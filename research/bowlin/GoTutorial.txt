@@ -2,10 +2,10 @@ This file contains my notes from the tutorial at https://go.dev/tour/welcome/1.
 
 · Go programs are made up of packages
 · Go programs start running in the main package
-· import (... , ..., etc) is used to import multiple packages
+· import (... ,... , etc) is used to import multiple packages
     · Can also do multiple import statements
 · You name a package with "  package _____  " at the top of a .go file
-· Concention says the package name has the same name as the last name
+· Convention says the package name has the same name as the last name
     of the output path
 · Packages only export variables that start with capital letters
 · Functions can take and return any numbers of things
@@ -21,4 +21,3 @@ This file contains my notes from the tutorial at https://go.dev/tour/welcome/1.
 · Declaring a variable without and explicit type will have it's type infered by what's on the right
 · Constants are declared using the const keyword
     · Can be character, string, boolean, or numeric values
-· 
