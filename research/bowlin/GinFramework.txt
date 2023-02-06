@@ -1,0 +1,26 @@
+https://gin-gonic.com/docs
+
+· Has middleware support
+· Can validate JSON
+· Has API routing
+· Supports error management
+· Has built in rednering for JSON, XML, and HTML
+
+
+The request responds to a url matching:  /welcome?firstname=Jane&lastname=Doe
+Example Route:
+    router.GET("/welcome", func(c *gin.Context) {
+		firstname := c.DefaultQuery("firstname", "Guest")
+		lastname := c.Query("lastname") // shortcut for c.Request.URL.Query().Get("lastname")
+
+		c.String(http.StatusOK, "Hello %s %s", firstname, lastname)
+	})
+
+· Routes have automatic query string parsing
+· Routes support grouping
+    ·  This makes routes made in the group relative to the group route
+
+
+· You can write test cases for GIN routes by creating test methods that send http requests to routes
+    · Assert return values
+    · Check backend variables
