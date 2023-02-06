@@ -1,0 +1,12 @@
+https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell
+
+· Git stores commits as commit objects that have points to the snapshot of changed content
+and the author's name and email, commit message, and points to commit(s) that came before
+· Git branches are movable pointers to commits
+· Default branch is master
+· git branch (name) ; creates a new branch at the current head pointer
+· git checkout lets you switch branches
+· Branch divergence occurs when two different commits occur from the same parent commit
+    · Ex: Two different developers commit on different branches from master
+· Need to merge branches to combine them again
+· Merge conflicts occur when two branches made changes to the same code
