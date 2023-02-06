@@ -1,0 +1,11 @@
+https://tutorialedge.net/projects/chat-system-in-go-and-react/
+https://www.freecodecamp.org/news/how-to-build-a-web-app-with-go-gin-and-react-cffdc473576/
+
+· The application should have backend and frontend directories
+    · Backend will have GO files
+    · Front end will have the ReactJS files 
+· Node.JS is required to run the ReactJS portion
+· Websockets can be used instead of polling to fetch/update information in real time
+    · Alternatively, information can be statically loaded on page loads
+· The frontend can fetch data from the backend using HTTP requests
+    · Should make the routes the same for the backend and frontend, but should add /api to the front of the routes for the backend
