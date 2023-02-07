@@ -1,0 +1,21 @@
+Gin API with Golang:
+https://gin-gonic.com/docs/	
+	Gin is a HTTP web framework written in Go (Golang). It features a Martini-like API, but with performance up to 40 times faster than Martini.
+	Benefits of Gin: Very fast, middleware support (logger/authorization/GZIP in between HTTP request an DB post), Crash-free (HTTP recovery), JSON validation, Routes grouping, error management (log debugging), Rending built-in, and Extendable. Gin also has extensive testing capabilities which would help with our professional skill. 
+	Example Program using HTTP requests:
+	package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+	r := gin.Default()
+	//HTTP get using Gin
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
+	r.Run() // listen and serve on 0.0.0.0:8080
+}
+
+We are not sure if we are going to use Gin yet, however, it seems like a helpful tool for HTTP requests and JSON payloads. Some other libraries we were considering using was Go-Chi and GORM.

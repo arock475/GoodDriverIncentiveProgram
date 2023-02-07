@@ -1,0 +1,14 @@
+Typescript:
+	https://www.typescriptlang.org/
+Typescript adds additional syntax to JavaScript to support a tighter integration/catch errors early with the editor. It can run anywhere (browser, Node.js, Deno, apps, etc.) and uses type inference which gives great tooling without additional code. 
+Example of type checker when using Typescript: 
+const obj = { width: 10, height: 15 };
+const area = obj.width * obj.heigth;
+“Property 'heigth' does not exist on type '{ width: number; height: number; }'. Did you mean 'height'?”
+While the above is not a syntax error, the type checker can check the JavaScript type and provide useful feedback. Same with something like 4/[] which is valid, but will not produce any output/could segfault
+Object/Type creation example:
+	const user = {
+ 		 name: "Hayes",
+  		id: 0,
+}; <- Creates an object with the inferred type which includes name: string and id: number
+You also can create interfaces that can be used to create future objects with that type. 

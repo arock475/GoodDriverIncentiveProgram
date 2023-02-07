@@ -1,0 +1,17 @@
+React: 
+https://reactjs.org/
+https://www.w3schools.com/whatis/whatis_react.asp
+React is a JavaScript library for building user interfaces. It has declarative views that make it easy to create interactive UIs, component-based which helps make more complex UIs, and works well with the other technologies on the stack. Most React users use the Babel compiler to translate markup programming languages like JavaScript and JSX (JavaScript XML) tags so JavaScript can act more like HTML (tag name, attributes, children, etc.)	
+A simple component where input data is stored in this.props:
+	class HelloMessage extends React.Component {
+		//Method that takes input data and returns it to a display
+  		render() {
+			//JSX syntax
+   			 return <div>Hello {this.props.name}</div>;
+ 		 }
+}
+root.render(<HelloMessage name="Taylor" />);	
+This.state allows for updated information to be displayed anytime a change happens (Ex: Timer increasing every second or a simple todo program using - Add #{this.state.items.length + 1})
+React also works well with external plugins and libraries such as Remarkable, an external markdown library.
+
+React will work great with our project because it is very easy to reuse components (such as not having different components for similar things like the different users, etc.) which saves time and is more efficient than just coding everything. 
