@@ -1,0 +1,37 @@
+What is AWS?
++ cloud platform
+# provides:
+	+ infrastructure
+	+ platform
+	+ software
+	+ cloud storage
+	> Hosting provider
+* EC2 = elastic compute cloud
+	+ create a virtual computer in the cloud
+		-> use vc as server for web app
+* VPC (Virtual Private Cloud)
+* S3 (Simple Storage Service)
+	= Upload and store files in cloud
+* RDS (Relational Database Service)
+	+ can manage backups, packing, and scale
+* ELB (Elastic Load Balancing)
+	= automatically distributes load for multiple
+	  EC2 instances
+* Lambda ~= serverless code
+	+ choose an event that triggers running of some code
+* SES (simple email service)
+* SNS (simple notification service)
+
+What is PHP?
+# What installed on a server to make it work:
+	Apache
+		= the program that handles requests from browsers
+		+ checks file systems for requested files
+	PHP
+		+ renders/works with code accessed/requested by Apache
+		+ is preprocessor*
+			* preprocessor = processes on server side before sending
+					     back to MySQL
+		+ usually outputs some other code like HTML or javascript
+	MySQL
+	(LAMP Stack)
