@@ -1,0 +1,82 @@
+Installing Golang on Visual Studio Code:
+	Downloaded Visual Studio Code: https://code.visualstudio.com/docs/?dv=win
+	Install: https://marketplace.visualstudio.com/items?itemName=golang.go
+	Example code to test: https://gobyexample.com/
+
+    Go, also known as Golang, is an open-source, compiled, and statically typed programming language designed by Google. It is built to be simple, high-performing, readable, and efficient.
+
+	Simple Hello world Program and output:
+		package main
+        //Package fmt implements formatted I/O with functions analogous to C's printf and scanf. The format 'verbs' are derived from C's but are simpler.
+        import "fmt"
+        func main() {
+                        fmt.Println("hello world")
+        }
+
+        “hello world”
+
+	Variables:
+		:- is shorthand for declaring and initializing a variable
+		Example: f :- “apple” is equal to var f = “apple”
+
+	Slices – More powerful interface for sequencing than arrays:
+	Contains operations like append and copy to better manipulate the slice
+		package main
+        import "fmt"
+        func main() {
+            s := make([]string, 3) //Typed only by the elements they contain
+            fmt.Println("emp:", s)
+            s[0] = "a"
+            s[1] = "b"
+            s[2] = "c"
+            fmt.Println("set:", s)
+            fmt.Println("get:", s[2])
+
+            fmt.Println("len:", len(s))
+            s = append(s, "d")
+            s = append(s, "e", "f")
+            fmt.Println("apd:", s)
+            c := make([]string, len(s))
+            copy(c, s)
+            fmt.Println("cpy:", c)
+            l := s[2:5]
+            fmt.Println("sl1:", l)
+            l = s[:5]
+            fmt.Println("sl2:", l)
+            l = s[2:]
+            fmt.Println("sl3:", l)
+            t := []string{"g", "h", "i"}
+            fmt.Println("dcl:", t)
+            twoD := make([][]int, 3)
+            for i := 0; i < 3; i++ {
+                innerLen := i + 1
+                twoD[i] = make([]int, innerLen)
+                for j := 0; j < innerLen; j++ {
+                    twoD[i][j] = i + j
+                }
+            }
+            fmt.Println("2d: ", twoD)
+        }
+
+        "emp: [  ]
+        set: [a b c]
+        get: c
+        len: 3
+        apd: [a b c d e f]
+        cpy: [a b c d e f]
+        sl1: [c d e]
+        sl2: [a b c d e]
+        sl3: [c d e f]
+        dcl: [g h i]
+        2d:  [[0] [1 2] [2 3 4]]”]
+
+    Multiple returns on functions:
+        Go can return multiple objects per function.
+        Use the _ identifier to only return a specific object (_, c :- vals())
+
+    Errors: 
+        Go can import the errors library to give more detailed errors than C
+        func f1(arg int) (int, error) {
+            if arg == 42 {
+                    return -1, errors.New("can't work with 42")
+            }
