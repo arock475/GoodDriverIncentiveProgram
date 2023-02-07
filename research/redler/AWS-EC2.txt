@@ -1,0 +1,17 @@
+We would first want to select a good linux distro to run on the server, then indicate 
+an amazon machine image that is for that OS. For example we could use the default AWS Linux image.
+
+Then we can select the actual compute hardware the server will run on, such as a micro server or something larger.
+Since the workload on this project won't be an actual production workload, we can probably select a small box.
+
+After that we can setup the VPC subnet so we can have more granular control network permissions for our 
+API versus the internet facing website. This is in tandum with the security group that gets assigned to the EC2
+that can control who can connect to the server, such as team members. 
+
+Then we would have to consider storage, such as EBS to have the storage accessable directly from the EC2 instance
+on disk. Or we could make an S2 bucket that can be used by the EC2 instance to host certain types of content, such 
+as profile pictures.
+
+We should then tag our EC2 to ensure that its organized under our team.
+
+Then we can SSH into the EC2 instance once we setup the security group correctly.

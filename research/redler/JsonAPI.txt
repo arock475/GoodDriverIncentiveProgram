@@ -1,0 +1,25 @@
+Sample standard json API implementation:
+
+Request format
+GET request to a url with the header being some authorization method, like a Bearer token
+with query parameters indicated by ? at the end of the url and & for each additional parameter:
+example:
+curl -X GET 'https://truckerincentive.com/api/driver?id=123&raw=true' 
+-H 'Auth: Bearer oiqwjeo12830123jqlwkej'
+
+We sent a request to the driver endpoint with the query parameter for id (123) and set a boolean parameter 'raw'
+to true.
+
+The response json would look something like this:
+{
+    "data": [{
+        id: 123
+        name: "Driver Name",
+        points: 321
+    }],
+    "err": 2,
+    "errmsg": ''
+}
+
+And we would send specific html error codes to indiciate errors and populate errmsg with a contextual 
+explanation for the error that may have occured.
