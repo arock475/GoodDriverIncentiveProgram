@@ -1,0 +1,13 @@
+In Golang you can do `go run <file.go>` to build and execute
+the go code in the file in one command. This command doesn't actually
+build a persistent binary that you can execute afterwords, and it also
+works without making a module.
+
+To actually build a useful binary, you first must make a module
+and set the parameters for building; such as versioning, dependencies,
+and submodules.
+
+Once this is done you can simply go to the top level directory with
+your go module file and run `go build` to build your binary. Of course,
+there are additional flags you can pass to the compile to specify
+optimization levels, debug symbols, etc; very similar to gcc/clang.

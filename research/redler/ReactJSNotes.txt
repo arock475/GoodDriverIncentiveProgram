@@ -1,0 +1,31 @@
+React is a web framework that can be used without both javascript and typescript. For our project
+we will be utilizing typescript to interact with the react framework.
+
+React has a few main features; components, the virtual DOM, and internal state/props.
+
+Components are encapsulation of html elements that can be thought of as a single entity.
+Custom component implementations are usually derived from a template react component that allows you to
+override existing methods to insert behavior in certain situations that happen throughout the library. 
+For example components often override the `render()` component method to insert what html you want to be displayed
+for the component.
+
+so for example we can create a component for a single shopping catalogue item when we pull from the ebay
+api; so as we iterate over the results from our ebay payload, we can have a constructor for our custom 
+component that takes the item data and can create the html for a single item programmatically.
+
+Another powerful feature of react is the interaction with the virtual DOM. The actual DOM represents the entire
+html on a page and how to interact with it. Instead of manually manipulating the actual DOM for every html change,
+react can optimize updates and rendering using an in-memory representation of the DOM and displaying changes only
+when necessary.
+
+State & Props is a crucial part of making and interacting with components, and can be seem similarly as a class
+and the attributes in the class. Components have internal props (properties) and a state that can be passed down
+from parent components to child components. Updating internal props on a component can change what the component
+rendering displays. You can also have eventHooks on components that make it so pieces of code only run when 
+a certain prop or state gets changed on the component. 
+
+React also has a very useful feature for adding additional logic to native html elements. For example, you can 
+make it so whenever you click a native html <button> a method could be called that captures the state of the element
+and can run a normal function.
+
+React also has an incredibly large ecosystem with lots of libraries to use. 
