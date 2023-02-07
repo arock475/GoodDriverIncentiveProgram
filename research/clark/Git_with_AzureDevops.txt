@@ -1,0 +1,14 @@
+Git with Azure Devops:
+https://learn.microsoft.com/en-us/azure/devops/user-guide/code-with-git?view=azure-devops
+
+Git is very simple with AzureDevops and takes a lot of the complexity out of using Git normally. It also can view files/commits through the broswer rather than just using a console/bash.
+Steps to work with Git on DevOps
+1.	Clone repo (Repo->Files->Clone)
+2.	Run git clone http://... To clone the repo
+3.	Cd into current directory
+You can create branches with git branch and use git checkout to switch to that branch. 
+Simple commit with git:
+	git add .
+git commit -m "My first commit"
+git push origin users/…
+To merge, create a pull request on devops and create it to begin the pull request. After which the merge will be successful. Usual workflow goes like: make a branch, make changes to the branch, stage changes to the repo, commit said changes, merge the branch back to local, push the changes to master branch.
