@@ -1,0 +1,2 @@
+followed this tutorial: https://www.youtube.com/watch?v=hQAHSlTtcmY&t=928s
+(didn't upload project because felt like a bad idea to nest React projects within each other.)

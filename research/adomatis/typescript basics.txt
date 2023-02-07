@@ -1,0 +1,7 @@
+What is typescript?
+	+ basically the same thing as javascript
+	+ adds static typing
+		-> fixes run time error issues
+
+Followed this tutorial: https://www.youtube.com/watch?v=TiSGujM22OI&list=PLC3y8-rFHvwi1AXijGTKM0BKtHzVC-LSK&index=1
+(followed in conjuction with react. Didn't upload the project because it felt like a bad idea to have a React project nested within another react project)
