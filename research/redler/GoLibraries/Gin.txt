@@ -1,0 +1,29 @@
+Gin is an all encompassing web framework for Go.
+
+Gin provides out of the box lots of middleware options, automatic crash prevention, json validation, 
+building html routes and grouping, and error management.
+
+Unit testing is a critical component of Gin, and is integrated heavily into the framework. It allows for quick
+unit test creation while testing core functionality in the library.
+
+Here is an example program that creates an html route at /ping, and passes in a function pointer that provides a 
+workload to be run and sent back to the caller.
+
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+	r := gin.Default()
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
+	r.Run() // listen and serve on 0.0.0.0:8080
+}
+
+A potential downside of Gin the forced requirement to use their provided middleware and functions, making
+it potentially harder to integrate other libraries that may perform different tasks better into the Gin framework.
+
+https://gin-gonic.com/docs/

@@ -1,0 +1,54 @@
+GORM is a ORM library for go that allows for us to easily interact with our 
+database in a much more intuitive and object driven way that would resemble our actual
+structure in code better than a relational one.
+
+GORM allows for easy integration into relational associations, such as one-to-one, or many-to-many.
+Hooks can be created which are similar to triggers that allow for code to be run on
+before or after certain operations. 
+
+It essentially allows for you to do any native sql operation but without writing much actual sql
+and in a way that represents our data structures more intuitivly.
+
+Here is an example that could represent us updating a driver with GORM:
+
+package main
+
+import (
+  "gorm.io/gorm"
+  "gorm.io/driver/mysql"
+)
+
+type Driver struct {
+  gorm.Model
+  ID     uint
+  Name   string
+  Points uint
+}
+
+func main() {
+    dsn := "user:pass@tcp(127.0.0.1:3306)/testdb"
+  db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+  if err != nil {
+    panic("failed to connect database")
+  }
+
+  // Migrate the schema
+  db.AutoMigrate(&Driver{})
+
+  // Create a new driver into the database using our actual struct type
+  db.Create(&Driver{ID: 2, Name: "Bob Jones", Points: 0})
+
+  // Read
+  var driver Driver
+  db.First(&driver, 2) // find product with integer primary key
+
+  // Update the driver's points.
+  db.Model(&driver).Update("Points", driver.Points + 10)
+}
+
+In comparsion, the native mysql driver would require us to write raw sql queries to retrieve drivers from a table,
+then iterate over a result set and manually unpack each field into a new struct. 
+
+This would end with the same result, but would much longer, verbose, and error prone code that isn't any more 
+faster than GORM. Updating would be a similar story, but doing the operation of unpacking in reverse with binding
+parameters manually.
