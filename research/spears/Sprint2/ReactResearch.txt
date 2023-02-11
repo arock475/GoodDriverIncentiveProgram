@@ -1,0 +1,30 @@
+React components are reusable bits of code that return HTML
+
+There are function components and class components
+All component names must be capitilized
+
+Class components
+Class components must include "extends React.Component" to create inheritance to React.Component
+This gives access to all of React.Component's functions
+The component also requires a render() methdos that returns HTML
+
+Function components
+A function component also returns HTML but Function components include less code and are simpler
+A function component is basically a function from any other language that returns HTML
+
+Rendering a Component
+to render something you do root.render(<FUNCTION NAME />);
+
+Components can be passed as props (properties)
+Properties are like function arguments and can pass properties like colors or size
+
+Components can be refered to inside of components (like functions normally)
+
+React suggests seperating components into separate files in order to easily reuse it
+then you import these files using import X from PATH
+
+
+Components allow you to make pieces of a frontend and reuse it in many places
+This will allow us to write fewer lines of code to do the same thing
+
+https://www.w3schools.com/react/react_components.asp#:~:text=Components%20are%20independent%20and%20reusable,will%20concentrate%20on%20Function%20components.

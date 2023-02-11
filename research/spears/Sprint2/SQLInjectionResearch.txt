@@ -1,0 +1,20 @@
+SQL injection is the action of placing malicious code inside of existing SQL statements via webpage input
+The basic premise is that anywhere you ask the user for input that instead of said input they give SQL statements that will be unconsciously run on the database.
+
+In some cases the attack will be based on 1=1 always being true.
+    For example putting the input 105 or 1=1 when placed into a SELECT query could return all rows in a table
+
+In other cases the attack will be based on ""="" always being true. This works under the same premise as the above case but for string input
+
+Then there are injection attacks based on Batched SQL statements
+    Batched SQL statements are groups of 2+ SQL statements separated by semicolons
+    In these kinds of attacks things like
+        SELECT * FROM Users; DROP TABLE Suppliers
+    will return all rows from the Users table and then delete the Suppliers table.
+
+In order to protect from injection attacks one can use SQL Parameters
+    SQL Parameters are values that are added to SQL query at execution time in a controlled way.
+    
+    The SQL engine checks each parameter to ensure that it is correct for its column and to ensure that it is not part of the SQL to be executed.
+
+https://www.w3schools.com/sql/sql_injection.asp

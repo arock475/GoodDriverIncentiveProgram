@@ -1,0 +1,19 @@
+I have installed Go and written and run a few basic lines of Go code.
+
+In these lines I have learned the basic syntax including assignment and loops as well as functions and packages.
+Go does not have a specific keyword for while loops so you would use a simplified for loop in that case.
+
+Sources and resources
+https://go.dev/doc/tutorial/getting-started
+Got me started with Go including how to download it
+
+https://www.w3schools.com/go/index.php 
+Gave good resources for most of the syntax that I have learned
+
+https://stackoverflow.com/questions/36512919/what-is-the-difference-between-and-in-go 
+Explained the differences between = and := in Go 
+(:= allows for ommiting the data type by assigning the new variable to the type of the assigned data)
+For example x := 10 would make x an integer and x := "yes" would make it a string
+Without the := assignment is done as var x int = 10 for example
+
+If you plan to run my GoTest.go file you would have to have go downloaded and then run "go run GoTest.go" or "go run ."

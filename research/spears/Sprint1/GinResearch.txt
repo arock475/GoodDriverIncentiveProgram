@@ -1,0 +1,47 @@
+Gin is a web framework for Golang. It is similar to other web frameworks such as 
+martini but it has up to 40 times better proformance.
+
+Gin has many features that make it ideal for web development such as
+    A large amount of middleware that is availabe and supported
+    Automatic crash prevention if some sort of panic happens with a http request
+    JSON validation (checks to make sure all required values are present)
+    Routes grouping which organizes routes for simplicity
+    Error management which makes it much easier to find and manage errors throughout requests
+
+The Gin framework also provides a built in suite of unit tests and allows for the creation of custom unit tests
+This will be crucial as our professional skill is automated testing, using the Gin framework will make this much easier on us
+Gin also allows for the API to be frozen so that new releases will not break the code, while we are not working with a live app 
+this feature is still nice so that we can prevent breaking our code base
+
+
+One of our main uses with Gin will be the test cases
+
+One example of a test case would be this one which tests whether or not the GET request both returns something and that it returns the right value
+
+package main
+
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestPingRoute(t *testing.T) {
+	router := setupRouter()
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/ping", nil)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, "pong", w.Body.String())
+}
+
+This would be one example of a test case in our test case suite that would be run automatically 
+
+Gin projects can also be deployed easily on a variety of cloud providers including Koyeb, Qovery, Render, Google App Engine, as well as AWS which 
+we will be using for this project
+
+https://gin-gonic.com/docs/ (Source)

@@ -1,0 +1,24 @@
+GoChi is a second Golang backend framework.
+
+The main differences between GoChi and Gin are that 
+GoChi is more lightweight. Gin also is quite restrictive
+in the fact that we would only be able to use Gin components.
+
+In otherwords GoChi is more lightweight and is compatible with a larger
+number of things
+
+This makes GoChi better for our purposes.
+
+Some more things about GoChi is that it is fast (which is a plus for us, we don't want
+our application to be slowed down by our technologies)
+
+compatible with .net/http (which is good for our purposes)
+
+GoChi is also designed for usage with modular and large API systems
+Since this is our goal this make GoChi a pretty good choice, it will allow us to keep our system managable
+
+Go Chi also has automatic documentation using docgen
+    THis will make our lives easier by not having to do as much documenting ourselves
+
+There are many more features of GoChi that I am sure we will either end up utilizing
+or at least consider using. GoChi seems like the better choice for our purposes.

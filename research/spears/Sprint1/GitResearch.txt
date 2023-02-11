@@ -1,0 +1,34 @@
+GIT is a version control system that is used in most industry jobs. It is exceptionally versatile and useful.
+
+I have personally learned and used git one time. However we used it very infrequently and I never learned 
+adequately enough for my liking. This document will likely be short on account of me not needing much of a refresher 
+I mostly want a cheatsheet of sorts for myself on what each GIT command does and the basics.
+
+The basic git workflow is as follows
+
+I have a local file that is in a local repository.
+If I make a change to said local file I would then need to update the master repository as well as commit the changes to my local repository
+
+To do so I would first need to stage the changes by doing git add
+Then I would need to commit the  changes to the local repository (using git commit -m "something")
+
+Then from there I could do git push origin master to push it onto the remote master repository
+
+This is the basic workflow of git but normally branches are in the mix as well
+
+The main change here is that all commits would be going onto the local branch, this said branch would then be merged with the local repository,
+Then after that merge you would push to the master repository
+
+This allows for multiple people to work and commit simultaenously while limiting the number of merge conflicts that happen
+
+OVERALL WORKFLOW
+
+make branch
+make changes
+stage changes
+commit changes
+merge branch to local
+push changes to master
+
+https://www.w3schools.com/git/git_branch.asp?remote=github
+https://www.freecodecamp.org/news/learn-the-basics-of-git-in-under-10-minutes-da548267cc91/
