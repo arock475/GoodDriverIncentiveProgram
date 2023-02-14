@@ -1,0 +1,30 @@
+Testing in Golang:
+https://go.dev/doc/tutorial/add-a-test
+
+Go has various testing capabilities that can help expose bugs while changes occur constantly. Go’s testing package has specific naming conventions and the go test command to write and execute tests quickly and efficiently. 
+
+Example of a test in go:
+package greetings
+import (
+    "testing"
+    "regexp"
+)
+// TestHelloName calls greetings. Hello with a name, checking for a valid return value.
+func TestHelloName(t *testing.T) {
+    name := "Gladys"
+    want := regexp.MustCompile(`\b`+name+`\b`)
+    msg, err := Hello("Gladys")
+    if !want.MatchString(msg) || err != nil {
+        t.Fatalf(`Hello("Gladys") = %q, %v, want match for %#q, nil`, msg, err, want)
+    }
+}
+
+// TestHelloEmpty calls greetings.Hello with an empty string, checking for an error.
+func TestHelloEmpty(t *testing.T) {
+    msg, err := Hello("")
+    if msg != "" || err == nil {
+        t.Fatalf(`Hello("") = %q, %v, want "", error`, msg, err)
+    }
+}
+
+go test - PASS
