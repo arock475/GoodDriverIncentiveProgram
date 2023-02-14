@@ -1,0 +1,21 @@
+Protecting against SQL Injection:
+https://security.berkeley.edu/education-awareness/how-protect-against-sql-injection-attacks
+
+SQL injection is one of the most common forms of attack used by attackers/hackers to steal data from databases/organizations. Usually, the attacks target websites by inserting malicious 
+SQL statements into different input fields that get sent to the SQL database which is usually a result of improper coding of web applications. A successful injection can read sensitive 
+data from the database, modify the database (insert/update/delete), execute administrative operations (ex: shutdown the DBMS), recover old content that was deleted, and in some cases, issue command to the OS. 
+
+An example of a SQL injection could look like: 
+SELECT id, firstname, lastname from authors where firstname = 'evil'ex' and lastname ='newman'
+The database would interpret the line as: Incorrect syntax near il' as the database tried to execute evil which could run the evil.ex
+Developers can protect against SQL injection by utilizing parameterized database queries with bound, typed parameters, and careful use of parameterized stored procedures in the database. 
+Almost all languages have systems in place to sanitize inputs, and some of the most common versions use prepared statements with parameterized queries and/or stored procedures. 
+Additionally, just input filtering does not solve the problem of injection as experienced attackers can circumvent this leaving the web application vulnerable.
+
+Java example:
+String custname = request.getParameter("customerName");
+// Perform input validation to detect attacks
+String query = "SELECT account_balance FROM user_data WHERE user_name = ? ";
+PreparedStatement pstmt = connection.prepareStatement( query );
+pstmt.setString( 1, custname);
+ResultSet results = pstmt.executeQuery( );
