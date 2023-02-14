@@ -1,0 +1,45 @@
+In MySQL INSERT INTO is used to make new records into a table
+
+There are two syntaxes for This
+    1. Specifying both column names and values to INSERT
+        EX
+            INSERT INTO table_name (col1, col2, col3, ...)
+            VALUES (val1, val2, val3, ...)
+    2. When adding values for all columns you do not need to specify col names
+        Something to make sure is that the data is in the right order for the columns, 
+        otherwise the data will go into the wrong places
+        EX
+            INSERT INTO table_name
+            VALUES (val1, val2, val3, ...)
+
+It is also possible to only insert into specific columns
+    EX
+        INSERT INTO Customers (CustomerName, City, Country)
+        VALUES ('Cardinal', 'Stavenger', 'Norway')
+    This would leave null values in the columns not specified.
+
+https://www.w3schools.com/mysql/mysql_insert.asp
+
+In order to create a new table in MySQL you use CREATE TABLE
+
+CREATE TABLE's syntax is as follows
+
+CREATE TABLE table_name (
+    column1 datatype, 
+    column2 datatype,
+    column3 datatype,
+    ....
+);
+The column paramaters specify the names of the columns of the table
+The datatype parameter specifies the type of data the column can hold (varchar, integer, date, etc)
+
+You can also create a table using another table
+syntax:
+    CREATE TABLE new_table_name AS 
+        SELECT col1, col2, ...
+        FROM existing_table_name
+        WHERE ....;
+
+These are two of the most basic commands for SQL usage and we will use them relatively frequently
+
+https://www.w3schools.com/mysql/mysql_create_table.asp
