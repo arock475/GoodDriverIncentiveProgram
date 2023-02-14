@@ -1,0 +1,44 @@
+Go has a built in testing library that is simple and easy to use, executing tests 
+is integrated into the compiler.
+
+To create a new test suite file, simply give it a name ending with "_test.go", so for example
+if we wanted to create a test suite for our login api, we could have a "login_test.go" file.
+
+To import the testing functionality: import "testing".
+
+To make a new test, make a function who's name starts with Test and then a capitalized name for the test.
+Example: func TestPasswordHashing(t *testing.T)
+
+Go test also has benchmark functionality that can be run N times sequentially to deliver performance
+metrics for the function. The function parameter for the benchmark function includes information
+like the number of passes.
+
+Sub-tests are also possible to allow for setuping up code then running a number of tests using that 
+same starting state:
+
+func TestFoo(t *testing.T) {
+    // <setup code>
+    t.Run("A=1", func(t *testing.T) { ... })
+    t.Run("A=2", func(t *testing.T) { ... })
+    t.Run("B=1", func(t *testing.T) { ... })
+    // <tear-down code>
+}
+
+This would result in 3 different tests and the results for said tests.
+
+Here is an example test:
+
+
+package abs
+
+import "testing"
+
+func TestAbs(t *testing.T) {
+    got := Abs(-1)
+    if got != 1 {
+        t.Errorf("Abs(-1) = %d; want 1", got)
+    }
+}
+
+We can then run: `go test -run ''` to run all tests. We can also run specific tests using name matching
+such as go test -run PasswordHashing.

@@ -1,0 +1,54 @@
+Components are UI elements that are independent, reusable, and isolated from other components.
+A large benefit components have is their ability to be constructed multiple times into many components
+on a single page, and the fact that they can inherit props and pass props around to the rest of its environment.
+
+A basic component could look like this:
+
+class BasicComponent extends React.Component {
+    render() {
+        return <h1> Hello, {this.props.name}</h1>;
+    }
+}
+
+You can also create a component using only a function:
+
+function Basic(props) {
+    return <h1>Hello, {props.name}</h1>;
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+const element = <Basic name="Ryan" />;
+root.render(element);
+
+Components can contain components, such as an App component that renders multiple of our BasicComponent:
+
+function App() {
+  return (
+    <div>
+      <Basic name="Sara" />
+      <Basic name="Cahal" />
+      <Basic name="Edite" />
+    </div>
+  );
+}
+
+Props are read only, and all functions that use props on a component must be "pure", that do not modify
+the original props variable passed into it.
+
+You should never define a component within a component, but instead define all compnoents at the top level scope for the file.
+
+We can also use react's JSX with make html a bit easier to write with variables.
+
+Here is an easy avatar component that can take a variable avatar link, such as an s3 url, and a description:
+
+export default function Avatar() {
+  const avatar = 'link';
+  const description = 'Gregorio Y. Zara';
+  return (
+    <img
+      className="avatar"
+      src={avatar}
+      alt={description}
+    />
+  );
+}
