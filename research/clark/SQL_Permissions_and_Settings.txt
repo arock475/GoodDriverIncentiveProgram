@@ -1,0 +1,20 @@
+SQL Permissions/Settings
+https://learn.microsoft.com/en-us/sql/relational-databases/security/permissions-database-engine?view=sql-server-ver16
+
+	Every SQL Server has associated permissions that can be granted to various users. They can managed at a server level or at a database level depending on which permissions are needed to be granted. 
+    There are a total of 248 different permissions with Azure SQL having 254. To apply a permissions, use the following template:
+
+GRANT SELECT ON SCHEMA::HumanResources TO role_HumanResourcesDept;
+REVOKE SELECT ON SCHEMA::HumanResources TO role_HumanResourcesDept;
+
+Some important permissions that can be assigned are:
+	Control – gives ownership level permissions to a user
+	Alter/Alter Any – gives the user to alter anything except ownership level permissions
+	Impersonate – Impersonate different user permissions
+	Create – The user can create server/database objects
+	View Definition – User can view metadata
+	References – Used to create foreign keys/functions/views
+    
+All of the above permissions have sub permissions that can limit different things the user can do depending on what is needed. To see all permissions on a database and/or server, use the following command: 
+	SELECT * FROM fn_builtin_permissions(default);
+    GO;
