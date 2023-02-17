@@ -1,11 +1,12 @@
 import React from 'react';
 import '../styles/App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import HeaderComponent from '../components/HeaderComponent';
+import Header from '../components/Header/Header';
 
 const App = () => {
   return (
-    <HeaderComponent colorTheme={"primary"} loggedIn={false} profilePictureUrl={''}/>
+    <Header colorTheme={"light"} loggedIn={true} loginUser={"Van Scoy"}/>
+
     
     // Page Contents
     
