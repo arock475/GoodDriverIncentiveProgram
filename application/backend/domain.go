@@ -45,6 +45,17 @@ type Admin struct {
 	User   User
 }
 
+type Profile struct {
+	ID        int // primary key
+	UserID    int `gorm:"uniqueIndex;not null"` // foreign key for user
+	User      User
+	FirstName string `gorm:"not null"`
+	LastName  string `gorm:"not null"`
+	Phone     string `gorm:"default:''"`
+	Bio       string `gorm:"default:''"`
+	Image     string `gorm:"default:''"`
+}
+
 type Organization struct {
 	ID        int
 	Name      string `gorm:"not null"`

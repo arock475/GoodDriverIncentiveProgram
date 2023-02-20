@@ -34,6 +34,7 @@ func main() {
 	db.AutoMigrate(&Driver{})
 	db.AutoMigrate(&Sponsor{})
 	db.AutoMigrate(&Admin{})
+	db.AutoMigrate(&Profile{})
 	db.AutoMigrate(&Organization{})
 	db.AutoMigrate(&Points{})
 
