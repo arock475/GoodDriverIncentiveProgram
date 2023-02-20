@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 type CreateUserPayload struct {
 	Email        *string `json:"email"`
 	PasswordHash *string `json:"password"`
@@ -43,5 +45,21 @@ type Admin struct {
 	User   User
 }
 
-//type Organization struct {
-//}
+type Organization struct {
+	ID        int
+	Name      string `gorm:"not null"`
+	Biography string `gorm:"default:''"`
+	Phone     string `gorm:"default:''"`
+	Email     string `gorm:"default:''"`
+	LogoURL   string `gorm:"not null"`
+}
+
+type Points struct {
+	ID        int
+	DriverID  int `gorm:"uniqueIndex;not null"`
+	Driver    Driver
+	NumChange int
+	Reason    string
+	Total     int
+	CreatedAt time.Time
+}
