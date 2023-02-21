@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import CreateAccount from '../pages/Login/CreateAccountComponent';
+import CreateAccount from '../pages/Login/CreateAccount';
 
 test('Create Account Username', () => {
   render(<CreateAccount/>);

@@ -17,7 +17,7 @@ const LoginNav: React.FC<LoginNav> = ({
             <Nav.Link href={`/user/${loginUser}`} className="nav-link">
                 {loginUser}
                 <img src={"https://team25-s3bucket.s3.amazonaws.com/profilepicture-default.gif"} width={60} height={60}></img>
-                </Nav.Link>
+            </Nav.Link>
         </Nav>
         )
     }
