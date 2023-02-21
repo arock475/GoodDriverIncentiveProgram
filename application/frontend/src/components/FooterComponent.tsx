@@ -9,7 +9,7 @@ const Footer: React.FC<FooterProps> = ({
     colorTheme="dark"
 }) => {
     return (
-        <div className="main-footer">
+        <div className="main-footer navbar-fixed-bottom">
             <div className="bg-dark text-white">
                 <Container>
                     <div className="row">
@@ -19,7 +19,7 @@ const Footer: React.FC<FooterProps> = ({
                             </h4>
                             <ul className="list-unstyled">                            
                                 <p>
-                                    <a className="text-reset" href="https://www.youtube.com/watch?v=eow125xV5-c!">Frequently Asked Questions</a>
+                                    <a className="text-reset" href="/faq">Frequently Asked Questions</a>
                                 </p>
                             </ul>
                         </div>

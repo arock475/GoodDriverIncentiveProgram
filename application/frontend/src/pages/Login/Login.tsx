@@ -26,7 +26,7 @@ const Login = () => {
           </Button>
         </div>
         <div className='text-center'>
-          <Button variant='secondary' type='submit' color='blue' href='/Create-Account'>
+          <Button variant='secondary' type='submit' color='blue' href='/login/create'>
             Create Account
           </Button>
         </div>
