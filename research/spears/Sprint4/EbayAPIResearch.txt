@@ -1,0 +1,21 @@
+Ebay has a quite large API selection. There are multiple categories of API that allow one to buy/sell/analyze various items and statistics
+
+In our project we will be using one main API that Ebay provides, the Browse API.
+
+This API allows one to create a selection of Ebay's items based on category or filter.
+
+The API also allows one to add individual desired items to the selection if necessary
+
+This is perfect for our project's needs as we want sponsors to be able to choose what they want from Ebay to have in their catalog
+
+We will be making some sort of frontend around this API in order to allow for the sponsors to create a catalog without having to 
+go through the actual endpoints and commands for the API
+
+The API provides a series of methods that allow for all manner of searching and sorting items from Ebay's inventory
+
+some of these methods are by name, by image, and by category.
+
+
+I have also created an Ebay Developer Account and am in the process of being aproved
+
+https://developer.ebay.com/api-docs/buy/browse/static/overview.html

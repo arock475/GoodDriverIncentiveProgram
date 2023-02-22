@@ -1,0 +1,13 @@
+Build Pipelines are the backbone of Continuous Integration/Continuous Deployment environments
+
+Build Pipelines include everything from running automated tests, to deploying in a production environment, to compiling code. 
+
+In our case I currently plan to run our automated test (that is our professional skill) and also have the pipeline place committed code directly
+into our production environment
+
+Azure provides a tool to do this in their pipelines section which is what I will be using in order to achieve this.
+
+https://blogs.perficient.com/2021/01/19/how-to-set-up-automated-deployment-with-ci-cd-pipelines-through-azure/
+https://www.sealights.io/sprint-velocity/build-automation-the-foundation-of-your-ci-cd-pipeline/
+
+This research is short but I will likely be doing slighly more research as I actually implement this in our project
