@@ -5,7 +5,6 @@ import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import React from 'react';
-import bcrypt from 'bcryptjs'
 
 const CreateAccount = () => {
 
@@ -13,21 +12,24 @@ const CreateAccount = () => {
     e.preventDefault();
 
     const target = e.target as typeof e.target & {
+        firstName : { value: string };
+        lastName : { value: string };
         email : { value: string };
         password: { value: string };
     };
 
+    const firstName = target.firstName.value;
+    const lastName = target.lastName.value;
     const email = target.email.value;
-    const plaintextPassword = target.password.value;
-
-    const saltRounds = 10;
-    const hash: string = await bcrypt.hash(plaintextPassword, saltRounds);
+    const password = target.password.value;
 
     const response = await fetch('http://localhost:3333/users', {
         method: 'POST',
         body: JSON.stringify({
+            firstName: firstName,
+            lastName: lastName,
             email: email, 
-            password: hash,
+            password: password,
             type: 0
         })});
     
@@ -49,11 +51,11 @@ const CreateAccount = () => {
                 <Row>
                     <Col>
                         <Form.Label>First Name</Form.Label>
-                        <Form.Control placeholder="First name" />
+                        <Form.Control name="firstName" placeholder="First name" />
                     </Col>
                     <Col>
                         <Form.Label>Last Name</Form.Label>
-                        <Form.Control placeholder="Last name" />
+                        <Form.Control name="lastName" placeholder="Last name" />
                     </Col>
                 </Row>
                 <Row>

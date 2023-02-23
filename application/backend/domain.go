@@ -3,9 +3,16 @@ package main
 import "time"
 
 type CreateUserPayload struct {
-	Email        *string `json:"email"`
-	PasswordHash *string `json:"password"`
-	Type         *int    `json:"type"`
+	Email             *string `json:"email"`
+	PlaintextPassword *string `json:"password"`
+	FirstName         *string `json:"firstName"`
+	LastName          *string `json:"lastName"`
+	Type              *int    `json:"type"`
+}
+
+type LoginUserPayload struct {
+	Email             *string `json:"email"`
+	PlaintextPassword *string `json:"password"`
 }
 
 // Type is a discriminator for different subtypes: driver, sponsor, admin
@@ -14,6 +21,8 @@ type User struct {
 	ID           int    `json:"id"`
 	Email        string `json:"email" gorm:"unique;not null"`
 	PasswordHash string `json:"password" gorm:"not null"`
+	FirstName    string `json:"firstName" gorm:"not null"`
+	LastName     string `json:"lastName" gorm:"not null"`
 	Type         int    `json:"type" gorm:"not null, default:0"`
 }
 
@@ -46,14 +55,12 @@ type Admin struct {
 }
 
 type Profile struct {
-	ID        int // primary key
-	UserID    int `gorm:"uniqueIndex;not null"` // foreign key for user
-	User      User
-	FirstName string `gorm:"not null"`
-	LastName  string `gorm:"not null"`
-	Phone     string `gorm:"default:''"`
-	Bio       string `gorm:"default:''"`
-	Image     string `gorm:"default:''"`
+	ID     int // primary key
+	UserID int `gorm:"uniqueIndex;not null"` // foreign key for user
+	User   User
+	Phone  string `gorm:"default:''"`
+	Bio    string `gorm:"default:''"`
+	Image  string `gorm:"default:''"`
 }
 
 type Organization struct {

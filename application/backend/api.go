@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -56,6 +57,10 @@ func main() {
 		w.Write([]byte("Available routes: /users"))
 	})
 
+	r.Route("/login", func(r chi.Router) {
+		r.Post("/", LoginUser)
+	})
+
 	r.Route("/users", func(r chi.Router) {
 		r.Get("/", ListUsers)
 		r.Post("/", CreateUser)
@@ -97,8 +102,18 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if data.PasswordHash == nil {
+	if data.PlaintextPassword == nil {
 		http.Error(w, "CreateUserPayload missing required field: \"password\"", http.StatusBadRequest)
+		return
+	}
+
+	if data.FirstName == nil {
+		http.Error(w, "CreateUserPayload missing required field: \"firstName\"", http.StatusBadRequest)
+		return
+	}
+
+	if data.LastName == nil {
+		http.Error(w, "CreateUserPayload missing required field: \"lastName\"", http.StatusBadRequest)
 		return
 	}
 
@@ -107,9 +122,17 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(*data.PlaintextPassword), bcrypt.MinCost)
+	if err != nil {
+		http.Error(w, "Internal server error: Failed to hash password, could not create user.", http.StatusInternalServerError)
+		return
+	}
+
 	var user User
 	user.Email = *data.Email
-	user.PasswordHash = *data.PasswordHash
+	user.PasswordHash = string(hashedBytes)
+	user.FirstName = *data.FirstName
+	user.LastName = *data.LastName
 	user.Type = *data.Type
 
 	// TODO: Make additional driver/sponsor/admin struct based on type
@@ -123,6 +146,47 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	returned, _ := json.Marshal(user)
 	w.Write(returned)
+}
+
+func LoginUser(w http.ResponseWriter, r *http.Request) {
+	data := LoginUserPayload{}
+
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if data.Email == nil {
+		http.Error(w, "LoginUserPayload missing required field: \"email\"", http.StatusBadRequest)
+		return
+	}
+
+	if data.PlaintextPassword == nil {
+		http.Error(w, "LoginUserPayload missing required field: \"password\"", http.StatusBadRequest)
+		return
+	}
+
+	var user User
+
+	// Get hash from database for user, if exists.
+	result := db.Where("email = ?", data.Email).First(&user)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) || result.Error != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(*data.PlaintextPassword))
+	if err != nil {
+		http.Error(w, "User authentication failed: wrong password.", http.StatusUnauthorized)
+		return
+	}
+
+	w.Write([]byte("success!\n"))
+
+	// user has been authenticated, generate token and return it
+	// TODO: implement go-chi jwtauth JWT authentication middleware
+	// (https://go-chi.io/#/pages/middleware?id=jwt-authentication)
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
