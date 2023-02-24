@@ -2,6 +2,14 @@ package main
 
 import "time"
 
+type UserProfilePayload struct {
+	FirstName *string `json:"firstName"`
+	LastName  *string `json:"lastName"`
+	Phone     *string `json:"phone"`
+	Bio       *string `json:"bio"`
+	ImageURL  *string `json:"image"`
+}
+
 type CreateUserPayload struct {
 	Email             *string `json:"email"`
 	PlaintextPassword *string `json:"password"`
@@ -17,17 +25,19 @@ type LoginUserPayload struct {
 
 // Type is a discriminator for different subtypes: driver, sponsor, admin
 // 0 -> Driver, 1 -> Sponsor, 2 -> Admin
+// User has a custom Marshaler which omits the password hash.
+// This will be used as a "Protected User View" for GET /users but not POST /users
 type User struct {
 	ID           int    `json:"id"`
 	Email        string `json:"email" gorm:"unique;not null"`
-	PasswordHash string `json:"password" gorm:"not null"`
+	PasswordHash string `json:"password,omitempty" gorm:"not null"`
 	FirstName    string `json:"firstName" gorm:"not null"`
 	LastName     string `json:"lastName" gorm:"not null"`
+	Phone        string `json:"phone" gorm:"default:''"`
+	Bio          string `json:"bio" gorm:"default:''"`
+	ImageURL     string `json:"image" gorm:"default:''"`
 	Type         int    `json:"type" gorm:"not null, default:0"`
 }
-
-// TODO: UserProtectedView struct for seeing user information
-// from database but exclude things like password hash ?
 
 type Driver struct {
 	ID           int
@@ -52,15 +62,6 @@ type Admin struct {
 	ID     int
 	UserID int `gorm:"uniqueIndex;not null"`
 	User   User
-}
-
-type Profile struct {
-	ID     int // primary key
-	UserID int `gorm:"uniqueIndex;not null"` // foreign key for user
-	User   User
-	Phone  string `gorm:"default:''"`
-	Bio    string `gorm:"default:''"`
-	Image  string `gorm:"default:''"`
 }
 
 type Organization struct {

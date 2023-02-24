@@ -35,7 +35,6 @@ func main() {
 	db.AutoMigrate(&Driver{})
 	db.AutoMigrate(&Sponsor{})
 	db.AutoMigrate(&Admin{})
-	db.AutoMigrate(&Profile{})
 	db.AutoMigrate(&Organization{})
 	db.AutoMigrate(&Points{})
 
@@ -67,6 +66,7 @@ func main() {
 
 		r.Route("/{userID}", func(r chi.Router) {
 			r.Get("/", GetUser)
+			r.Put("/profile", UpdateProfile)
 		})
 	})
 
@@ -75,15 +75,15 @@ func main() {
 }
 
 func ListUsers(w http.ResponseWriter, r *http.Request) {
-	var dbUsers []User
+	var users []User
 
-	result := db.Find(&dbUsers)
+	result := db.Find(&users)
 	if result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusBadRequest)
 		return
 	}
 
-	returned, _ := json.Marshal(dbUsers)
+	returned, _ := json.Marshal(users)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(returned)
 }
@@ -145,6 +145,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	returned, _ := json.Marshal(user)
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(returned)
 }
 
@@ -204,5 +205,56 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	returned, _ := json.Marshal(user)
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(returned)
+}
+
+func UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	data := UserProfilePayload{}
+
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	updates := make(map[string]interface{})
+
+	if data.FirstName != nil {
+		updates["first_name"] = *data.FirstName
+	}
+
+	if data.LastName != nil {
+		updates["last_name"] = *data.LastName
+	}
+
+	if data.Phone != nil {
+		updates["phone"] = *data.Phone
+	}
+
+	if data.Bio != nil {
+		updates["bio"] = *data.Bio
+	}
+
+	if data.ImageURL != nil {
+		updates["image_url"] = *data.ImageURL
+	}
+
+	if userID := chi.URLParam(r, "userID"); userID != "" {
+		result := db.Model(&User{}).Where("id = ?", userID).Updates(updates)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "User Not Found", http.StatusNotFound)
+		return
+	}
+}
+
+func (u User) MarshalJSON() ([]byte, error) {
+	type user User
+	x := user(u)
+	x.PasswordHash = ""
+	return json.Marshal(x)
 }
