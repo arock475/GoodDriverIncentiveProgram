@@ -46,7 +46,9 @@ steps:
   displayName: 'Get dependencies, then build'
 
 - script: |
+    pushd $(UIPath)
     npm install
     npm test
     npm run build
+    popd
   displayName: 'npm install and build'
