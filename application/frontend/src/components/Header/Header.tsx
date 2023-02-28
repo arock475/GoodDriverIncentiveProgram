@@ -15,16 +15,16 @@ export type HeaderProps = {
 }
 
 const Header: React.FC<HeaderProps> = ({
-    colorTheme="dark",
-    loggedIn=false,
-    loginUser="",
-    loginId=0
+    colorTheme = "dark",
+    loggedIn = false,
+    loginUser = "",
+    loginId = 0
 }) => {
     return (
         <Navbar bg={colorTheme} expand="sm" className="header navbar-header" id="header-navbar">
             <Container>
                 <Navbar.Brand href="/">
-                    <img src={logo} alt="logo" width="60" height="60" className="d-inline-block align-top"/>
+                    <img src={logo} alt="logo" width="60" height="60" className="d-inline-block align-top" />
                 </Navbar.Brand>
 
                 <Navbar.Toggle aria-controls="driver-incentive-navbar" />
@@ -35,9 +35,15 @@ const Header: React.FC<HeaderProps> = ({
                             <NavDropdown.Item href="/store">Store</NavDropdown.Item>
                             <NavDropdown.Item href="/points">Point History</NavDropdown.Item>
                         </NavDropdown>
+                        <NavDropdown title="Create" id="create-navbar-dropdown">
+                            <NavDropdown.Item href="/admin/create-driver">Driver</NavDropdown.Item>
+                            <NavDropdown.Item href="/admin/create-sponsor">Sponsor</NavDropdown.Item>
+                            <NavDropdown.Item href="/admin/create-admin">Admin</NavDropdown.Item>
+                            <NavDropdown.Item href="/admin/create-org">Organization</NavDropdown.Item>
+                        </NavDropdown>
                     </Nav>
-                    
-                    <LoginNav loggedIn={loggedIn} loginUser={loginUser} loginId={loginId}/>
+
+                    <LoginNav loggedIn={loggedIn} loginUser={loginUser} loginId={loginId} />
                 </Navbar.Collapse>
             </Container>
         </Navbar>

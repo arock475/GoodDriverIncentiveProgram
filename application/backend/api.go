@@ -96,6 +96,11 @@ func (s *Server) MountHandlers() {
 				r.Put("/profile", s.UpdateProfile)
 			})
 		})
+
+		r.Route("/orgs", func(r chi.Router) {
+			r.Get("/", s.ListOrgs)
+			r.Post("/", s.CreateOrganization)
+		})
 	})
 }
 
@@ -179,15 +184,102 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	user.LastName = *data.LastName
 	user.Type = *data.Type
 
-	// TODO: Make additional driver/sponsor/admin struct based on type
-	// and insert that into the db as well.
+	switch user.Type {
+	// driver
+	case 0:
+		// error checking driver specific fields
+		if data.OrganizationId == nil {
+			http.Error(w, "CreateUserPayload missing required field: \"OrganizationId\" (0-2)", http.StatusBadRequest)
+			return
+		}
+		// check licence number
+		if data.LicenceNumber == nil {
+			http.Error(w, "CreateDriverPayload missing required field: \"LicenceNumber\" (0-2)", http.StatusBadRequest)
+			return
+		}
+		//check truck type
+		if data.TruckType == nil {
+			http.Error(w, "CreateDriverPayload missing required field: \"TruckType\" (0-2)", http.StatusBadRequest)
+			return
+		}
 
-	result := s.DB.Create(&user)
-	if result.Error != nil {
-		http.Error(w, result.Error.Error(), http.StatusBadRequest)
-		return
+		// assigning driver values
+		var driver Driver
+		driver.User = user
+		driver.LicensePlate = *data.LicenceNumber
+		driver.TruckType = *data.TruckType
+
+		// finding organization based on organization id
+		var organization Organization
+		result := s.DB.First(&organization, *data.OrganizationId)
+		// error checking organization
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Organization Not Found\n", http.StatusNotFound)
+			return
+		}
+		driver.Organization = organization // POTENTIAL ERROR: might need to use result instead of the referenced value
+
+		// creating the sponsor in the database
+		createResult := s.DB.Create(&driver)
+		// error checking sponsor creation
+		if createResult.Error != nil {
+			http.Error(w, createResult.Error.Error(), http.StatusBadRequest)
+			return
+		}
+		user.ID = driver.UserID
+	// sponsor case
+	case 1:
+		// error checking sponsor specific fields
+		if data.OrganizationId == nil {
+			http.Error(w, "CreateUserPayload missing required field: \"OrganizationId\" (0-2)", http.StatusBadRequest)
+			return
+		}
+		// assigning sponsor values
+		var sponsor Sponsor
+		sponsor.User = user
+
+		// finding organization based on organization id
+		var organization Organization
+		result := s.DB.First(&organization, *data.OrganizationId)
+		// error checking organization
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Organization Not Found\n", http.StatusNotFound)
+
+			return
+		}
+		sponsor.Organization = organization // POTENTIAL ERROR: might need to use result instead of the referenced value
+
+		// creating the sponsor in the database
+		createResult := s.DB.Create(&sponsor)
+		// error checking sponsor creation
+		if createResult.Error != nil {
+			http.Error(w, createResult.Error.Error(), http.StatusBadRequest)
+			return
+		}
+		user.ID = sponsor.UserID
+	// admin case
+	case 2:
+		// assigning sponsor values
+		var admin Admin
+		admin.User = user
+		// creating the sponsor in the database
+		createResult := s.DB.Create(&admin)
+		// error checking sponsor creation
+		if createResult.Error != nil {
+			http.Error(w, createResult.Error.Error(), http.StatusBadRequest)
+			return
+		}
+		user.ID = admin.UserID
+	// case for none specific user
+	default:
+		result := s.DB.Create(&user)
+		if result.Error != nil {
+			http.Error(w, result.Error.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
+	// Return base user
 	returned, _ := json.Marshal(user)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(returned)
@@ -208,6 +300,67 @@ func (s *Server) GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	returned, _ := json.Marshal(user)
+	w.Write(returned)
+}
+
+// desc: sends a request back containing all the orgs
+func (s *Server) ListOrgs(w http.ResponseWriter, r *http.Request) {
+	// assigning variable
+	var all_orgs []Organization
+	// grabbing all orgs from database
+	result := s.DB.Find(&all_orgs)
+	// error checking
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+	// ? writing the response
+	returned, _ := json.Marshal(all_orgs)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(returned)
+}
+
+func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
+	// Recieing data fomr client-side json and errochecking it
+	data := CreateOrgPayload{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if data.Name == nil {
+		http.Error(w, "CreateUserPayload missing required field: \"name\"", http.StatusBadRequest)
+		return
+	}
+	if data.Phone == nil {
+		http.Error(w, "CreateUserPayload missing required field: \"phone\"", http.StatusBadRequest)
+		return
+	}
+	if data.Email == nil {
+		http.Error(w, "CreateUserPayload missing required field: \"email\"", http.StatusBadRequest)
+		return
+	}
+	if data.LogoURL == nil {
+		http.Error(w, "CreateUserPayload missing required field: \"email\"", http.StatusBadRequest)
+		return
+	}
+
+	// creating org variable
+	var org Organization
+	org.Name = *data.Name
+	org.Biography = *data.Bio
+	org.Email = *data.Email
+	org.LogoURL = *data.LogoURL
+
+	// injecting org into database
+	result := s.DB.Create(&org)
+	// error checking injection
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	returned, _ := json.Marshal(org)
 	w.Write(returned)
 }
 

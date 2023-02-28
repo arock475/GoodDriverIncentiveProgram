@@ -12,6 +12,12 @@ import Login from '../pages/Login/Login';
 import Profile from '../pages/Profile/Profile';
 import EditProfile from '../pages/Profile/EditProfile';
 import Faq from '../pages/FAQ/Faq';
+// create user page imports
+import CreateDriver from './CreateUsers/CreateDriver'
+import CreateOrganization from './CreateUsers/CreateOrganization'
+import CreateSponsor from './CreateUsers/CreateSponsor'
+import CreateAdmin from './CreateUsers/CreateAdmin'
+//
 import Logout from '../components/Login/Logout';
 
 const App = () => {
@@ -34,7 +40,7 @@ const App = () => {
           return Promise.reject();
         }
         // Login Successful
-        if(!loggedIn){
+        if (!loggedIn) {
           setLoggedInAs(cookies.user);
           setLoggedInId(cookies.id);
           setLoggedIn(true);
@@ -49,21 +55,29 @@ const App = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Layout key={loggedInAs} loggedIn={loggedIn} loginUser={loggedInAs} loginId={loggedInId}/>}>
+      <Route path="/" element={<Layout key={loggedInAs} loggedIn={loggedIn} loginUser={loggedInAs} loginId={loggedInId} />}>
         {/* Home Page */}
         <Route index element={<></>} />
         <Route path="logout" element={<Logout />} />
 
         {/* Login Pages */}
         <Route path="login">
-          <Route index element={<Login />}/>
-          <Route path="create" element={<CreateAccount />}/>
+          <Route index element={<Login />} />
+          <Route path="create" element={<CreateAccount />} />
         </Route>
 
         {/* Profile Links */}
         <Route path="user/:userID">
-          <Route index element={<Profile />}/>
-          <Route path="edit" element={<EditProfile />}/>
+          <Route index element={<Profile />} />
+          <Route path="edit" element={<EditProfile />} />
+        </Route>
+
+        {/* Create Pages*/}
+        <Route path="admin">
+          <Route path="create-driver" element={<CreateDriver />} />
+          <Route path="create-org" element={<CreateOrganization />} />
+          <Route path="create-sponsor" element={<CreateSponsor />} />
+          <Route path="create-admin" element={<CreateAdmin />} />
         </Route>
 
         {/* Footer Links */}
@@ -73,7 +87,7 @@ const App = () => {
         <Route path="*" element={<></>} />
       </Route>
     </Routes>
-  )
+  );
 }
 
 

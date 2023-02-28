@@ -11,11 +11,26 @@ type UserProfilePayload struct {
 }
 
 type CreateUserPayload struct {
+	// user fields
 	Email             *string `json:"email"`
 	PlaintextPassword *string `json:"password"`
 	FirstName         *string `json:"firstName"`
 	LastName          *string `json:"lastName"`
 	Type              *int    `json:"type"`
+	// driver fields
+	LicenceNumber *string `json:"licenceNumber"`
+	TruckType     *string `json:"truckType"`
+	// driver/sponsor fields
+	OrganizationId *int `json:"organizationId"`
+}
+
+// used to receive data from client-side
+type CreateOrgPayload struct {
+	Name    *string `json:"name"`
+	Bio     *string `json:"bio"`
+	Phone   *string `json:"phone"`
+	Email   *string `json:"email"`
+	LogoURL *string `json:"logoURL"`
 }
 
 type LoginUserPayload struct {
@@ -40,22 +55,22 @@ type User struct {
 }
 
 type Driver struct {
-	ID           int
-	UserID       int `gorm:"uniqueIndex;not null"`
-	User         User
-	SponsorID    int `gorm:"not null"`
-	Sponsor      Sponsor
-	Status       int `gorm:"not null;default:0"`
-	LicensePlate int
-	TruckType    string
+	ID             int
+	UserID         int `gorm:"uniqueIndex;not null"`
+	User           User
+	OrganizationID int `gorm:"not null"`
+	Organization   Organization
+	Status         int `gorm:"not null;default:0"`
+	LicensePlate   string
+	TruckType      string
 }
 
 type Sponsor struct {
-	ID     int
-	UserID int `gorm:"uniqueIndex;not null"`
-	User   User
-	//OrganizationID int `gorm:"uniqueIndex"`
-	//Organization   Organization
+	ID             int
+	UserID         int `gorm:"uniqueIndex;not null"`
+	User           User
+	OrganizationID int `gorm:"uniqueIndex"`
+	Organization   Organization
 }
 
 type Admin struct {

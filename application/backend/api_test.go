@@ -97,6 +97,9 @@ func TestCreateUser(t *testing.T) {
 	lastName := "User"
 	email := "newuser@testing.com"
 	password := "mypassword$"
+	license := "123USP"
+	truck := "Semi-Truck"
+	org := 1
 	ttype := 0
 
 	data := CreateUserPayload{
@@ -104,6 +107,9 @@ func TestCreateUser(t *testing.T) {
 		LastName:          &lastName,
 		Email:             &email,
 		PlaintextPassword: &password,
+		LicenceNumber:     &license,
+		TruckType:         &truck,
+		OrganizationId:    &org,
 		Type:              &ttype,
 	}
 
@@ -131,6 +137,7 @@ func TestCreateUser(t *testing.T) {
 	require.Equal(t, user.Type, ttype)
 
 	// Cleanup created user from test
+	ts.DB.Delete(&Driver{}, "user_id = ?", user.ID)
 	ts.DB.Delete(&User{}, user.ID)
 }
 
@@ -139,6 +146,9 @@ func TestUpdateProfile(t *testing.T) {
 	lastName := "User"
 	email := "newuser@testing.com"
 	password := "mypassword$"
+	license := "123USP"
+	truck := "Semi-Truck"
+	org := 1
 	ttype := 0
 
 	data := CreateUserPayload{
@@ -146,6 +156,9 @@ func TestUpdateProfile(t *testing.T) {
 		LastName:          &lastName,
 		Email:             &email,
 		PlaintextPassword: &password,
+		LicenceNumber:     &license,
+		TruckType:         &truck,
+		OrganizationId:    &org,
 		Type:              &ttype,
 	}
 
@@ -206,6 +219,7 @@ func TestUpdateProfile(t *testing.T) {
 	require.Equal(t, user.ImageURL, image)
 
 	// Cleanup created user from test
+	ts.DB.Delete(&Driver{}, "user_id = ?", user.ID)
 	ts.DB.Delete(&User{}, user.ID)
 }
 
@@ -214,6 +228,9 @@ func TestSuccessfulLogin(t *testing.T) {
 	lastName := "User"
 	email := "newuser@testing.com"
 	password := "mypassword$"
+	license := "123USP"
+	truck := "Semi-Truck"
+	org := 1
 	ttype := 0
 
 	data := CreateUserPayload{
@@ -221,6 +238,9 @@ func TestSuccessfulLogin(t *testing.T) {
 		LastName:          &lastName,
 		Email:             &email,
 		PlaintextPassword: &password,
+		LicenceNumber:     &license,
+		TruckType:         &truck,
+		OrganizationId:    &org,
 		Type:              &ttype,
 	}
 
@@ -256,6 +276,7 @@ func TestSuccessfulLogin(t *testing.T) {
 	require.Equal(t, http.StatusOK, response.Code)
 
 	// Cleanup created user from test
+	ts.DB.Delete(&Driver{}, "user_id = ?", user.ID)
 	ts.DB.Delete(&User{}, user.ID)
 }
 
@@ -264,6 +285,9 @@ func TestFailedLogin(t *testing.T) {
 	lastName := "User"
 	email := "newuser@testing.com"
 	password := "mypassword$"
+	license := "123USP"
+	truck := "Semi-Truck"
+	org := 1
 	ttype := 0
 
 	data := CreateUserPayload{
@@ -271,6 +295,9 @@ func TestFailedLogin(t *testing.T) {
 		LastName:          &lastName,
 		Email:             &email,
 		PlaintextPassword: &password,
+		LicenceNumber:     &license,
+		TruckType:         &truck,
+		OrganizationId:    &org,
 		Type:              &ttype,
 	}
 
@@ -308,5 +335,6 @@ func TestFailedLogin(t *testing.T) {
 	require.Equal(t, http.StatusUnauthorized, response.Code)
 
 	// Cleanup created user from test
+	ts.DB.Delete(&Driver{}, "user_id = ?", user.ID)
 	ts.DB.Delete(&User{}, user.ID)
 }
