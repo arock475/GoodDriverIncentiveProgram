@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   MDBCol,
   MDBRow,
@@ -9,12 +8,42 @@ import {
   MDBProgress,
   MDBProgressBar,
   MDBIcon,
-  MDBListGroup,
-  MDBListGroupItem
+  MDBListGroupItem,
+  MDBBtn
 } from 'mdb-react-ui-kit';
-
+import { useNavigate, useParams } from "react-router-dom";
+import{ useState, useEffect } from 'react';
 
 export default function ProfilePage() {
+  const { userID } = useParams();
+  const [Data,setData]=useState({
+    firstName:'',
+    lastName:'',
+    email:'',
+    phone:'',
+    bio:'',
+    image: ''
+  })
+
+  // Gets user info from database
+  useEffect(() => {
+     fetch('http://localhost:3333/users/' + userID)
+        .then((res) => res.json())
+        .then((data) => {
+           setData({firstName:data.firstName, lastName:data.lastName, email:data.email, phone:data.phone, bio:data.bio, image:data.image})
+        })
+        .catch((err) => {
+           console.log(err.message);
+        });
+  }, []);
+
+  // Navigates to the Edit profile page
+  let navigate = useNavigate(); 
+  const routeChange = () =>{ 
+    let path = 'edit'; 
+    navigate(path);
+  }
+
   return (
     <section style={{ backgroundColor: '#eee' }}>
         <MDBRow>
@@ -22,12 +51,12 @@ export default function ProfilePage() {
             <MDBCard className="mb-4">
               <MDBCardBody className="text-center">
                 <MDBCardImage
-                  src="https://team25-s3bucket.s3.amazonaws.com/profilepicture-default.gif"
+                  src={Data.image}
                   alt="avatar"
                   className="rounded-circle"
                   style={{ width: '150px' }}
                   fluid />
-                <p className="text-muted mb-1">Truck Driver</p>
+                <p className="text-muted mb-1">{Data.email}</p>
                 <p className="text-muted mb-1">Company Name</p>
                 <p className="text-muted mb-4">Organization Name</p>
               </MDBCardBody>
@@ -35,14 +64,13 @@ export default function ProfilePage() {
 
             <MDBCard className="mb-4 mb-lg-0">
               <MDBCardBody className="p-0">
-                <MDBListGroup flush className="rounded-3">
                   <MDBListGroupItem className="d-flex justify-content-between align-items-center p-3">
                     <MDBIcon fas icon="globe fa-lg text-warning" />
-                    <MDBCardText>Contact info 1</MDBCardText>
+                    <MDBCardText>Website info 1</MDBCardText>
                   </MDBListGroupItem>
                   <MDBListGroupItem className="d-flex justify-content-between align-items-center p-3">
                     <MDBIcon fab icon="github fa-lg" style={{ color: '#333333' }} />
-                    <MDBCardText>Contact info 2</MDBCardText>
+                    <MDBCardText>Website info 2</MDBCardText>
                   </MDBListGroupItem>
                   <MDBListGroupItem className="d-flex justify-content-between align-items-center p-3">
                     <MDBIcon fab icon="twitter fa-lg" style={{ color: '#55acee' }} />
@@ -56,7 +84,6 @@ export default function ProfilePage() {
                     <MDBIcon fab icon="facebook fa-lg" style={{ color: '#3b5998' }} />
                     <MDBCardText></MDBCardText>
                   </MDBListGroupItem>
-                </MDBListGroup>
               </MDBCardBody>
             </MDBCard>
           </MDBCol>
@@ -65,19 +92,19 @@ export default function ProfilePage() {
               <MDBCardBody>
                 <MDBRow>
                   <MDBCol sm="3">
-                    <MDBCardText>Full Name</MDBCardText>
+                    <MDBCardText>First Name</MDBCardText>
                   </MDBCol>
                   <MDBCol sm="9">
-                    <MDBCardText className="text-muted">Van Scoy</MDBCardText>
+                    <MDBCardText className="text-muted">{Data.firstName}</MDBCardText>
                   </MDBCol>
                 </MDBRow>
                 <hr />
                 <MDBRow>
                   <MDBCol sm="3">
-                    <MDBCardText>Email</MDBCardText>
+                    <MDBCardText>Last Name</MDBCardText>
                   </MDBCol>
                   <MDBCol sm="9">
-                    <MDBCardText className="text-muted">example@example.com</MDBCardText>
+                    <MDBCardText className="text-muted">{Data.lastName}</MDBCardText>
                   </MDBCol>
                 </MDBRow>
                 <hr />
@@ -86,7 +113,7 @@ export default function ProfilePage() {
                     <MDBCardText>Phone</MDBCardText>
                   </MDBCol>
                   <MDBCol sm="9">
-                    <MDBCardText className="text-muted">(000) 000-0000</MDBCardText>
+                    <MDBCardText className="text-muted">{Data.phone}</MDBCardText>
                   </MDBCol>
                 </MDBRow>
                 <hr />
@@ -95,7 +122,7 @@ export default function ProfilePage() {
                     <MDBCardText>Biography</MDBCardText>
                   </MDBCol>
                   <MDBCol sm="9">
-                    <MDBCardText className="text-muted">This is my Biography<br></br>More biography</MDBCardText>
+                    <MDBCardText className="text-muted">{Data.bio}</MDBCardText>
                   </MDBCol>
                 </MDBRow>
               </MDBCardBody>
@@ -117,7 +144,12 @@ export default function ProfilePage() {
                 </MDBCard>
               </MDBCol>
             </MDBRow>
+
           </MDBCol>
+          <p></p><p></p>
+          <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={routeChange}>
+            Edit Profile
+          </MDBBtn></div>
         </MDBRow>
     </section>
   );

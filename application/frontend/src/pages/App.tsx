@@ -10,6 +10,7 @@ import Layout from './Layout';
 import CreateAccount from './Login/CreateAccount';
 import Login from '../pages/Login/Login';
 import Profile from '../pages/Profile/Profile';
+import EditProfile from '../pages/Profile/EditProfile';
 import Faq from '../pages/FAQ/Faq';
 import Logout from '../components/Login/Logout';
 
@@ -59,10 +60,10 @@ const App = () => {
           <Route path="create" element={<CreateAccount />}/>
         </Route>
 
-
         {/* Profile Links */}
-        <Route path="user/:id">
+        <Route path="user/:userID">
           <Route index element={<Profile />}/>
+          <Route path="edit" element={<EditProfile />}/>
         </Route>
 
         {/* Footer Links */}
