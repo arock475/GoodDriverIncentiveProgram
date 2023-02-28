@@ -19,28 +19,27 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
-
-var tokenAuth *jwtauth.JWTAuth
-
-func init() {
-	tokenAuth = jwtauth.New("HS256", []byte("SecretKey"), nil)
+type Server struct {
+	Router *chi.Mux
+	DB     *gorm.DB
 }
 
-func main() {
-	var err error
+func CreateNewServer() *Server {
+	s := &Server{}
+	s.Router = chi.NewRouter()
 
+	return s
+}
+
+func (s *Server) ConnectDatabase(schemaName string) {
 	dbuser := os.Getenv("RDS25_USER")
 	dbpass := os.Getenv("RDS25_PASS")
-	port := os.Getenv("API25_PORT")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(team25-rds.cobd8enwsupz.us-east-1.rds.amazonaws.com:3306)/dev", dbuser, dbpass)
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	dsn := fmt.Sprintf("%s:%s@tcp(team25-rds.cobd8enwsupz.us-east-1.rds.amazonaws.com:3306)/%s", dbuser, dbpass, schemaName)
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err.Error())
 	}
-
-	fmt.Print("Running\n")
 
 	// Create tables in db if they don't already exist based off the structs in domain.go
 	db.AutoMigrate(&User{})
@@ -50,7 +49,11 @@ func main() {
 	db.AutoMigrate(&Organization{})
 	db.AutoMigrate(&Points{})
 
-	r := chi.NewRouter()
+	s.DB = db
+}
+
+func (s *Server) MountHandlers() {
+	r := s.Router
 	r.Use(middleware.Logger)
 
 	r.Use(cors.Handler(cors.Options{
@@ -81,28 +84,44 @@ func main() {
 		})
 
 		r.Route("/login", func(r chi.Router) {
-			r.Post("/", LoginHandler)
+			r.Post("/", s.LoginHandler)
 		})
 
 		r.Route("/users", func(r chi.Router) {
-			r.Get("/", ListUsers)
-			r.Post("/", CreateUser)
+			r.Get("/", s.ListUsers)
+			r.Post("/", s.CreateUser)
 
 			r.Route("/{userID}", func(r chi.Router) {
-				r.Get("/", GetUser)
-				r.Put("/profile", UpdateProfile)
+				r.Get("/", s.GetUser)
+				r.Put("/profile", s.UpdateProfile)
 			})
 		})
 	})
-
-	// TODO: TLS autocert for let's encrypt https
-	http.ListenAndServe(fmt.Sprintf(":%s", port), r)
 }
 
-func ListUsers(w http.ResponseWriter, r *http.Request) {
+var tokenAuth *jwtauth.JWTAuth
+
+func init() {
+	tokenAuth = jwtauth.New("HS256", []byte("SecretKey"), nil)
+}
+
+func main() {
+	s := CreateNewServer()
+	s.MountHandlers()
+	s.ConnectDatabase("dev")
+
+	fmt.Print("Running\n")
+
+	port := os.Getenv("API25_PORT")
+
+	// TODO: TLS autocert for let's encrypt https
+	http.ListenAndServe(fmt.Sprintf(":%s", port), s.Router)
+}
+
+func (s *Server) ListUsers(w http.ResponseWriter, r *http.Request) {
 	var users []User
 
-	result := db.Find(&users)
+	result := s.DB.Find(&users)
 	if result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusBadRequest)
 		return
@@ -113,7 +132,7 @@ func ListUsers(w http.ResponseWriter, r *http.Request) {
 	w.Write(returned)
 }
 
-func CreateUser(w http.ResponseWriter, r *http.Request) {
+func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	data := CreateUserPayload{}
 
 	err := json.NewDecoder(r.Body).Decode(&data)
@@ -163,7 +182,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	// TODO: Make additional driver/sponsor/admin struct based on type
 	// and insert that into the db as well.
 
-	result := db.Create(&user)
+	result := s.DB.Create(&user)
 	if result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusBadRequest)
 		return
@@ -174,11 +193,11 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(returned)
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetUser(w http.ResponseWriter, r *http.Request) {
 	var user User
 
 	if userID := chi.URLParam(r, "userID"); userID != "" {
-		result := db.First(&user, "id = ?", userID)
+		result := s.DB.First(&user, "id = ?", userID)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			http.Error(w, "User Not Found", http.StatusNotFound)
 			return
@@ -213,7 +232,7 @@ func Authenticator(next http.Handler) http.Handler {
 	})
 }
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	data := LoginUserPayload{}
 
 	err := json.NewDecoder(r.Body).Decode(&data)
@@ -239,7 +258,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var user User
 
 	// Get hash from database for user, if exists.
-	result := db.Where("email = ?", data.Email).First(&user)
+	result := s.DB.Where("email = ?", data.Email).First(&user)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) || result.Error != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
@@ -306,7 +325,7 @@ func Authenticate(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Authentication Successful"))
 }
 
-func UpdateProfile(w http.ResponseWriter, r *http.Request) {
+func (s *Server) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	data := UserProfilePayload{}
 
 	err := json.NewDecoder(r.Body).Decode(&data)
@@ -338,7 +357,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if userID := chi.URLParam(r, "userID"); userID != "" {
-		result := db.Model(&User{}).Where("id = ?", userID).Updates(updates)
+		result := s.DB.Model(&User{}).Where("id = ?", userID).Updates(updates)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			http.Error(w, "User Not Found", http.StatusNotFound)
 			return
