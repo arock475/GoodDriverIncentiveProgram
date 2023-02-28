@@ -6,16 +6,26 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/jwtauth/v5"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
+
+var tokenAuth *jwtauth.JWTAuth
+
+func init() {
+	tokenAuth = jwtauth.New("HS256", []byte("SecretKey"), nil)
+}
 
 func main() {
 	var err error
@@ -29,6 +39,8 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	fmt.Print("Running\n")
 
 	// Create tables in db if they don't already exist based off the structs in domain.go
 	db.AutoMigrate(&User{})
@@ -48,25 +60,38 @@ func main() {
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: false,
+		AllowCredentials: true,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Available routes: /users"))
+	// Protected routes (Requires Login)
+	r.Group(func(r chi.Router) {
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(Authenticator)
+
+		r.Route("/auth", func(r chi.Router) {
+			r.Get("/is-auth", Authenticate)
+		})
 	})
 
-	r.Route("/login", func(r chi.Router) {
-		r.Post("/", LoginUser)
-	})
+	// Public routes
+	r.Group(func(r chi.Router) {
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("Available routes: /users"))
+		})
 
-	r.Route("/users", func(r chi.Router) {
-		r.Get("/", ListUsers)
-		r.Post("/", CreateUser)
+		r.Route("/login", func(r chi.Router) {
+			r.Post("/", LoginHandler)
+		})
 
-		r.Route("/{userID}", func(r chi.Router) {
-			r.Get("/", GetUser)
-			r.Put("/profile", UpdateProfile)
+		r.Route("/users", func(r chi.Router) {
+			r.Get("/", ListUsers)
+			r.Post("/", CreateUser)
+
+			r.Route("/{userID}", func(r chi.Router) {
+				r.Get("/", GetUser)
+				r.Put("/profile", UpdateProfile)
+			})
 		})
 	})
 
@@ -149,22 +174,65 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(returned)
 }
 
-func LoginUser(w http.ResponseWriter, r *http.Request) {
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	var user User
+
+	if userID := chi.URLParam(r, "userID"); userID != "" {
+		result := db.First(&user, "id = ?", userID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "User Not Found", http.StatusNotFound)
+		return
+	}
+
+	returned, _ := json.Marshal(user)
+	w.Write(returned)
+}
+
+///  Authentication
+
+func Authenticator(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token, _, err := jwtauth.FromContext(r.Context())
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		if token == nil || jwt.Validate(token) != nil {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+
+		// Token is authenticated, pass it through
+		next.ServeHTTP(w, r)
+	})
+}
+
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	data := LoginUserPayload{}
 
 	err := json.NewDecoder(r.Body).Decode(&data)
+
 	if err != nil {
+		fmt.Print("Http error\n")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if data.Email == nil {
-		http.Error(w, "LoginUserPayload missing required field: \"email\"", http.StatusBadRequest)
+		fmt.Print("Email error\n")
+		http.Error(w, "LoginUserPayload missing required field: \"email\"", http.StatusNotFound)
 		return
 	}
 
 	if data.PlaintextPassword == nil {
-		http.Error(w, "LoginUserPayload missing required field: \"password\"", http.StatusBadRequest)
+		fmt.Print("Password error\n")
+		http.Error(w, "LoginUserPayload missing required field: \"password\"", http.StatusNotFound)
 		return
 	}
 
@@ -183,30 +251,59 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("success!\n"))
+	// Generate the token string
+	_, token, _ := tokenAuth.Encode(map[string]interface{}{
+		"email":      data.Email,
+		"authorized": true,
+		"role":       0,
+	})
 
-	// user has been authenticated, generate token and return it
-	// TODO: implement go-chi jwtauth JWT authentication middleware
-	// (https://go-chi.io/#/pages/middleware?id=jwt-authentication)
-}
-
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	var user User
-
-	if userID := chi.URLParam(r, "userID"); userID != "" {
-		result := db.First(&user, "id = ?", userID)
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			http.Error(w, "User Not Found", http.StatusNotFound)
-			return
-		}
-	} else {
-		http.Error(w, "User Not Found", http.StatusNotFound)
-		return
+	jwtCookie := http.Cookie{
+		HttpOnly: false,
+		Expires:  time.Now().Add(time.Hour * 2),
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		// Uncomment for https
+		// Secure: True
+		Name:  "jwt",
+		Value: token,
 	}
 
-	returned, _ := json.Marshal(user)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(returned)
+	userCookie := http.Cookie{
+		HttpOnly: false,
+		Expires:  time.Now().Add(time.Hour * 2),
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		// Uncomment for https
+		// Secure: True
+		Name:  "user",
+		Value: user.FirstName,
+	}
+
+	ID := strconv.Itoa(user.ID)
+
+	userIdCookie := http.Cookie{
+		HttpOnly: false,
+		Expires:  time.Now().Add(time.Hour * 2),
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		// Uncomment for https
+		// Secure: True
+		Name:  "id",
+		Value: ID,
+	}
+
+	http.SetCookie(w, &jwtCookie)
+	http.SetCookie(w, &userCookie)
+	http.SetCookie(w, &userIdCookie)
+
+	w.WriteHeader(200)
+	w.Write([]byte(""))
+}
+
+func Authenticate(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(200)
+	w.Write([]byte("Authentication Successful"))
 }
 
 func UpdateProfile(w http.ResponseWriter, r *http.Request) {

@@ -1,22 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Container from 'react-bootstrap/Container';
 import NavDropdown from 'react-bootstrap/NavDropdown';
-import LoginNav from './LoginNav'
+import LoginNav from './LoginNav';
 import logo from '../../assets/truck-logo.jpg';
-import "../../styles/components/Header.css"
+import "../../styles/components/Header.css";
 
 export type HeaderProps = {
     colorTheme: string,
     loggedIn: boolean,
     loginUser?: string,
+    loginId?: number,
 }
 
 const Header: React.FC<HeaderProps> = ({
     colorTheme="dark",
     loggedIn=false,
     loginUser="",
+    loginId=0
 }) => {
     return (
         <Navbar bg={colorTheme} expand="sm" className="header navbar-header" id="header-navbar">
@@ -34,9 +36,8 @@ const Header: React.FC<HeaderProps> = ({
                             <NavDropdown.Item href="/points">Point History</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
-                    <Nav>
-                        <LoginNav loggedIn={loggedIn} loginUser={loginUser}/>
-                    </Nav>
+                    
+                    <LoginNav loggedIn={loggedIn} loginUser={loginUser} loginId={loginId}/>
                 </Navbar.Collapse>
             </Container>
         </Navbar>

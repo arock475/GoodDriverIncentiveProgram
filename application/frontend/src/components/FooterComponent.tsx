@@ -9,7 +9,7 @@ const Footer: React.FC<FooterProps> = ({
     colorTheme="dark"
 }) => {
     return (
-        <div className="main-footer navbar-fixed-bottom">
+        <div className="main-footer">
             <div className="bg-dark text-white">
                 <Container>
                     <div className="row">
