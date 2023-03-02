@@ -23,24 +23,24 @@ import{ useState, useEffect } from 'react';
 import AWS from 'aws-sdk'
 
 // TODO: Change to environmnet/protected variables
-const S3_BUCKET ='team25-s3bucket';
-const REGION ='us-east-1';
+//const S3_BUCKET ='team25-s3bucket';
+//const REGION ='us-east-1';
 
 AWS.config.update({
     // TODO: Change to environmnet/protected variables
-    accessKeyId: 'AKIAT77CFA376PT2Y752',
-    secretAccessKey: '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'
+    //accessKeyId: 'AKIAT77CFA376PT2Y752',
+    //secretAccessKey: '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'
+    accessKeyId: process.env.REACT_APP_ACCESS_KEY_ID,
+    secretAccessKey: process.env.REACT_APP_SECRET_ACCESS_KEY
 })
 
 const myBucket = new AWS.S3({
-    params: { Bucket: S3_BUCKET},
-    region: REGION,
+    params: { Bucket: process.env.REACT_APP_S3_BUCKET},
+    region: process.env.REACT_APP_REGION,
 })
 
 export default function EditProfilePage() {
-    // TODO: Change to token variable to get user by login
     const { userID } = useParams();
-
     const [Data,setData]=useState({
       email:'',
       firstName:'',
@@ -52,6 +52,7 @@ export default function EditProfilePage() {
 
     // Gets user info from database
     useEffect(() => {
+      console.log(process.env.REACT_APP_S3_BUCKET);
        fetch('http://localhost:3333/users/' + userID)
           .then((res) => res.json())
           .then((data) => {
@@ -79,7 +80,7 @@ export default function EditProfilePage() {
     // Handle File input
     const handleFileInput = (e) => {
         setSelectedFile(e.target.files[0]);
-        Data.image = 'https://team25-s3bucket.s3.amazonaws.com/' + e.target.files[0].name;
+        Data.image = process.env.REACT_APP_URL + e.target.files[0].name;
     }
 
     // Upload file to the S3 bucket
@@ -87,7 +88,7 @@ export default function EditProfilePage() {
         const params = {
             ACL: 'public-read',
             Body: file,
-            Bucket: S3_BUCKET,
+            Bucket: process.env.REACT_APP_S3_BUCKET,
             Key: file.name,
             ContentType:'image/jpg',
             ContentDisposition:'inline', 
