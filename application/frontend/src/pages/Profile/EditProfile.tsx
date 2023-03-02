@@ -22,14 +22,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import{ useState, useEffect } from 'react';
 import AWS from 'aws-sdk'
 
-// TODO: Change to environmnet/protected variables
-//const S3_BUCKET ='team25-s3bucket';
-//const REGION ='us-east-1';
-
 AWS.config.update({
-    // TODO: Change to environmnet/protected variables
-    //accessKeyId: 'AKIAT77CFA376PT2Y752',
-    //secretAccessKey: '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'
     accessKeyId: process.env.REACT_APP_ACCESS_KEY_ID,
     secretAccessKey: process.env.REACT_APP_SECRET_ACCESS_KEY
 })
