@@ -137,7 +137,10 @@ func TestCreateUser(t *testing.T) {
 	require.Equal(t, user.Type, ttype)
 
 	// Cleanup created user from test
-	ts.DB.Delete(&Driver{}, "user_id = ?", user.ID)
+	var driver Driver
+	driver.ID = user.ID
+	ts.DB.Model(&driver).Association("Organizations").Clear()
+	ts.DB.Delete(&driver)
 	ts.DB.Delete(&User{}, user.ID)
 }
 
@@ -219,7 +222,10 @@ func TestUpdateProfile(t *testing.T) {
 	require.Equal(t, user.ImageURL, image)
 
 	// Cleanup created user from test
-	ts.DB.Delete(&Driver{}, "user_id = ?", user.ID)
+	var driver Driver
+	driver.ID = user.ID
+	ts.DB.Model(&driver).Association("Organizations").Clear()
+	ts.DB.Delete(&driver)
 	ts.DB.Delete(&User{}, user.ID)
 }
 
@@ -276,7 +282,10 @@ func TestSuccessfulLogin(t *testing.T) {
 	require.Equal(t, http.StatusOK, response.Code)
 
 	// Cleanup created user from test
-	ts.DB.Delete(&Driver{}, "user_id = ?", user.ID)
+	var driver Driver
+	driver.ID = user.ID
+	ts.DB.Model(&driver).Association("Organizations").Clear()
+	ts.DB.Delete(&driver)
 	ts.DB.Delete(&User{}, user.ID)
 }
 
@@ -335,6 +344,9 @@ func TestFailedLogin(t *testing.T) {
 	require.Equal(t, http.StatusUnauthorized, response.Code)
 
 	// Cleanup created user from test
-	ts.DB.Delete(&Driver{}, "user_id = ?", user.ID)
+	var driver Driver
+	driver.ID = user.ID
+	ts.DB.Model(&driver).Association("Organizations").Clear()
+	ts.DB.Delete(&driver)
 	ts.DB.Delete(&User{}, user.ID)
 }

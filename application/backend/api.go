@@ -217,7 +217,9 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Organization Not Found\n", http.StatusNotFound)
 			return
 		}
-		driver.Organization = organization // POTENTIAL ERROR: might need to use result instead of the referenced value
+
+		// Appends this single organization to the list of organizations if there is one.
+		driver.Organizations = []*Organization{&organization}
 
 		// creating the sponsor in the database
 		createResult := s.DB.Create(&driver)
