@@ -19,8 +19,9 @@ import {
   MDBModalBody,
 } from 'mdb-react-ui-kit';
 import { useNavigate, useParams } from "react-router-dom";
-import{ useState, useEffect } from 'react';
-import AWS from 'aws-sdk'
+import{ useState, useEffect, useRef} from 'react';
+import AWS from 'aws-sdk';
+import emailjs from 'emailjs-com';
 
 AWS.config.update({
     accessKeyId: process.env.REACT_APP_ACCESS_KEY_ID,
@@ -45,7 +46,6 @@ export default function EditProfilePage() {
 
     // Gets user info from database
     useEffect(() => {
-      console.log(process.env.REACT_APP_S3_BUCKET);
        fetch('http://localhost:3333/users/' + userID)
           .then((res) => res.json())
           .then((data) => {
@@ -55,6 +55,24 @@ export default function EditProfilePage() {
              console.log(err.message);
           });
     }, []);
+
+    const email = {      
+      name: Data.firstName + ' ' + Data.lastName,
+      email: Data.email
+    }
+
+    const form = useRef();
+    function sendEmail(e) {
+      e.preventDefault();   
+      console.log(Data.email);
+      emailjs.send(process.env.REACT_APP_SERVICE_ID, process.env.REACT_APP_TEMPLATE_ID, email, process.env.REACT_APP_EMAIL_USER_ID)
+        .then((result) => {
+            window.location.reload() 
+        }, (error) => {
+            console.log(error.text);
+        });
+        routeChange('reset')
+    }
 
     // Updates Data struct when user changes a field
     const handleChange = (event) => {
@@ -248,6 +266,9 @@ export default function EditProfilePage() {
           <p></p><p></p>
           <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={function(event){ sendRequest(); routeChange('../')}}>
             Save Profile
+          </MDBBtn></div>
+          <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={function(event){ routeChange('../reset')}}>
+              Reset Password
           </MDBBtn></div>
         </MDBRow>
     </section>

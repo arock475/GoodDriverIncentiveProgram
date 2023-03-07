@@ -19,6 +19,7 @@ import CreateSponsor from './CreateUsers/CreateSponsor'
 import CreateAdmin from './CreateUsers/CreateAdmin'
 //
 import Logout from '../components/Login/Logout';
+import ResetPassword from './Profile/ResetPassword';
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -70,6 +71,8 @@ const App = () => {
         <Route path="user/:userID">
           <Route index element={<Profile />} />
           <Route path="edit" element={<EditProfile />} />
+          <Route path="reset" element={<ResetPassword />} />
+
         </Route>
 
         {/* Create Pages*/}
