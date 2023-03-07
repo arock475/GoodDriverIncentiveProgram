@@ -28,6 +28,7 @@ const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [loggedInAs, setLoggedInAs] = useState("");
   const [loggedInId, setLoggedInId] = useState(0);
+  const [loggedInRole, setLoggedInRole] = useState(0);
   const [cookies, setCookie, removeCookie] = useCookies();
   const location = useLocation();
 
@@ -41,12 +42,15 @@ const App = () => {
         if (!response.ok) {
           setLoggedIn(false);
           setLoggedInAs("");
+          setLoggedInId(null);
+          setLoggedInRole(null);
           return Promise.reject();
         }
         // Login Successful
         if (!loggedIn) {
           setLoggedInAs(cookies.user);
           setLoggedInId(cookies.id);
+          setLoggedInRole(cookies.role);
           setLoggedIn(true);
         }
       })

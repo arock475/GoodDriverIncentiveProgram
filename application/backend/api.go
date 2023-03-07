@@ -437,7 +437,7 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	_, token, _ := tokenAuth.Encode(map[string]interface{}{
 		"email":      data.Email,
 		"authorized": true,
-		"role":       0,
+		"role":       user.Type,
 	})
 
 	jwtCookie := http.Cookie{
@@ -462,7 +462,16 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Value: user.FirstName,
 	}
 
-	ID := strconv.Itoa(user.ID)
+	roleCookie := http.Cookie{
+		HttpOnly: false,
+		Expires:  time.Now().Add(time.Hour * 2),
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		// Uncomment for https
+		// Secure: True
+		Name:  "role",
+		Value: strconv.Itoa(user.Type),
+	}
 
 	userIdCookie := http.Cookie{
 		HttpOnly: false,
@@ -472,12 +481,13 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		// Uncomment for https
 		// Secure: True
 		Name:  "id",
-		Value: ID,
+		Value: strconv.Itoa(user.ID),
 	}
 
 	http.SetCookie(w, &jwtCookie)
 	http.SetCookie(w, &userCookie)
 	http.SetCookie(w, &userIdCookie)
+	http.SetCookie(w, &roleCookie)
 
 	w.WriteHeader(200)
 	w.Write([]byte(""))
