@@ -14,11 +14,12 @@ import EditProfile from '../pages/Profile/EditProfile';
 import Faq from '../pages/FAQ/Faq';
 // create user page imports
 import CreateDriver from './CreateUsers/CreateDriver'
-import CreateOrganization from './CreateUsers/CreateOrganization'
+import CreateOrganization from './Orgs/CreateOrganization'
 import CreateSponsor from './CreateUsers/CreateSponsor'
 import CreateAdmin from './CreateUsers/CreateAdmin'
 //
 import Logout from '../components/Login/Logout';
+import DeleteOrg from './Orgs/DeleteOrganization';
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -78,6 +79,7 @@ const App = () => {
           <Route path="create-org" element={<CreateOrganization />} />
           <Route path="create-sponsor" element={<CreateSponsor />} />
           <Route path="create-admin" element={<CreateAdmin />} />
+          <Route path="delete-org" element={<DeleteOrg />} />
         </Route>
 
         {/* Footer Links */}
