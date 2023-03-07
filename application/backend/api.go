@@ -414,6 +414,26 @@ func (s *Server) DeleteOrg(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
+
+		// deleting all drivers associated with an org
+		for {
+			var driver Driver
+			resultS := s.DB.Where("organization_id = ?", org.ID).First(&driver)
+			if errors.Is(resultS.Error, gorm.ErrRecordNotFound) {
+				break
+			}
+			var userID = driver.UserID
+			s.DB.Delete(&driver)
+			// deleting base user
+			var user User
+			fmt.Printf("Attempting to delete user with user ID:%d\n", userID)
+			resultU := s.DB.Where("id = ?", userID).Delete(&user)
+			if errors.Is(resultU.Error, gorm.ErrRecordNotFound) {
+				http.Error(w, "User Delete Failed", http.StatusNotFound)
+				return
+			}
+		}
+
 		// 	deleting base org
 		resultO := s.DB.Delete(&org)
 		if errors.Is(resultO.Error, gorm.ErrRecordNotFound) {

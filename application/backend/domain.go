@@ -69,7 +69,7 @@ type Sponsor struct {
 	ID             int
 	UserID         int `gorm:"uniqueIndex;not null"`
 	User           User
-	OrganizationID int `gorm:"uniqueIndex"`
+	OrganizationID int `gorm:"not null"`
 	Organization   Organization
 }
 
