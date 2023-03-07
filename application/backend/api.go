@@ -397,9 +397,23 @@ func (s *Server) DeleteOrg(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// deleting all sponsors associated with an org
-		// DEBUG: Will this work with drivers who still have the
-		s.DB.Where("organization_id = ?", orgID).Delete(Organization{})
-
+		for {
+			var sponsor Sponsor
+			resultS := s.DB.Where("organization_id = ?", org.ID).First(&sponsor)
+			if errors.Is(resultS.Error, gorm.ErrRecordNotFound) {
+				break
+			}
+			var userID = sponsor.UserID
+			s.DB.Delete(&sponsor)
+			// deleting base user
+			var user User
+			fmt.Printf("Attempting to delete user with user ID:%d\n", userID)
+			resultU := s.DB.Where("id = ?", userID).Delete(&user)
+			if errors.Is(resultU.Error, gorm.ErrRecordNotFound) {
+				http.Error(w, "User Delete Failed", http.StatusNotFound)
+				return
+			}
+		}
 		// 	deleting base org
 		resultO := s.DB.Delete(&org)
 		if errors.Is(resultO.Error, gorm.ErrRecordNotFound) {
