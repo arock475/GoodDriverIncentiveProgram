@@ -100,6 +100,11 @@ func (s *Server) MountHandlers() {
 		r.Route("/orgs", func(r chi.Router) {
 			r.Get("/", s.ListOrgs)
 			r.Post("/", s.CreateOrganization)
+
+			r.Route("/{orgID}", func(r chi.Router) {
+				r.Get("/", s.GetOrg)
+				r.Delete("/", s.DeleteOrg)
+			})
 		})
 	})
 }
@@ -303,6 +308,24 @@ func (s *Server) GetUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(returned)
 }
 
+func (s *Server) GetOrg(w http.ResponseWriter, r *http.Request) {
+	var org Organization
+
+	if orgID := chi.URLParam(r, "orgID"); orgID != "" {
+		result := s.DB.First(&org, "id = ?", orgID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Organization Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Organization Not Found", http.StatusNotFound)
+		return
+	}
+
+	returned, _ := json.Marshal(org)
+	w.Write(returned)
+}
+
 // desc: sends a request back containing all the orgs
 func (s *Server) ListOrgs(w http.ResponseWriter, r *http.Request) {
 	// assigning variable
@@ -362,6 +385,35 @@ func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 
 	returned, _ := json.Marshal(org)
 	w.Write(returned)
+}
+
+func (s *Server) DeleteOrg(w http.ResponseWriter, r *http.Request) {
+	var org Organization
+	if orgID := chi.URLParam(r, "orgID"); orgID != "" {
+		// finding org based on url
+		result := s.DB.First(&org, "id = ?", orgID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Organization Not Found", http.StatusNotFound)
+			return
+		}
+		// deleting all sponsors associated with an org
+		// DEBUG: Will this work with drivers who still have the
+		s.DB.Where("organization_id = ?", orgID).Delete(Organization{})
+
+		// 	deleting base org
+		resultO := s.DB.Delete(&org)
+		if errors.Is(resultO.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Organization Delete Failed", http.StatusNotFound)
+			return
+		}
+
+		// Return user that was deleted
+		returned, _ := json.Marshal(org)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(returned)
+	} else {
+		http.Error(w, "Org Not Found", http.StatusNotFound)
+	}
 }
 
 ///  Authentication
