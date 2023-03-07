@@ -177,6 +177,14 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var userExists User
+	// Check if email exists
+	result := s.DB.Where("email = ?", data.Email).First(&userExists)
+	if !(errors.Is(result.Error, gorm.ErrRecordNotFound) || result.Error != nil) {
+		http.Error(w, "User already exists", http.StatusConflict)
+		return
+	}
+
 	var user User
 	user.Email = *data.Email
 	user.PasswordHash = string(hashedBytes)

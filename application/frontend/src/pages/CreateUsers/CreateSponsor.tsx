@@ -1,10 +1,8 @@
-import React from 'react'
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
+import React, { useState, useEffect } from 'react';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
-
-import {useState, useEffect} from 'react'
-import CreateUser from '../../components/CreateUser/CreateUser'
+import CreateUser from '../../components/CreateUser/CreateUser';
 import { Button } from 'react-bootstrap';
 
 // interfacing representing incoming organization
@@ -18,6 +16,7 @@ interface Organization {
 }
 
 const CreateSponsor = ({}) => {
+    const [emailInUse, setEmailInUse] = useState(true);
 
     // creating an org data constant to receive the data from fetch
     const [orgsArray, setOrgsArray] = useState<Organization[]>([])
@@ -58,9 +57,19 @@ const CreateSponsor = ({}) => {
                 type: 1, //sponsor type
                 organizationId: organizationId
             })
-        }).catch(error => console.log(error));
-        console.log(response);
-    }
+        }).then(async response => {
+            if (response.status === 409) {
+                setEmailInUse(true)
+                return
+            }
+    
+            setEmailInUse(false)
+        }).catch(
+            error => {
+                setEmailInUse(true)
+                console.log(error)
+            }
+        )}
     
     // handling selection changed to 
     const handleOrgChange = async (event: React.ChangeEvent<HTMLInputElement>) => {     
@@ -89,9 +98,7 @@ const CreateSponsor = ({}) => {
     return (
         <div>
             <Form onSubmit={handleSubmit}>
-                <CreateUser/>
-                <Row>
-                    <Col>                    
+                <CreateUser emailInUse={emailInUse}/>
                         <Form.Group>
                             <Form.Label>Associated Organization</Form.Label>
                             <Form.Control as='select' onChange={handleOrgChange}>
@@ -104,8 +111,6 @@ const CreateSponsor = ({}) => {
                             </Form.Control>
                             <Form.Text>Select an organization to associate this sponsor within.</Form.Text>
                         </Form.Group>
-                    </Col>
-                </Row>
                 <Row>
                     <Col className='text-center'>
                         <Button type='submit'>Submit</Button>

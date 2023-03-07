@@ -1,12 +1,13 @@
-import react from 'react';
+import react, { useState } from 'react';
 import { FormGroup } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
-import React from 'react';
 
 const CreateAccount = () => {
+  const [emailInUse, setEmailInUse] = useState(true);
+
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -31,10 +32,20 @@ const CreateAccount = () => {
             email: email, 
             password: password,
             type: 0
-    })});
-    
-    console.log(response.json())
-  }
+        })
+    }).then(async response => {
+        if (!response.ok) {
+            setEmailInUse(true)
+            return
+        }
+
+        setEmailInUse(false)
+    }).catch(
+        error => {
+            setEmailInUse(true)
+            console.log(error)
+        }
+    )}
 
   return (
             <Form onSubmit={handleSubmit}>
@@ -48,12 +59,15 @@ const CreateAccount = () => {
                         <Form.Control name="lastName" placeholder="Last name" />
                     </Col>
                 </Row>
-                <Row>
-                    <Col>
-                        <Form.Label>Email</Form.Label>
-                        <Form.Control type="email" name="email" placeholder='Email' />
-                    </Col>
-                </Row>
+                <FormGroup>
+                    <Form.Label>Email</Form.Label>
+                    <Form.Control 
+                        type="email" 
+                        name="email" 
+                        placeholder='Email'
+                        isInvalid={!emailInUse}
+                    />
+                </FormGroup>
                 <Row>
                     <Col>
                         <Form.Label>Password</Form.Label>

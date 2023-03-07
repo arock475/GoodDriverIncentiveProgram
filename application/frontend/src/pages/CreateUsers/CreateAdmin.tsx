@@ -1,13 +1,16 @@
+import react, { useState } from 'react';
 import { Row, Col, Button } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import CreateUser from '../../components/CreateUser/CreateUser'
 
 // Create Driver Page
 const CreateAdmin = ({}) => {
+    const [emailInUse, setEmailInUse] = useState(true);
 
     // handling form submit. Sending post request to database
     const handleSubmit = async (event: React.SyntheticEvent) => {     
         event.preventDefault();
+
         // getting info from the event target
         const target = event.target as typeof event.target & {
             // user values
@@ -33,13 +36,24 @@ const CreateAdmin = ({}) => {
                 password: password,
                 type: type,
             })
-        }).catch(error => console.log(error));
-        console.log(response);
-    }
+        }).then(async response => {
+            if (response.status === 409) {
+                setEmailInUse(true)
+                return
+            }
+    
+            setEmailInUse(false)
+        }).catch(
+            error => {
+                setEmailInUse(true)
+                console.log(error)
+            }
+        )}
+
     return (
         <div style={{height:"100vh"}}>
             <Form onSubmit={handleSubmit}>
-                <CreateUser/>
+                <CreateUser emailInUse={emailInUse}/>
                 <Row>
                     <Col className="text-center">
                         <Button variant="primary" type="submit" >Submit</Button>

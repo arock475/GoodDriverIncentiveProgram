@@ -3,7 +3,13 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form';
 
-const CreateUser = ({}) => {
+export type CreateUserProps = {
+    emailInUse: boolean
+}
+
+const CreateUser: React.FC<CreateUserProps> = ({
+    emailInUse=true
+}) => {
     return (
         <div>
             <Row>
@@ -21,7 +27,15 @@ const CreateUser = ({}) => {
             <Row>
                 <Col>
                     <Form.Label>Email</Form.Label>
-                    <Form.Control type="email" name="email" placeholder='johndoe@email.com' />
+                    <Form.Control 
+                        type="email" 
+                        name="email" 
+                        placeholder='johndoe@email.com' 
+                        isInvalid={!!emailInUse}
+                    />
+                    <Form.Control.Feedback type='invalid'>
+                        Email in use
+                    </Form.Control.Feedback>
                 </Col>
             </Row>
             <Row>

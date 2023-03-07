@@ -1,11 +1,9 @@
-import React from 'react'
+import react, { useState, useEffect } from 'react';
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import CreateUser from '../../components/CreateUser/CreateUser'
-
-import { useState, useEffect } from "react"
 
 // interfacing representing incoming organization
 interface Organization {
@@ -18,7 +16,8 @@ interface Organization {
 }
 
 // Create Driver Page
-const CreateDriver = ({}) => {
+const CreateDriver: React.FC = () => {
+    const [emailInUse, setEmailInUse] = useState(false);
 
     // creating an org data constant to receive the data from fetch
     const [orgsArray, setOrgsArray] = useState<Organization[]>([])
@@ -68,9 +67,19 @@ const CreateDriver = ({}) => {
                 truckType: truckType,
                 licenceNumber: licenceNumber
             })
-        }).catch(error => console.log(error));
-        console.log(response);
-    }
+        }).then(async response => {
+            if (response.status === 409) {
+                setEmailInUse(true)
+                return
+            }
+    
+            setEmailInUse(false)
+        }).catch(
+            error => {
+                setEmailInUse(true)
+                console.log(error)
+            }
+        )}
 
     // handling selection changed to 
     const handleOrgChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,25 +108,15 @@ const CreateDriver = ({}) => {
     return (
         <div style={{ height: "100vh" }}>
             <Form onSubmit={handleSubmit}>
-                <CreateUser/>
-                <Row>
-                    <Col>
+                <CreateUser emailInUse={emailInUse}/>
                         <Form.Group>
                             <Form.Label>Truck Type</Form.Label>
                             <Form.Control name="truckType" placeholder="Truck Type"/>
                         </Form.Group>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
                         <Form.Group>
                             <Form.Label>Licence Plate</Form.Label>
                             <Form.Control name="licenceNumber" placeholder="XXX XXXX"/>
                         </Form.Group>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
                         <Form.Group>
                             <Form.Label>Associated Organization</Form.Label>
                             <Form.Control as='select' onChange={handleOrgChange}>
@@ -130,8 +129,6 @@ const CreateDriver = ({}) => {
                             </Form.Control>
                             <Form.Text>Select an organization to associate this sponsor within.</Form.Text>
                         </Form.Group>
-                    </Col>
-                </Row>
                 <Row>
                     <Col className="text-center">
                         <Button variant="primary" type="submit" >Submit</Button>
