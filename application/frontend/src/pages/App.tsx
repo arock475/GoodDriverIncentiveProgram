@@ -11,6 +11,7 @@ import CreateAccount from './Login/CreateAccount';
 import Login from '../pages/Login/Login';
 import Profile from '../pages/Profile/Profile';
 import EditProfile from '../pages/Profile/EditProfile';
+import UserSearch from '../components/Search/UserSearch';
 import Faq from '../pages/FAQ/Faq';
 // create user page imports
 import CreateDriver from './CreateUsers/CreateDriver'
@@ -73,6 +74,11 @@ const App = () => {
         <Route path="user/:userID">
           <Route index element={<Profile />} />
           <Route path="edit" element={<EditProfile />} />
+        </Route>
+
+        {/* Search Links */}
+        <Route path="search">
+          <Route index element={<UserSearch />} />
         </Route>
 
         {/* Create Pages*/}
