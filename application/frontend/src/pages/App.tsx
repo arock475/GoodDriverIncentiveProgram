@@ -17,6 +17,9 @@ import CreateDriver from './CreateUsers/CreateDriver'
 import CreateOrganization from './CreateUsers/CreateOrganization'
 import CreateSponsor from './CreateUsers/CreateSponsor'
 import CreateAdmin from './CreateUsers/CreateAdmin'
+import DriverDashboard from './Dashboard/DriverDashboard';
+import SponsorDashboard from './Dashboard/SponsorDashboard';
+import AdminDashboard from './Dashboard/AdminDashboard';
 //
 import Logout from '../components/Login/Logout';
 
@@ -57,7 +60,7 @@ const App = () => {
     <Routes>
       <Route path="/" element={<Layout key={loggedInAs} loggedIn={loggedIn} loginUser={loggedInAs} loginId={loggedInId} />}>
         {/* Home Page */}
-        <Route index element={<></>} />
+        <Route index element={<DriverDashboard />} />
         <Route path="logout" element={<Logout />} />
 
         {/* Login Pages */}
