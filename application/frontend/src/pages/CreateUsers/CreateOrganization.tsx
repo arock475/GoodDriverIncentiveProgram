@@ -35,7 +35,7 @@ const CreateOrganization = ({ }) => {
 
         // asking to API to create organizaiton
         // POTENTIAL ISSUE: Do I need await before fetch?
-        const response = await fetch('http://localhost:3333/orgs', {
+        const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs', {
             method: 'POST',
             body: JSON.stringify({
                 name: name,

@@ -18,35 +18,35 @@ const Login = () => {
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
 
-      try {
-        fetch("http://localhost:3333/login", {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            'email': email,
-            'password': password,
-          })
-        }).then(async response => {
-          // check for error response
-          if (!response.ok) {
-            setCredentialError(true)
-            return
-          }
-
-          setCredentialError(false)
-          navigate("/")
-        }).catch(error => {
-          setCredentialError(true)
-          console.log("Catch: ", error)
+    try {
+      fetch("http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/login", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          'email': email,
+          'password': password,
         })
-      }
-      catch(err) {
-        console.log("ERROR")
+      }).then(async response => {
+        // check for error response
+        if (!response.ok) {
+          setCredentialError(true)
+          return
+        }
+
+        setCredentialError(false)
+        navigate("/")
+      }).catch(error => {
         setCredentialError(true)
-      }
+        console.log("Catch: ", error)
+      })
+    }
+    catch (err) {
+      console.log("ERROR")
+      setCredentialError(true)
+    }
   }
 
   return (
@@ -56,34 +56,34 @@ const Login = () => {
           <Form onSubmit={handleSubmit}>
             <FormGroup>
               <Form.Label>Email</Form.Label>
-              <Form.Control type="email" 
-                placeholder='Enter Email' 
+              <Form.Control type="email"
+                placeholder='Enter Email'
                 className='w-100'
                 onChange={e => setEmail(e.target.value)}
                 isInvalid={credentialError}
-                />
-                <Form.Control.Feedback type='invalid'>
-                  Invalid email or password
-                </Form.Control.Feedback>
+              />
+              <Form.Control.Feedback type='invalid'>
+                Invalid email or password
+              </Form.Control.Feedback>
             </FormGroup>
             <FormGroup>
               <Form.Label>Password</Form.Label>
-              <Form.Control 
-                type="password" 
-                placeholder="Password" 
+              <Form.Control
+                type="password"
+                placeholder="Password"
                 onChange={e => setPassword(e.target.value)}
                 isInvalid={credentialError}
-                />
-                <Form.Control.Feedback type='invalid'>
-                  Invalid email or password
-                </Form.Control.Feedback>
+              />
+              <Form.Control.Feedback type='invalid'>
+                Invalid email or password
+              </Form.Control.Feedback>
             </FormGroup>
             <div className='text-center'>
-              <Button 
-                variant='primary' 
-                type='submit' 
+              <Button
+                variant='primary'
+                type='submit'
                 color='blue'>
-                  Login
+                Login
               </Button>
             </div>
           </Form>
