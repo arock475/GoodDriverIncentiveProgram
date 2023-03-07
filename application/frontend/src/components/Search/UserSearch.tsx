@@ -73,7 +73,7 @@ const UserSearch: React.FC = () => {
         <ul className="list-group mt-3">
           {searchResults.map((user) => (
             <li key={user.id} className="list-group-item">
-              <Link to={`user/${user.id}`} style={linkStyle}>
+              <Link to={`/user/${user.id}`} style={linkStyle}>
                 <div className="d-flex justify-content-between align-items-center">
                   <div>
                     <h6>{user.full}</h6>
