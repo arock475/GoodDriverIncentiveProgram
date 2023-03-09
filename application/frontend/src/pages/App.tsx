@@ -21,8 +21,11 @@ import CreateAdmin from './CreateUsers/CreateAdmin'
 import DriverDashboard from './Dashboard/DriverDashboard';
 import SponsorDashboard from './Dashboard/SponsorDashboard';
 import AdminDashboard from './Dashboard/AdminDashboard';
-//
+
 import Logout from '../components/Login/Logout';
+// Point Imports
+import Points from './Points/Points'
+
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -92,6 +95,7 @@ const App = () => {
           <Route path="create-sponsor" element={<CreateSponsor />} />
           <Route path="create-admin" element={<CreateAdmin />} />
         </Route>
+        <Route path="points" element={<Points />} />
 
         {/* Footer Links */}
         <Route path="faq" element={<Faq />} />
