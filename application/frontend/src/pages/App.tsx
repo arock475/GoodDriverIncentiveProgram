@@ -95,7 +95,7 @@ const App = () => {
           <Route path="create-sponsor" element={<CreateSponsor />} />
           <Route path="create-admin" element={<CreateAdmin />} />
         </Route>
-        <Route path="points" element={<Points />} />
+        <Route path="points" element={<Points loggedIn={loggedIn} loginRole={loggedInRole}/>} />
 
         {/* Footer Links */}
         <Route path="faq" element={<Faq />} />

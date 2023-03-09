@@ -14,7 +14,7 @@ const Points: React.FC<PointsProps> = ({
 }) => {
     return (
         <Container>
-            <PointsTable loggedIn={loggedIn} loginRole={loginRole} />
+            <PointsTable />
         </Container>
     );
 }
