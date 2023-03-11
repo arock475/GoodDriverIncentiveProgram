@@ -21,7 +21,6 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import{ useState, useEffect, useRef} from 'react';
 import AWS from 'aws-sdk';
-import emailjs from 'emailjs-com';
 
 AWS.config.update({
     accessKeyId: process.env.REACT_APP_ACCESS_KEY_ID,
@@ -61,19 +60,6 @@ export default function EditProfilePage() {
       email: Data.email
     }
 
-    const form = useRef();
-    function sendEmail(e) {
-      e.preventDefault();   
-      console.log(Data.email);
-      emailjs.send(process.env.REACT_APP_SERVICE_ID, process.env.REACT_APP_TEMPLATE_ID, email, process.env.REACT_APP_EMAIL_USER_ID)
-        .then((result) => {
-            window.location.reload() 
-        }, (error) => {
-            console.log(error.text);
-        });
-        routeChange('reset')
-    }
-
     // Updates Data struct when user changes a field
     const handleChange = (event) => {
       const value = event.target.value;
@@ -91,7 +77,7 @@ export default function EditProfilePage() {
     // Handle File input
     const handleFileInput = (e) => {
         setSelectedFile(e.target.files[0]);
-        Data.image = process.env.REACT_APP_URL + e.target.files[0].name;
+        Data.image = process.env.REACT_APP_S3_URL + e.target.files[0].name;
     }
 
     // Upload file to the S3 bucket
