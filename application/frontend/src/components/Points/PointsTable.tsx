@@ -18,15 +18,18 @@ interface Organization {
     LogoURL: string
 }
 
-interface PointsTable {
-    ID: number
-    DriverID: number,
-    OrganizationID: number,
-    NumChange: number,
-    Reason: string,
+interface Driver {
+    ID: number,
+    UserID: number,
+    Status: number,
+    LicencePlate: string,
+    TruckType: string,
+}
+
+interface PointsTotals {
     Total: number,
-    // createdAt: time
     Organization: Organization
+    Driver: Driver
 }
 
 const PointsTable = ({}) => {  
@@ -34,7 +37,7 @@ const PointsTable = ({}) => {
     // user role and cookies variables
     const [userRole, setUserRole] = useState(null);
     const [cookies, setCookie, removeCookie] = useCookies();
-    const [points, setPoints,] = useState<PointsTable[]>([]);
+    const [points, setPoints,] = useState<PointsTotals[]>([]);
 
     // On load, set claim using cookies, get user role from it, then use user role to fetch from backend
     useEffect(() => {
@@ -46,7 +49,7 @@ const PointsTable = ({}) => {
         // making call to api
         // console.log(`Component/PointsTable: TESTING: cookies.id = ${cookies.id}`);
         const fetchPoints = async () => {
-            const response = await fetch(`http://localhost:3333/points/${5}`); // DEBUG: Temp code
+            const response = await fetch(`http://localhost:3333/points/${5}/totals`); // DEBUG: Temp code
             const data = await response.json();
             setPoints(data);
         };
@@ -67,11 +70,11 @@ const PointsTable = ({}) => {
                     </thead>
                     <tbody>
                     {
-                        points.map((pointsTable) => (
-                            <tr key={pointsTable.ID}>
-                                <td>{pointsTable.Organization.ID}</td>
-                                <td>{pointsTable.Organization.Name}</td>
-                                <td>{pointsTable.Total}</td>
+                        points.map((pointsTotal) => (
+                            <tr key={pointsTotal.Organization.ID}>
+                                <td>{pointsTotal.Organization.ID}</td>
+                                <td>{pointsTotal.Organization.Name}</td>
+                                <td>{pointsTotal.Total}</td>
                             </tr>
                         ))
                     }

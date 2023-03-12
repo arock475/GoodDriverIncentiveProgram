@@ -33,6 +33,13 @@ type CreateOrgPayload struct {
 	LogoURL *string `json:"logoURL"`
 }
 
+// used to send data about points totals
+type GetPointsTotalsPayload struct {
+	Driver       Driver
+	Organization Organization
+	Total        int
+}
+
 type LoginUserPayload struct {
 	Email             *string `json:"email"`
 	PlaintextPassword *string `json:"password"`
@@ -106,5 +113,4 @@ type Points struct {
 	CreatedAt      time.Time
 	Name           string
 	Catalog        int
-	Total          int
 }

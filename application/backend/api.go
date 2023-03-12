@@ -103,7 +103,7 @@ func (s *Server) MountHandlers() {
 			// per user point info
 			r.Route("/{userID}", func(r chi.Router) {
 				// getting points based on user
-				r.Get("/Totals", s.GetPointsTotal)
+				r.Get("/totals", s.GetPointsTotal)
 			})
 		})
 
@@ -435,26 +435,28 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Printf("Driver:\n\tName:%s %s\n\tDriverID:%d\n\tUserID:%d\n", driver.User.FirstName, driver.User.LastName, driver.ID, driver.User.ID)
 		// getting all the points based on the drivers orgs
-		var points []Points
+		var pointsTotals []GetPointsTotalsPayload
 		fmt.Printf("Driver has %d associated organizations\n", len(driver.Organizations))
 		for _, organization := range driver.Organizations {
-			// getting points
-			var pointsTable Points
-			resultPointsTable := s.DB.Model(&Points{}).Preload(clause.Associations).First(&pointsTable, "driver_id = ? AND organization_id = ?", driver.ID, organization.ID)
-			if errors.Is(resultPointsTable.Error, gorm.ErrRecordNotFound) {
-				http.Error(w, "Points Bridge Table Not Found", http.StatusNotFound)
+			// getting points totals
+			var pointsTotal GetPointsTotalsPayload
+			pointsTotal.Organization = *organization
+			pointsTotal.Driver = driver
+			result := s.DB.Model(&Points{}).Select("sum(num_change)").Where("driver_id = ? and organization_id = ?", driver.ID, organization.ID).Scan(&pointsTotal.Total)
+			if result.Error != nil {
+				http.Error(w, "Error calculating driver's points.", http.StatusInternalServerError)
 				return
 			}
-			fmt.Printf("Adding PointsTable from Org:{%d} to Driver\n", organization.ID)
-			points = append(points, pointsTable)
+			pointsTotals = append(pointsTotals, pointsTotal)
+
 		}
 
 		// writing return
-		for _, pointsTable := range points {
-			fmt.Printf("Driver:{%d} Organization:{%d}: TotalPoints:{%d}\n", pointsTable.DriverID, pointsTable.OrganizationID, pointsTable.Total)
+		for _, pointsTotal := range pointsTotals {
+			fmt.Printf("Driver:{%d} Organization:{%d}: TotalPoints:{%d}\n", pointsTotal.Driver.ID, pointsTotal.Organization.ID, pointsTotal.Total)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		returned, _ := json.Marshal(points)
+		returned, _ := json.Marshal(pointsTotals)
 		w.Write(returned)
 
 		// TESTING: Untested areas:
