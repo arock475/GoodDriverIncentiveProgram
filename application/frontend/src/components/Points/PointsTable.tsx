@@ -10,12 +10,12 @@ export type jwtClaim = {
 }
 
 interface PointsTable {
-    id: number
-    driverID: number,
-    organizationID: number,
-    numChange: number,
-    reason: string,
-    total: number,
+    ID: number
+    DriverID: number,
+    OrganizationID: number,
+    NumChange: number,
+    Reason: string,
+    Total: number,
     // createdAt: time
 }
 
@@ -69,9 +69,9 @@ const PointsTable = ({}) => {
                 {
                     points.map((pointsTable) => (
                         <tr>
-                            <td>{pointsTable.organizationID}</td>
+                            <td>{pointsTable.OrganizationID}</td>
                             <td>PointsTable.OrgName</td>
-                            <td>{pointsTable.total}</td>
+                            <td>{pointsTable.Total}</td>
                         </tr>
                     ))
                 }

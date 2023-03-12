@@ -110,6 +110,10 @@ func (s *Server) MountHandlers() {
 		r.Route("/orgs", func(r chi.Router) {
 			r.Get("/", s.ListOrgs)
 			r.Post("/", s.CreateOrganization)
+
+			r.Route("/{orgID}", func(r chi.Router) {
+				r.Get("/", s.GetOrg)
+			})
 		})
 	})
 }
@@ -342,6 +346,23 @@ func (s *Server) ListOrgs(w http.ResponseWriter, r *http.Request) {
 	w.Write(returned)
 }
 
+func (s *Server) GetOrg(w http.ResponseWriter, r *http.Request) {
+	var org Organization
+
+	if orgID := chi.URLParam(r, "orgID"); orgID != "" {
+		result := s.DB.First(&org, "id = ?", orgID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Organization Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Organization Not Found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	returned, _ := json.Marshal(org)
+	w.Write(returned)
+}
 func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 	// Recieing data fomr client-side json and errochecking it
 	data := CreateOrgPayload{}
