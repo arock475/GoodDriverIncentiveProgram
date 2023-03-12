@@ -97,12 +97,14 @@ type Organization struct {
 // Organization is the organization who assigned those points.
 type Points struct {
 	ID             int
-	DriverID       int `gorm:"uniqueIndex;not null"`
+	DriverID       int `gorm:"not null"`
 	Driver         Driver
-	OrganizationID int `gorm:"uniqueIndex;not null"`
+	OrganizationID int `gorm:"not null"`
 	Organization   Organization
 	NumChange      int
 	Reason         string
-	Total          int
 	CreatedAt      time.Time
+	Name           string
+	Catalog        int
+	Total          int
 }

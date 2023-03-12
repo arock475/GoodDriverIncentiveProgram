@@ -9,6 +9,15 @@ export type jwtClaim = {
     role: number
 }
 
+interface Organization {
+    ID: number
+    Name: string
+    Bio: string
+    Phone: string
+    Email: string
+    LogoURL: string
+}
+
 interface PointsTable {
     ID: number
     DriverID: number,
@@ -17,6 +26,7 @@ interface PointsTable {
     Reason: string,
     Total: number,
     // createdAt: time
+    Organization: Organization
 }
 
 const PointsTable = ({}) => {  
@@ -34,7 +44,7 @@ const PointsTable = ({}) => {
             setUserRole(claim.role);
         }
         // making call to api
-        console.log(`Component/PointsTable: TESTING: cookies.id = ${cookies.id}`);
+        // console.log(`Component/PointsTable: TESTING: cookies.id = ${cookies.id}`);
         const fetchPoints = async () => {
             const response = await fetch(`http://localhost:3333/points/${5}`); // DEBUG: Temp code
             const data = await response.json();
@@ -48,35 +58,25 @@ const PointsTable = ({}) => {
         case 0: // driver
             return (
                 <Table striped bordered hover>
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Organization Name</th>
-                    <th>Points</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td>34</td>
-                    <td>Amaze-on!</td>
-                    <td>0</td>
-                </tr>
-                <tr>
-                    <td>69</td>
-                    <td>Nice Inc. </td>
-                    <td>68</td>
-                </tr>
-                {
-                    points.map((pointsTable) => (
-                        <tr>
-                            <td>{pointsTable.OrganizationID}</td>
-                            <td>PointsTable.OrgName</td>
-                            <td>{pointsTable.Total}</td>
-                        </tr>
-                    ))
-                }
-                </tbody>
-            </Table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Organization Name</th>
+                        <th>Points</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {
+                        points.map((pointsTable) => (
+                            <tr key={pointsTable.ID}>
+                                <td>{pointsTable.Organization.ID}</td>
+                                <td>{pointsTable.Organization.Name}</td>
+                                <td>{pointsTable.Total}</td>
+                            </tr>
+                        ))
+                    }
+                    </tbody>
+                </Table>
             );
     case 1: // sponsor
         // implement later
@@ -85,7 +85,7 @@ const PointsTable = ({}) => {
         // implement later
         break;
     default: // loggedIn w/o role -> error from depreciated user
-        console.log("PointsTable component: depreciated user attempting to access points!");
+        // console.log("PointsTable component: depreciated user attempting to access points!");
         break;
 }
 }

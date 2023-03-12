@@ -103,7 +103,7 @@ func (s *Server) MountHandlers() {
 			// per user point info
 			r.Route("/{userID}", func(r chi.Router) {
 				// getting points based on user
-				r.Get("/", s.GetPoints)
+				r.Get("/Totals", s.GetPointsTotal)
 			})
 		})
 
@@ -408,7 +408,7 @@ func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 }
 
 // / Points
-func (s *Server) GetPoints(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 	// initializing user
 	var user User
 	if userID := chi.URLParam(r, "userID"); userID != "" {
@@ -439,14 +439,14 @@ func (s *Server) GetPoints(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Driver has %d associated organizations\n", len(driver.Organizations))
 		for _, organization := range driver.Organizations {
 			// getting points
-			var pointsInfo Points
-			resultPointsInfo := s.DB.Model(&Points{}).Preload(clause.Associations).First(&pointsInfo, "driver_id = ? AND organization_id = ?", driver.ID, organization.ID)
-			if errors.Is(resultPointsInfo.Error, gorm.ErrRecordNotFound) {
+			var pointsTable Points
+			resultPointsTable := s.DB.Model(&Points{}).Preload(clause.Associations).First(&pointsTable, "driver_id = ? AND organization_id = ?", driver.ID, organization.ID)
+			if errors.Is(resultPointsTable.Error, gorm.ErrRecordNotFound) {
 				http.Error(w, "Points Bridge Table Not Found", http.StatusNotFound)
 				return
 			}
 			fmt.Printf("Adding PointsTable from Org:{%d} to Driver\n", organization.ID)
-			points = append(points, pointsInfo)
+			points = append(points, pointsTable)
 		}
 
 		// writing return
@@ -470,7 +470,6 @@ func (s *Server) GetPoints(w http.ResponseWriter, r *http.Request) {
 	default:
 		fmt.Print("Error! Attempting to get point info for a user with no role!\n")
 	}
-
 }
 
 ///  Authentication
