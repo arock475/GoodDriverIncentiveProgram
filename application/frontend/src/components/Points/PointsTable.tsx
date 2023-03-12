@@ -11,8 +11,11 @@ export type jwtClaim = {
 
 const PointsTable = ({}) => {  
 
+    // user role and cookies variables
     const [userRole, setUserRole] = useState(null);
     const [cookies, setCookie, removeCookie] = useCookies();
+
+    // On load, set claim using cookies, get user role from it
     useEffect(() => {
         const token = cookies.jwt;
         if (token) {
@@ -21,49 +24,40 @@ const PointsTable = ({}) => {
         }
     }, [])
 
-    console.log(`PointsTable comp: ${userRole}`);
+    // Returning conditionally rendered table based on role
     switch (userRole) {
         case 0: // driver
-            console.log("PointsTable component: rendering driver table");
             return (
                 <Table striped bordered hover>
                 <thead>
                 <tr>
-                    <th>#</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Username</th>
+                    <th>ID</th>
+                    <th>Organization Name</th>
+                    <th>Points</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td>1</td>
-                    <td>Mark</td>
-                    <td>Otto</td>
-                    <td>@mdo</td>
+                    <td>34</td>
+                    <td>Amaze-on!</td>
+                    <td>0</td>
                 </tr>
                 <tr>
-                    <td>2</td>
-                    <td>Jacob</td>
-                    <td>Thornton</td>
-                    <td>@fat</td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td colSpan={2}>Larry the Bird</td>
-                    <td>@twitter</td>
+                    <td>69</td>
+                    <td>Nice Inc. </td>
+                    <td>68</td>
                 </tr>
                 </tbody>
             </Table>
             );
     case 1: // sponsor
-        // impplement later
+        // implement later
         break;
     case 2: // admin
         // implement later
         break;
     default: // loggedIn w/o role -> error from depreciated user
-        console.log("PointsTable component: depreciated user");
+        console.log("PointsTable component: depreciated user attempting to access points!");
         break;
 }
 }

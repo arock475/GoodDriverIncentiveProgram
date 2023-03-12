@@ -97,6 +97,15 @@ func (s *Server) MountHandlers() {
 			})
 		})
 
+		// points route
+		r.Route("/poinst", func(r chi.Router) {
+			// per user point info
+			r.Route("/{userID}", func(r chi.Router) {
+				// getting points based on user
+				r.Get("/", s.GetPoints)
+			})
+		})
+
 		r.Route("/orgs", func(r chi.Router) {
 			r.Get("/", s.ListOrgs)
 			r.Post("/", s.CreateOrganization)
@@ -313,6 +322,8 @@ func (s *Server) GetUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(returned)
 }
 
+/// Organization
+
 // desc: sends a request back containing all the orgs
 func (s *Server) ListOrgs(w http.ResponseWriter, r *http.Request) {
 	// assigning variable
@@ -372,6 +383,36 @@ func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 
 	returned, _ := json.Marshal(org)
 	w.Write(returned)
+}
+
+// / Points
+func (s *Server) GetPoints(w http.ResponseWriter, r *http.Request) {
+	// initializing user
+	var user User
+	if userID := chi.URLParam(r, "userID"); userID != "" {
+		result := s.DB.First(&user, "id = ?", userID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "User Not Found", http.StatusNotFound)
+		return
+	}
+	// returning info based on user role
+	switch user.Type {
+	case 0: // if driver
+		fmt.Print("Getting Driver Point info!\n")
+	case 1: // sponsor
+		// implement later
+		fmt.Print("Getting Sponsor Point info!\n")
+	case 2: // admin
+		// implement later
+		fmt.Print("Getting Admin Point info!\n")
+	default:
+		fmt.Print("Error! Attempting to get point info for a user with no role!\n")
+	}
+
 }
 
 ///  Authentication
