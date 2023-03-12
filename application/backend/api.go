@@ -17,6 +17,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Server struct {
@@ -98,7 +99,7 @@ func (s *Server) MountHandlers() {
 		})
 
 		// points route
-		r.Route("/poinst", func(r chi.Router) {
+		r.Route("/points", func(r chi.Router) {
 			// per user point info
 			r.Route("/{userID}", func(r chi.Router) {
 				// getting points based on user
@@ -335,7 +336,7 @@ func (s *Server) ListOrgs(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, result.Error.Error(), http.StatusBadRequest)
 		return
 	}
-	// ? writing the response
+	// writing the response
 	returned, _ := json.Marshal(all_orgs)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(returned)
@@ -399,10 +400,46 @@ func (s *Server) GetPoints(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "User Not Found", http.StatusNotFound)
 		return
 	}
+	fmt.Printf("User:\n\tName:%s %s\n\tUserID:%d\n", user.FirstName, user.LastName, user.ID)
 	// returning info based on user role
 	switch user.Type {
 	case 0: // if driver
 		fmt.Print("Getting Driver Point info!\n")
+		// getting the driver
+		var driver Driver
+		resultDriver := s.DB.Model(&Driver{}).Preload(clause.Associations).First(&driver, "user_id = ?", user.ID)
+		if errors.Is(resultDriver.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Driver Not Found", http.StatusNotFound)
+			return
+		}
+		fmt.Printf("Driver:\n\tName:%s %s\n\tDriverID:%d\n\tUserID:%d\n", driver.User.FirstName, driver.User.LastName, driver.ID, driver.User.ID)
+		// getting all the points based on the drivers orgs
+		var points []Points
+		fmt.Printf("Driver has %d associated organizations\n", len(driver.Organizations))
+		for _, organization := range driver.Organizations {
+			// getting points
+			var pointsInfo Points
+			resultPointsInfo := s.DB.Model(&Points{}).Preload(clause.Associations).First(&pointsInfo, "driver_id = ? AND organization_id = ?", driver.ID, organization.ID)
+			if errors.Is(resultPointsInfo.Error, gorm.ErrRecordNotFound) {
+				http.Error(w, "Points Bridge Table Not Found", http.StatusNotFound)
+				return
+			}
+			fmt.Printf("Adding PointsTable from Org:{%d} to Driver\n", organization.ID)
+			points = append(points, pointsInfo)
+		}
+
+		// writing return
+		for _, pointsTable := range points {
+			fmt.Printf("Driver:{%d} Organization:{%d}: TotalPoints:{%d}\n", pointsTable.DriverID, pointsTable.OrganizationID, pointsTable.Total)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		returned, _ := json.Marshal(points)
+		w.Write(returned)
+
+		// TESTING: Untested areas:
+		//		1. Points total > 0
+		//		2. Drivers associated orgs > 1
+
 	case 1: // sponsor
 		// implement later
 		fmt.Print("Getting Sponsor Point info!\n")

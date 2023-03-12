@@ -9,19 +9,38 @@ export type jwtClaim = {
     role: number
 }
 
+interface PointsTable {
+    id: number
+    driverID: number,
+    organizationID: number,
+    numChange: number,
+    reason: string,
+    total: number,
+    // createdAt: time
+}
+
 const PointsTable = ({}) => {  
 
     // user role and cookies variables
     const [userRole, setUserRole] = useState(null);
     const [cookies, setCookie, removeCookie] = useCookies();
+    const [points, setPoints,] = useState<PointsTable[]>([]);
 
-    // On load, set claim using cookies, get user role from it
+    // On load, set claim using cookies, get user role from it, then use user role to fetch from backend
     useEffect(() => {
         const token = cookies.jwt;
         if (token) {
             const claim: jwtClaim = jwt_decode(token);
             setUserRole(claim.role);
         }
+        // making call to api
+        console.log(`Component/PointsTable: TESTING: cookies.id = ${cookies.id}`);
+        const fetchPoints = async () => {
+            const response = await fetch(`http://localhost:3333/points/${5}`); // DEBUG: Temp code
+            const data = await response.json();
+            setPoints(data);
+        };
+        fetchPoints();
     }, [])
 
     // Returning conditionally rendered table based on role
@@ -47,6 +66,15 @@ const PointsTable = ({}) => {
                     <td>Nice Inc. </td>
                     <td>68</td>
                 </tr>
+                {
+                    points.map((pointsTable) => (
+                        <tr>
+                            <td>{pointsTable.organizationID}</td>
+                            <td>PointsTable.OrgName</td>
+                            <td>{pointsTable.total}</td>
+                        </tr>
+                    ))
+                }
                 </tbody>
             </Table>
             );
