@@ -8,16 +8,16 @@ export type jwtClaim = {
     email: string,
     role: number
 }
-
-interface User {
-    ID: number,
-    Email: string,
-    FirstName: string,
-    LastName: string,
-    Phone: string,
-    Bio: string,
-    ImageURL: string,
-    Type: string
+// lower case because of weird bug. My guess is a weird preloading thing on API
+export type user = {
+    id: number,
+    email: string,
+    firstName: string,
+    lastName: string,
+    phone: string,
+    bio: string,
+    imageURL: string,
+    type: string
 }
 
 interface Organization {
@@ -32,7 +32,7 @@ interface Organization {
 interface Driver {
     ID: number,
     UserID: number,
-    User: User,
+    User: user,
     Status: number,
     LicencePlate: string,
     TruckType: string,
@@ -62,7 +62,7 @@ const PointsTable = ({}) => {
         // making call to api
         // console.log(`Component/PointsTable: TESTING: cookies.id = ${cookies.id}`);
         const fetchPoints = async () => {
-            const response = await fetch(`http://localhost:3333/points/${11}/totals`); // DEBUG: Temp code
+            const response = await fetch(`http://localhost:3333/points/${cookies.id}/totals`); // DEBUG: Temp code
             const data = await response.json();
             setPoints(data);
         };
@@ -76,7 +76,7 @@ const PointsTable = ({}) => {
                 <Table striped bordered hover>
                     <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Org. ID</th>
                         <th>Organization Name</th>
                         <th>Points</th>
                     </tr>
@@ -95,29 +95,36 @@ const PointsTable = ({}) => {
                 </Table>
             );
     case 1: // sponsor
-        console.log("Rendering Sponsor Points view")       
-        return (
-            <Table striped bordered hover>
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Driver name</th>
-                    <th>Points</th>
-                </tr>
-                </thead>
-                <tbody>
-                {
-                    points.map((pointsTotal) => (
-                        <tr key={pointsTotal.Driver.ID}>
-                            <td>{pointsTotal.Driver.ID}</td>
-                            <td>{`${pointsTotal.Driver.User.FirstName} ${pointsTotal.Driver.User.LastName}`}</td>
-                            <td>{pointsTotal.Total}</td>
-                        </tr>
-                    ))
-                }
-                </tbody>
-            </Table>
-        );
+        try {     
+            return (
+                <Table striped bordered hover>
+                    <thead>
+                    <tr>
+                        <th>Driver ID</th>
+                        <th>Driver name</th>
+                        <th>Points</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {
+                            points.map((pointsTotal) => (
+                                <tr key={pointsTotal.Driver.ID}>
+                                    <td>{pointsTotal.Driver.ID}</td>
+                                    <td>{`${pointsTotal.Driver.User.firstName} ${pointsTotal.Driver.User.lastName}`}</td>
+                                    <td>{pointsTotal.Total}</td>
+                                </tr>
+                            ))                    
+                    }
+                    </tbody>
+                </Table>
+            );
+        } catch (error) {
+            return (
+                <div>
+                    Component PointsTable: Error loading table
+                </div>
+            );
+        }
     case 2: // admin
         // implement later
         break;

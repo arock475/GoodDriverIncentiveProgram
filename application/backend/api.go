@@ -458,26 +458,27 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 	case 1: // sponsor
 		// getting the driver
 		var sponsor Sponsor
-		resultSponsor := s.DB.Model(&Sponsor{}).Preload(clause.Associations).First(&sponsor, "user_id = ?", user.ID)
+		resultSponsor := s.DB.Model(&Sponsor{}).Preload("Organization.Drivers.User").First(&sponsor, "user_id = ?", user.ID)
 		if errors.Is(resultSponsor.Error, gorm.ErrRecordNotFound) {
 			http.Error(w, "Sponsor Not Found", http.StatusNotFound)
 			return
 		}
-		fmt.Printf("SponsorID:{%d} UserID:{%d} OrganizationID:{%d}\n", sponsor.ID, sponsor.UserID, sponsor.OrganizationID)
+		fmt.Printf("api.go/GetPointsTotal: \n\tSponsorID:{%d} UserID:{%d} OrganizationID:{%d}\n", sponsor.ID, sponsor.UserID, sponsor.OrganizationID)
 		// getting all the points based on the org's driver
 		var pointsTotals []GetPointsTotalsPayload
-		fmt.Printf("Associated Drivers:{%d}\n", len(sponsor.Organization.Drivers))
+		fmt.Printf("api.go/GetPointsTotal: \n\tAssociated Drivers:{%d}\n", len(sponsor.Organization.Drivers))
 		for _, driver := range sponsor.Organization.Drivers {
 			// getting points totals
 			var pointsTotal GetPointsTotalsPayload
 			pointsTotal.Organization = sponsor.Organization
 			pointsTotal.Driver = *driver
-			result := s.DB.Model(&Points{}).Select("sum(num_change)").Where("driver_id = ? and organization_id = ?", driver.ID, sponsor.Organization.ID).Scan(&pointsTotal.Total)
-			if result.Error != nil {
-				http.Error(w, "Error calculating organization's points.", http.StatusInternalServerError)
-				return
+			fmt.Printf("api.go/GetPointsTotal: \n\tUsing Driver: ID:{%d} Name:{%s %s}\n", driver.ID, driver.User.FirstName, driver.User.LastName)
+			fmt.Printf("api.go/GetPointsTotal: \n\tAttempting to append to: OrgID:{%d}\n", sponsor.OrganizationID)
+			result := s.DB.Model(&Points{}).Select("sum(num_change)").Where("driver_id = ? and organization_id = ?", driver.ID, sponsor.OrganizationID).Scan(&pointsTotal.Total)
+			if result.Error == nil {
+				pointsTotals = append(pointsTotals, pointsTotal)
 			}
-			pointsTotals = append(pointsTotals, pointsTotal)
+
 		}
 
 		// writing return
