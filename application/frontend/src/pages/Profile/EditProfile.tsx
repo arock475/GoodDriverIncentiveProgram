@@ -20,7 +20,7 @@ import {
 } from 'mdb-react-ui-kit';
 import { useNavigate, useParams } from "react-router-dom";
 import{ useState, useEffect } from 'react';
-import AWS from 'aws-sdk'
+import AWS from 'aws-sdk';
 
 // TODO: Change to environmnet/protected variables
 const S3_BUCKET ='team25-s3bucket';

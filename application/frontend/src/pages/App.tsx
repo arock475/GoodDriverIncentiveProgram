@@ -11,12 +11,16 @@ import CreateAccount from './Login/CreateAccount';
 import Login from '../pages/Login/Login';
 import Profile from '../pages/Profile/Profile';
 import EditProfile from '../pages/Profile/EditProfile';
+import UserSearch from '../components/Search/UserSearch';
 import Faq from '../pages/FAQ/Faq';
 // create user page imports
 import CreateDriver from './CreateUsers/CreateDriver'
 import CreateOrganization from './Orgs/CreateOrganization'
 import CreateSponsor from './CreateUsers/CreateSponsor'
 import CreateAdmin from './CreateUsers/CreateAdmin'
+import DriverDashboard from './Dashboard/DriverDashboard';
+import SponsorDashboard from './Dashboard/SponsorDashboard';
+import AdminDashboard from './Dashboard/AdminDashboard';
 //
 import Logout from '../components/Login/Logout';
 import DeleteOrg from './Orgs/DeleteOrganization';
@@ -25,6 +29,7 @@ const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [loggedInAs, setLoggedInAs] = useState("");
   const [loggedInId, setLoggedInId] = useState(0);
+  const [loggedInRole, setLoggedInRole] = useState(0);
   const [cookies, setCookie, removeCookie] = useCookies();
   const location = useLocation();
 
@@ -38,12 +43,15 @@ const App = () => {
         if (!response.ok) {
           setLoggedIn(false);
           setLoggedInAs("");
+          setLoggedInId(null);
+          setLoggedInRole(null);
           return Promise.reject();
         }
         // Login Successful
         if (!loggedIn) {
           setLoggedInAs(cookies.user);
           setLoggedInId(cookies.id);
+          setLoggedInRole(cookies.role);
           setLoggedIn(true);
         }
       })
@@ -58,7 +66,7 @@ const App = () => {
     <Routes>
       <Route path="/" element={<Layout key={loggedInAs} loggedIn={loggedIn} loginUser={loggedInAs} loginId={loggedInId} />}>
         {/* Home Page */}
-        <Route index element={<></>} />
+        <Route index element={<DriverDashboard />} />
         <Route path="logout" element={<Logout />} />
 
         {/* Login Pages */}
@@ -71,6 +79,11 @@ const App = () => {
         <Route path="user/:userID">
           <Route index element={<Profile />} />
           <Route path="edit" element={<EditProfile />} />
+        </Route>
+
+        {/* Search Links */}
+        <Route path="search">
+          <Route index element={<UserSearch />} />
         </Route>
 
         {/* Create Pages*/}

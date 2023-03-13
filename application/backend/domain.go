@@ -54,17 +54,18 @@ type User struct {
 	Type         int    `json:"type" gorm:"not null, default:0"`
 }
 
+// A driver can belong to multiple organizations.
 type Driver struct {
-	ID             int
-	UserID         int `gorm:"uniqueIndex;not null"`
-	User           User
-	OrganizationID int `gorm:"not null"`
-	Organization   Organization
-	Status         int `gorm:"not null;default:0"`
-	LicensePlate   string
-	TruckType      string
+	ID            int
+	UserID        int `gorm:"uniqueIndex;not null"`
+	User          User
+	Status        int `gorm:"not null;default:0"`
+	LicensePlate  string
+	TruckType     string
+	Organizations []*Organization `gorm:"many2many:driver_organizations;"`
 }
 
+// Belongs to an organization
 type Sponsor struct {
 	ID             int
 	UserID         int `gorm:"uniqueIndex;not null"`
@@ -79,6 +80,9 @@ type Admin struct {
 	User   User
 }
 
+// An organization is the actual company, i.e Amazon Prime
+// An organization will always have atleast one sponsor account belonging to it
+// but it can have more than that.
 type Organization struct {
 	ID        int
 	Name      string `gorm:"not null"`
@@ -88,12 +92,17 @@ type Organization struct {
 	LogoURL   string `gorm:"not null"`
 }
 
+// Points has a foreign key for both a driver and sponsor.
+// DriverID is the driver whose the points change belongs to
+// Organization is the organization who assigned those points.
 type Points struct {
-	ID        int
-	DriverID  int `gorm:"uniqueIndex;not null"`
-	Driver    Driver
-	NumChange int
-	Reason    string
-	Total     int
-	CreatedAt time.Time
+	ID             int
+	DriverID       int `gorm:"uniqueIndex;not null"`
+	Driver         Driver
+	OrganizationID int `gorm:"uniqueIndex;not null"`
+	Organization   Organization
+	NumChange      int
+	Reason         string
+	Total          int
+	CreatedAt      time.Time
 }

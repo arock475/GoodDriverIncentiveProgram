@@ -21,7 +21,7 @@ const Header: React.FC<HeaderProps> = ({
     loginId = 0
 }) => {
     return (
-        <Navbar bg={colorTheme} expand="sm" className="header navbar-header" id="header-navbar">
+        <Navbar bg={colorTheme} expand="sm" className="header navbar-header mb-3" id="header-navbar">
             <Container>
                 <Navbar.Brand href="/">
                     <img src={logo} alt="logo" width="60" height="60" className="d-inline-block align-top" />
@@ -41,6 +41,11 @@ const Header: React.FC<HeaderProps> = ({
                             <NavDropdown.Item href="/admin/create-admin">Admin</NavDropdown.Item>
                             <NavDropdown.Item href="/admin/create-org">Organization</NavDropdown.Item>
                         </NavDropdown>
+                        <Nav.Link href="/driver/orders" className="nav-link">Orders</Nav.Link>
+                        <Nav.Link href="/driver/applications" className="nav-link">Applications</Nav.Link>
+                        <Nav.Link href="/driver/organizations" className="nav-link">Organizations</Nav.Link>
+                        <Nav.Link href="/driver/notifications" className="nav-link">Notifications</Nav.Link>
+                        <Nav.Link href="/search" className="nav-link">Search</Nav.Link>
                     </Nav>
 
                     <LoginNav loggedIn={loggedIn} loginUser={loginUser} loginId={loginId} />

@@ -1,14 +1,9 @@
-import React from 'react'
-import Container from 'react-bootstrap/Container'
-import CreateAccount from '../Login/CreateAccount'
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
+import React, { useState, useEffect } from 'react';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
-import Dropdown from 'react-bootstrap/Dropdown'
-import Buttom from 'react-bootstrap/Button'
-import Button from 'react-bootstrap/Button'
-
-import {useState, useEffect} from 'react'
+import CreateUser from '../../components/CreateUser/CreateUser';
+import { Button } from 'react-bootstrap';
 
 // interfacing representing incoming organization
 interface Organization {
@@ -21,6 +16,7 @@ interface Organization {
 }
 
 const CreateSponsor = ({}) => {
+    const [emailInUse, setEmailInUse] = useState(true);
 
     // creating an org data constant to receive the data from fetch
     const [orgsArray, setOrgsArray] = useState<Organization[]>([])
@@ -61,9 +57,19 @@ const CreateSponsor = ({}) => {
                 type: 1, //sponsor type
                 organizationId: organizationId
             })
-        }).catch(error => console.log(error));
-        console.log(response);
-    }
+        }).then(async response => {
+            if (response.status === 409) {
+                setEmailInUse(true)
+                return
+            }
+    
+            setEmailInUse(false)
+        }).catch(
+            error => {
+                setEmailInUse(true)
+                console.log(error)
+            }
+        )}
     
     // handling selection changed to 
     const handleOrgChange = async (event: React.ChangeEvent<HTMLInputElement>) => {     
@@ -92,38 +98,7 @@ const CreateSponsor = ({}) => {
     return (
         <div>
             <Form onSubmit={handleSubmit}>
-                <Row>
-                    <Col>
-                        <Form.Label>First Name</Form.Label>
-                        <Form.Control name="firstName" placeholder="First name" />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <Form.Label>Last Name</Form.Label>
-                        <Form.Control name="lastName" placeholder="Last name" />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <Form.Label>Email</Form.Label>
-                        <Form.Control type="email" name="email" placeholder='Email' />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <Form.Label>Password</Form.Label>
-                        <Form.Control type="password" name="password" placeholder='Password' />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <Form.Label>Confirm Password</Form.Label>
-                        <Form.Control type="password" name="confirmPassword" placeholder='Confirm Password' />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>                    
+                <CreateUser emailInUse={emailInUse}/>
                         <Form.Group>
                             <Form.Label>Associated Organization</Form.Label>
                             <Form.Control as='select' onChange={handleOrgChange}>
@@ -136,8 +111,6 @@ const CreateSponsor = ({}) => {
                             </Form.Control>
                             <Form.Text>Select an organization to associate this sponsor within.</Form.Text>
                         </Form.Group>
-                    </Col>
-                </Row>
                 <Row>
                     <Col className='text-center'>
                         <Button type='submit'>Submit</Button>

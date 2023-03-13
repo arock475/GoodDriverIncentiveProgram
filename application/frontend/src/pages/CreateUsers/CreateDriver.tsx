@@ -1,14 +1,9 @@
-import React, { SyntheticEvent } from 'react'
-import Container from 'react-bootstrap/Container'
-import CreateAccount from '../Login/CreateAccount'
+import react, { useState, useEffect } from 'react';
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
-import Form from 'react-bootstrap/Form';
-import Dropdown from 'react-bootstrap/Dropdown'
-import Buttom from 'react-bootstrap/Button'
+import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
-
-import { useState, useEffect } from "react"
+import CreateUser from '../../components/CreateUser/CreateUser'
 
 // interfacing representing incoming organization
 interface Organization {
@@ -21,7 +16,8 @@ interface Organization {
 }
 
 // Create Driver Page
-const CreateDriver = ({ }) => {
+const CreateDriver: React.FC = () => {
+    const [emailInUse, setEmailInUse] = useState(false);
 
     // creating an org data constant to receive the data from fetch
     const [orgsArray, setOrgsArray] = useState<Organization[]>([])
@@ -53,9 +49,11 @@ const CreateDriver = ({ }) => {
         const lastName = target.lastName.value;
         const email = target.email.value;
         const password = target.password.value;
+        const type = 0; // drive type
         const truckType = target.truckType.value;
         const licenceNumber = target.licenceNumber.value;
         const organizationId = selectedOrg.ID;
+
         // making call to api
         const response = await fetch('http://localhost:3333/users', {
             method: 'POST',
@@ -64,14 +62,24 @@ const CreateDriver = ({ }) => {
                 lastName: lastName,
                 email: email,
                 password: password,
-                type: 0, //driver type
+                type: type,
                 organizationId: organizationId,
                 truckType: truckType,
                 licenceNumber: licenceNumber
             })
-        }).catch(error => console.log(error));
-        console.log(response);
-    }
+        }).then(async response => {
+            if (response.status === 409) {
+                setEmailInUse(true)
+                return
+            }
+    
+            setEmailInUse(false)
+        }).catch(
+            error => {
+                setEmailInUse(true)
+                console.log(error)
+            }
+        )}
 
     // handling selection changed to 
     const handleOrgChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,64 +108,27 @@ const CreateDriver = ({ }) => {
     return (
         <div style={{ height: "100vh" }}>
             <Form onSubmit={handleSubmit}>
-                <Row>
-                    <Col>
-                        <Form.Label>First Name</Form.Label>
-                        <Form.Control name="firstName" placeholder="First name" />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <Form.Label>Last Name</Form.Label>
-                        <Form.Control name="lastName" placeholder="Last name" />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <Form.Label>Email</Form.Label>
-                        <Form.Control type="email" name="email" placeholder='Email' />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <Form.Label>Password</Form.Label>
-                        <Form.Control type="password" name="password" placeholder='Password' />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        <Form.Label>Confirm Password</Form.Label>
-                        <Form.Control type="password" name="confirmPassword" placeholder='Confirm Password' />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
+                <CreateUser emailInUse={emailInUse}/>
                         <Form.Group>
-                            <Form.Label>License Number</Form.Label>
-                            <Form.Control name="licenceNumber" placeholder="License Number" />
+                            <Form.Label>Truck Type</Form.Label>
+                            <Form.Control name="truckType" placeholder="Truck Type"/>
                         </Form.Group>
-                    </Col>
-                </Row>
-                <Row>
-                    <Form.Group>
-                        <Form.Label>Truck Type</Form.Label>
-                        <Form.Control name="truckType" placeholder="Truck Type" />
-                    </Form.Group>
-                </Row>
-                <Row>
-                    <Form.Group>
-                        <Form.Label>Associated Organization</Form.Label>
-                        <Form.Control as='select' onChange={handleOrgChange}>
-                            <option value="">Select an Organization</option>
-                            {
-                                orgsArray.map((org) => (
-                                    <option key={org.ID} value={org.ID}>{org.Name}</option>
-                                ))
-                            }
-                        </Form.Control>
-                        <Form.Text>Select an organization to associate this sponsor within.</Form.Text>
-                    </Form.Group>
-                </Row>
+                        <Form.Group>
+                            <Form.Label>Licence Plate</Form.Label>
+                            <Form.Control name="licenceNumber" placeholder="XXX XXXX"/>
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Associated Organization</Form.Label>
+                            <Form.Control as='select' onChange={handleOrgChange}>
+                                <option value="">Select an Organization</option>
+                                {
+                                    orgsArray.map((org) => (
+                                        <option key={org.ID} value={org.ID}>{org.Name}</option>
+                                    ))
+                                }
+                            </Form.Control>
+                            <Form.Text>Select an organization to associate this sponsor within.</Form.Text>
+                        </Form.Group>
                 <Row>
                     <Col className="text-center">
                         <Button variant="primary" type="submit" >Submit</Button>

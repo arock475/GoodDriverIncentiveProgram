@@ -182,6 +182,14 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var userExists User
+	// Check if email exists
+	result := s.DB.Where("email = ?", data.Email).First(&userExists)
+	if !(errors.Is(result.Error, gorm.ErrRecordNotFound) || result.Error != nil) {
+		http.Error(w, "User already exists", http.StatusConflict)
+		return
+	}
+
 	var user User
 	user.Email = *data.Email
 	user.PasswordHash = string(hashedBytes)
@@ -222,7 +230,9 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Organization Not Found\n", http.StatusNotFound)
 			return
 		}
-		driver.Organization = organization // POTENTIAL ERROR: might need to use result instead of the referenced value
+
+		// Appends this single organization to the list of organizations if there is one.
+		driver.Organizations = []*Organization{&organization}
 
 		// creating the sponsor in the database
 		createResult := s.DB.Create(&driver)
@@ -513,7 +523,7 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	_, token, _ := tokenAuth.Encode(map[string]interface{}{
 		"email":      data.Email,
 		"authorized": true,
-		"role":       0,
+		"role":       user.Type,
 	})
 
 	jwtCookie := http.Cookie{
@@ -538,7 +548,16 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Value: user.FirstName,
 	}
 
-	ID := strconv.Itoa(user.ID)
+	roleCookie := http.Cookie{
+		HttpOnly: false,
+		Expires:  time.Now().Add(time.Hour * 2),
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		// Uncomment for https
+		// Secure: True
+		Name:  "role",
+		Value: strconv.Itoa(user.Type),
+	}
 
 	userIdCookie := http.Cookie{
 		HttpOnly: false,
@@ -548,12 +567,13 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		// Uncomment for https
 		// Secure: True
 		Name:  "id",
-		Value: ID,
+		Value: strconv.Itoa(user.ID),
 	}
 
 	http.SetCookie(w, &jwtCookie)
 	http.SetCookie(w, &userCookie)
 	http.SetCookie(w, &userIdCookie)
+	http.SetCookie(w, &roleCookie)
 
 	w.WriteHeader(200)
 	w.Write([]byte(""))
