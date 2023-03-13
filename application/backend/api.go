@@ -118,7 +118,7 @@ func init() {
 func main() {
 	s := CreateNewServer()
 	s.MountHandlers()
-	s.ConnectDatabase("dev")
+	s.ConnectDatabase("devOrgDeletes")
 
 	fmt.Print("Running\n")
 
@@ -397,67 +397,74 @@ func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 	w.Write(returned)
 }
 
+// DEBUG: Doesn't delete anything except the sponsor user (I think)
+//
+//	What it's not:
+//		1. not returning out of the program without an print statement
 func (s *Server) DeleteOrg(w http.ResponseWriter, r *http.Request) {
 	var org Organization
 	if orgID := chi.URLParam(r, "orgID"); orgID != "" {
-		// finding org based on url
-		result := s.DB.First(&org, "id = ?", orgID)
+		// finding org based on url param
+		result := s.DB.Preload("Drivers.User").First(&org, "id = ?", orgID)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			fmt.Printf("Org Not Found\n")
 			http.Error(w, "Organization Not Found", http.StatusNotFound)
 			return
 		}
-		// deleting all sponsors associated with an org
-		for {
-			var sponsor Sponsor
-			resultS := s.DB.Where("organization_id = ?", org.ID).First(&sponsor)
-			if errors.Is(resultS.Error, gorm.ErrRecordNotFound) {
-				break
-			}
-			var userID = sponsor.UserID
-			s.DB.Delete(&sponsor)
-			// deleting base user
-			var user User
-			fmt.Printf("Attempting to delete user with user ID:%d\n", userID)
-			resultU := s.DB.Where("id = ?", userID).Delete(&user)
-			if errors.Is(resultU.Error, gorm.ErrRecordNotFound) {
-				http.Error(w, "User Delete Failed", http.StatusNotFound)
-				return
-			}
-		}
+	} else {
+		fmt.Printf("Org Not Found\n")
+		http.Error(w, "Org Not Found", http.StatusNotFound)
+		return
+	}
 
-		// deleting all drivers associated with an org
-		for {
-			var driver Driver
-			resultS := s.DB.Where("organization_id = ?", org.ID).First(&driver)
-			if errors.Is(resultS.Error, gorm.ErrRecordNotFound) {
-				break
-			}
-			var userID = driver.UserID
-			s.DB.Delete(&driver)
-			// deleting base user
-			var user User
-			fmt.Printf("Attempting to delete user with user ID:%d\n", userID)
-			resultU := s.DB.Where("id = ?", userID).Delete(&user)
-			if errors.Is(resultU.Error, gorm.ErrRecordNotFound) {
-				http.Error(w, "User Delete Failed", http.StatusNotFound)
-				return
-			}
-		}
+	// Getting the IDs of the users associated with the deleted sponsors
+	var userIds []uint
+	result := s.DB.Model(&Sponsor{}).Where("organization_id = ?", org.ID).Pluck("DISTINCT user_id", &userIds)
+	if result.Error != nil {
+		fmt.Printf("Failed To Delete Associated Users\n")
+		http.Error(w, "Failed To Delete Associated Users", http.StatusNotFound)
+		return
+	}
 
-		// 	deleting base org
-		resultO := s.DB.Delete(&org)
-		if errors.Is(resultO.Error, gorm.ErrRecordNotFound) {
-			http.Error(w, "Organization Delete Failed", http.StatusNotFound)
+	// Deleting all sponsors in the organization
+	result = s.DB.Where("organization_id = ?", org.ID).Delete(&Sponsor{})
+	if result != nil {
+		fmt.Printf("Failed To Delete Associated Sponsors\n")
+		http.Error(w, "Failed To Delete Associated Sponsors", http.StatusNotFound)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "No Associated Sponsors Found", http.StatusNotFound)
+		} else {
 			return
 		}
-
-		// Return user that was deleted
-		returned, _ := json.Marshal(org)
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(returned)
-	} else {
-		http.Error(w, "Org Not Found", http.StatusNotFound)
 	}
+
+	// Deleting all the users associated with the deleted sponsors
+	result = s.DB.Where("id IN (?)", userIds).Delete(&User{})
+	if result.Error != nil {
+		fmt.Printf("Failed To Clear Driver Associations\n")
+		http.Error(w, "Failed To Clear Driver Associations", http.StatusNotFound)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "No Driver Associations", http.StatusNotFound)
+		} else {
+			return
+		}
+	}
+
+	// Clearing all associations with drivers
+	s.DB.Model(&org).Association("Drivers").Clear()
+
+	// Finally, deleting the organization
+	result = s.DB.Where("id = ?", org.ID).Delete(&Organization{})
+	if result.Error != nil {
+		fmt.Printf("Failed To Delete Organization\n")
+		http.Error(w, "Failed To Delete Organization", http.StatusNotFound)
+		return
+	}
+
+	// Return the org that was deleted
+	returned, _ := json.Marshal(org)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(returned)
 }
 
 ///  Authentication

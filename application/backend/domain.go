@@ -85,11 +85,12 @@ type Admin struct {
 // but it can have more than that.
 type Organization struct {
 	ID        int
-	Name      string `gorm:"not null"`
-	Biography string `gorm:"default:''"`
-	Phone     string `gorm:"default:''"`
-	Email     string `gorm:"default:''"`
-	LogoURL   string `gorm:"not null"`
+	Name      string    `gorm:"not null"`
+	Biography string    `gorm:"default:''"`
+	Phone     string    `gorm:"default:''"`
+	Email     string    `gorm:"default:''"`
+	LogoURL   string    `gorm:"not null"`
+	Drivers   []*Driver `gorm:"many2many:driver_organizations;"`
 }
 
 // Points has a foreign key for both a driver and sponsor.
