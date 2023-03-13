@@ -61,7 +61,7 @@ const PointsTable = ({}) => {
         }
         // making call to api
         const fetchPoints = async () => {
-            const response = await fetch(`http://localhost:3333/points/${cookies.id}/totals`); // DEBUG: Temp code
+            const response = await fetch(`http://localhost:3333/points/${cookies.id}/totals`);
             const data = await response.json();
             setPoints(data);
         };
