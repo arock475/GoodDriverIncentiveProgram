@@ -405,7 +405,7 @@ func (s *Server) DeleteOrg(w http.ResponseWriter, r *http.Request) {
 	var org Organization
 	if orgID := chi.URLParam(r, "orgID"); orgID != "" {
 		// finding org based on url param
-		result := s.DB.Preload("Drivers.User").First(&org, "id = ?", orgID)
+		result := s.DB.First(&org, "id = ?", orgID)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			fmt.Printf("Org Not Found\n")
 			http.Error(w, "Organization Not Found", http.StatusNotFound)
@@ -418,32 +418,33 @@ func (s *Server) DeleteOrg(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Getting the IDs of the users associated with the deleted sponsors
-	var userIds []uint
-	result := s.DB.Model(&Sponsor{}).Where("organization_id = ?", org.ID).Pluck("DISTINCT user_id", &userIds)
-	if result.Error != nil {
+	var userIds []int64
+	resultUserIds := s.DB.Model(&Sponsor{}).Where("organization_id = ?", org.ID).Pluck("user_id", &userIds)
+	if resultUserIds.Error != nil {
 		fmt.Printf("Failed To Delete Associated Users\n")
 		http.Error(w, "Failed To Delete Associated Users", http.StatusNotFound)
 		return
 	}
 
 	// Deleting all sponsors in the organization
-	result = s.DB.Where("organization_id = ?", org.ID).Delete(&Sponsor{})
-	if result != nil {
+	resultSponsors := s.DB.Where("organization_id = ?", org.ID).Delete(&Sponsor{})
+	if resultSponsors != nil {
 		fmt.Printf("Failed To Delete Associated Sponsors\n")
 		http.Error(w, "Failed To Delete Associated Sponsors", http.StatusNotFound)
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		if errors.Is(resultSponsors.Error, gorm.ErrRecordNotFound) {
 			http.Error(w, "No Associated Sponsors Found", http.StatusNotFound)
 		} else {
+			fmt.Printf("%s\n", resultSponsors.Error.Error())
 			return
 		}
 	}
 
 	// Deleting all the users associated with the deleted sponsors
-	result = s.DB.Where("id IN (?)", userIds).Delete(&User{})
-	if result.Error != nil {
+	resultUsers := s.DB.Where("id IN ?", userIds).Delete(&User{})
+	if resultUsers.Error != nil {
 		fmt.Printf("Failed To Clear Driver Associations\n")
 		http.Error(w, "Failed To Clear Driver Associations", http.StatusNotFound)
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		if errors.Is(resultUsers.Error, gorm.ErrRecordNotFound) {
 			http.Error(w, "No Driver Associations", http.StatusNotFound)
 		} else {
 			return
@@ -454,8 +455,8 @@ func (s *Server) DeleteOrg(w http.ResponseWriter, r *http.Request) {
 	s.DB.Model(&org).Association("Drivers").Clear()
 
 	// Finally, deleting the organization
-	result = s.DB.Where("id = ?", org.ID).Delete(&Organization{})
-	if result.Error != nil {
+	resultOrg := s.DB.Where("id = ?", org.ID).Delete(&Organization{})
+	if resultOrg.Error != nil {
 		fmt.Printf("Failed To Delete Organization\n")
 		http.Error(w, "Failed To Delete Organization", http.StatusNotFound)
 		return
