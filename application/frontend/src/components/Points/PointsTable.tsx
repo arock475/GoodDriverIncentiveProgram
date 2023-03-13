@@ -9,6 +9,17 @@ export type jwtClaim = {
     role: number
 }
 
+interface User {
+    ID: number,
+    Email: string,
+    FirstName: string,
+    LastName: string,
+    Phone: string,
+    Bio: string,
+    ImageURL: string,
+    Type: string
+}
+
 interface Organization {
     ID: number
     Name: string
@@ -21,9 +32,11 @@ interface Organization {
 interface Driver {
     ID: number,
     UserID: number,
+    User: User,
     Status: number,
     LicencePlate: string,
     TruckType: string,
+    // Organizations: Organizations[]
 }
 
 interface PointsTotals {
@@ -82,8 +95,29 @@ const PointsTable = ({}) => {
                 </Table>
             );
     case 1: // sponsor
-        // implement later
-        break;
+                
+        return (
+            <Table striped bordered hover>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Driver name</th>
+                    <th>Points</th>
+                </tr>
+                </thead>
+                <tbody>
+                {
+                    points.map((pointsTotal) => (
+                        <tr key={pointsTotal.Driver.ID}>
+                            <td>{`${pointsTotal.Driver.User.FirstName} ${pointsTotal.Driver.User.LastName}`}</td>
+                            <td>{pointsTotal.Organization.Name}</td>
+                            <td>{pointsTotal.Total}</td>
+                        </tr>
+                    ))
+                }
+                </tbody>
+            </Table>
+        );
     case 2: // admin
         // implement later
         break;
