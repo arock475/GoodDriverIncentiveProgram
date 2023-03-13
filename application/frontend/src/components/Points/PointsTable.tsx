@@ -60,7 +60,6 @@ const PointsTable = ({}) => {
             setUserRole(claim.role);
         }
         // making call to api
-        // console.log(`Component/PointsTable: TESTING: cookies.id = ${cookies.id}`);
         const fetchPoints = async () => {
             const response = await fetch(`http://localhost:3333/points/${cookies.id}/totals`); // DEBUG: Temp code
             const data = await response.json();
@@ -121,7 +120,7 @@ const PointsTable = ({}) => {
         } catch (error) {
             return (
                 <div>
-                    Component PointsTable: Error loading table
+                    Component PointsTable: Table is Null.
                 </div>
             );
         }
