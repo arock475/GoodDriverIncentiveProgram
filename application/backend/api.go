@@ -421,7 +421,6 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "User Not Found", http.StatusNotFound)
 		return
 	}
-	fmt.Printf("User:\n\tName:%s %s\n\tUserID:%d\n", user.FirstName, user.LastName, user.ID)
 	// returning info based on user role
 	switch user.Type {
 	case 0: // if driver
@@ -433,10 +432,8 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Driver Not Found", http.StatusNotFound)
 			return
 		}
-		fmt.Printf("Driver:\n\tName:%s %s\n\tDriverID:%d\n\tUserID:%d\n", driver.User.FirstName, driver.User.LastName, driver.ID, driver.User.ID)
 		// getting all the points based on the drivers orgs
 		var pointsTotals []GetPointsTotalsPayload
-		fmt.Printf("Driver has %d associated organizations\n", len(driver.Organizations))
 		for _, organization := range driver.Organizations {
 			// getting points totals
 			var pointsTotal GetPointsTotalsPayload
@@ -452,16 +449,12 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// writing return
-		for _, pointsTotal := range pointsTotals {
-			fmt.Printf("Driver:{%d} Organization:{%d}: TotalPoints:{%d}\n", pointsTotal.Driver.ID, pointsTotal.Organization.ID, pointsTotal.Total)
-		}
 		w.Header().Set("Content-Type", "application/json")
 		returned, _ := json.Marshal(pointsTotals)
 		w.Write(returned)
 
 		// TESTING: Untested areas:
-		//		1. Points total > 0
-		//		2. Drivers associated orgs > 1
+		//		1. Drivers associated orgs > 1
 
 	case 1: // sponsor
 		// implement later
