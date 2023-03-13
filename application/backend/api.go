@@ -428,7 +428,7 @@ func (s *Server) DeleteOrg(w http.ResponseWriter, r *http.Request) {
 
 	// Deleting all sponsors in the organization
 	resultSponsors := s.DB.Where("organization_id = ?", org.ID).Delete(&Sponsor{})
-	if resultSponsors != nil {
+	if resultSponsors.Error != nil {
 		fmt.Printf("Failed To Delete Associated Sponsors\n")
 		http.Error(w, "Failed To Delete Associated Sponsors", http.StatusNotFound)
 		if errors.Is(resultSponsors.Error, gorm.ErrRecordNotFound) {
