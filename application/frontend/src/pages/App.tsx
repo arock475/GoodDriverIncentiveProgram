@@ -23,10 +23,11 @@ import SponsorDashboard from './Dashboard/SponsorDashboard';
 import AdminDashboard from './Dashboard/AdminDashboard';
 
 import Logout from '../components/Login/Logout';
+import DriverApplications from './DriverApplications/DriverApplications';
 import Points from './Points/Points'
 import ResetPassword from './Profile/ResetPassword';
 import PointManagment from './Points/PointManagment';
-import CreateCategory from './Points/CreateCategory';import AddPoints from './Points/AddPoints';
+import CreateCategory from './Points/CreateCategory'; import AddPoints from './Points/AddPoints';
 import ShopCatalog from './Shop/ShopCatalog'
 
 const App = () => {
@@ -104,13 +105,18 @@ const App = () => {
           <Route path="create-sponsor" element={<CreateSponsor />} />
           <Route path="create-admin" element={<CreateAdmin />} />
         </Route>
-        <Route path="points" element={<Points loggedIn={loggedIn} loginRole={loggedInRole}/>} />
+        <Route path="points" element={<Points loggedIn={loggedIn} loginRole={loggedInRole} />} />
 
         {/* Point Pages */}
         <Route path="points-change">
           <Route index element={<PointManagment />} />
           <Route path="create" element={<CreateCategory />} />
           <Route path="add" element={<AddPoints />} />
+        </Route>
+
+        {/* Application Links */}
+        <Route path="applications">
+          <Route index element={<DriverApplications />} />
         </Route>
 
         {/* Footer Links */}
@@ -120,27 +126,27 @@ const App = () => {
         <Route path="*" element={<></>} />
 
         {/* Logs Link */}
-        <Route path="logs" element={<></>}/>
+        <Route path="logs" element={<></>} />
 
         {/* Reports Link */}
-        <Route path="reports" element={<></>}/>
+        <Route path="reports" element={<></>} />
 
         {/* Notifications Link */}
-        <Route path="notifications" element={<></>}/>
+        <Route path="notifications" element={<></>} />
 
         {/* Orders Link */}
-        <Route path="orders" element={<></>}/>
+        <Route path="orders" element={<></>} />
 
         {/* Points History Link */}
-        <Route path="points-change" element={<></>}/>
-        
+        <Route path="points-change" element={<></>} />
+
         {/* Applications Links */}
         <Route path="applications">
-          <Route path="driver" element={<></>}/>
-          <Route path="sponsor" element={<></>}/>
-          <Route path="admin" element={<></>}/>
+          <Route path="driver" element={<></>} />
+          <Route path="sponsor" element={<></>} />
+          <Route path="admin" element={<></>} />
         </Route>
-        
+
       </Route>
     </Routes>
   );

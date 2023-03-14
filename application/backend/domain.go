@@ -43,6 +43,12 @@ type LoginUserPayload struct {
 	PlaintextPassword *string `json:"password"`
 }
 
+type DriverApplicationPayload struct {
+	OrganizationID   *int    `json:"OrganizationID"`
+	OrganizationName *string `json:"OrganizationName"`
+	Status           *string `json:"Status"`
+}
+
 // Type is a discriminator for different subtypes: driver, sponsor, admin
 // 0 -> Driver, 1 -> Sponsor, 2 -> Admin
 // User has a custom Marshaler which omits the password hash.
@@ -127,4 +133,10 @@ type CreatePointPayload struct {
 	CreatedAt      *string `json:"createdAt"`
 	Name           *string `json:"name"`
 	Catalog        *int    `json:"catalog"`
+}
+
+type DriverApplication struct {
+	DriverUserID   int `gorm:"primaryKey;not null" json:"-"`
+	OrganizationID int `gorm:"primaryKey;not null"`
+	Status         string
 }

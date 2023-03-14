@@ -42,7 +42,6 @@ const Header: React.FC<HeaderProps> = ({
                             <NavDropdown.Item href="/admin/create-org">Organization</NavDropdown.Item>
                         </NavDropdown>
                         <Nav.Link href="/driver/orders" className="nav-link">Orders</Nav.Link>
-                        <Nav.Link href="/driver/applications" className="nav-link">Applications</Nav.Link>
                         <Nav.Link href="/driver/organizations" className="nav-link">Organizations</Nav.Link>
                         <Nav.Link href="/driver/notifications" className="nav-link">Notifications</Nav.Link>
                         <Nav.Link href="/search" className="nav-link">Search</Nav.Link>

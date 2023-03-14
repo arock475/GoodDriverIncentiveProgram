@@ -49,6 +49,7 @@ func (s *Server) ConnectDatabase(schemaName string) {
 	db.AutoMigrate(&Admin{})
 	db.AutoMigrate(&Organization{})
 	db.AutoMigrate(&Points{})
+	db.AutoMigrate(&DriverApplication{})
 
 	s.DB = db
 }
@@ -76,6 +77,11 @@ func (s *Server) MountHandlers() {
 
 		r.Route("/auth", func(r chi.Router) {
 			r.Get("/is-auth", Authenticate)
+		})
+
+		r.Route("/applications", func(r chi.Router) {
+			r.Get("/driver", s.GetDriverApplications)
+			r.Post("/driver", s.DriverApplyToOrg)
 		})
 	})
 
@@ -242,6 +248,10 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		driver.LicensePlate = *data.LicenceNumber
 		driver.TruckType = *data.TruckType
 
+		// default for now
+		// TODO: Remove this? make 1 default? make org foreign key nullable (this will break things)?
+		driver.OrganizationID = 1
+
 		// finding organization based on organization id
 		var organization Organization
 		result := s.DB.First(&organization, *data.OrganizationId)
@@ -251,11 +261,6 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Appends this single organization to the list of organizations if there is one.
-		// Also make this organization the primary one until specified otherwise
-		driver.OrganizationID = organization.ID
-		driver.Organizations = []*Organization{&organization}
-
 		// creating the sponsor in the database
 		createResult := s.DB.Create(&driver)
 		// error checking sponsor creation
@@ -264,6 +269,22 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		user.ID = driver.UserID
+
+		// Create application to organization
+		driverApp := DriverApplication{
+			DriverUserID:   driver.UserID,
+			OrganizationID: organization.ID,
+			Status:         "Pending",
+		}
+
+		// Add application to database
+		appResult := s.DB.Create(&driverApp)
+		// error checking creation
+		if appResult.Error != nil {
+			http.Error(w, appResult.Error.Error(), http.StatusBadRequest)
+			return
+		}
+
 	// sponsor case
 	case 1:
 		// error checking sponsor specific fields
@@ -420,6 +441,115 @@ func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 	w.Write(returned)
 }
 
+// Driver Applications
+func (s *Server) GetDriverApplications(w http.ResponseWriter, r *http.Request) {
+	var orgs []Organization
+	var driver Driver
+
+	// Find Driver
+	driverID := r.URL.Query().Get("driverID")
+	if driverID != "" {
+		result := s.DB.Find(&driver, "user_id = ?", driverID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Driver Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Driver Not Found", http.StatusNotFound)
+		return
+	}
+
+	s.DB.Find(&orgs)
+
+	var appList []DriverApplicationPayload
+	for i := 0; i < len(orgs); i++ {
+		var app DriverApplication
+		result := s.DB.Where("driver_user_id = ? AND organization_id = ?", driver.UserID, orgs[i].ID).First(&app)
+
+		var status string
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			status = "Apply Now"
+		} else {
+			status = app.Status
+		}
+
+		appList = append(appList, DriverApplicationPayload{
+			OrganizationID:   &orgs[i].ID,
+			OrganizationName: &orgs[i].Name,
+			Status:           &status,
+		})
+	}
+
+	// ? writing the response
+	returned, _ := json.Marshal(appList)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(returned)
+}
+
+func (s *Server) DriverApplyToOrg(w http.ResponseWriter, r *http.Request) {
+	var driver Driver
+	var org Organization
+
+	// Find Driver
+	driverID := r.URL.Query().Get("driverID")
+	if driverID != "" {
+		result := s.DB.Find(&driver, "user_id = ?", driverID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Driver Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Driver Not Found", http.StatusNotFound)
+		return
+	}
+
+	// Find organzation
+	orgID := r.URL.Query().Get("organizationID")
+	if orgID != "" {
+		result := s.DB.Find(&org, "id = ?", orgID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Organization Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Organization Not Found", http.StatusNotFound)
+		return
+	}
+
+	// Check if the driver already belongs to the organzation
+	var count int64
+	s.DB.Preload("drivers").Where("organization_id = ?", orgID).Count(&count)
+	if count < 0 {
+		http.Error(w, "Driver already belongs to organization", http.StatusConflict)
+		return
+	}
+
+	// Check if the driver has an existing application
+	var driverApplications []DriverApplication
+	s.DB.Find(&driverApplications, "driver_user_id = ? AND organization_id = ?", driverID, orgID).Count(&count)
+	if count > 0 {
+		http.Error(w, "Driver has existing application to organization", http.StatusConflict)
+		return
+	}
+
+	driverApp := DriverApplication{
+		DriverUserID:   driver.UserID,
+		OrganizationID: org.ID,
+		Status:         "Pending",
+	}
+
+	// Add application to database
+	createResult := s.DB.Create(&driverApp)
+	// error checking creation
+	if createResult.Error != nil {
+		http.Error(w, createResult.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(200)
+	w.Write([]byte("Application Created"))
+}
+
 // / Points
 func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 	// initializing user
@@ -544,6 +674,7 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		"email":      data.Email,
 		"authorized": true,
 		"role":       user.Type,
+		"id":         user.ID,
 	})
 
 	jwtCookie := http.Cookie{
