@@ -1,7 +1,5 @@
 package main
 
-import "time"
-
 type UserProfilePayload struct {
 	FirstName *string `json:"firstName"`
 	LastName  *string `json:"lastName"`
@@ -45,6 +43,12 @@ type LoginUserPayload struct {
 	PlaintextPassword *string `json:"password"`
 }
 
+type DriverApplicationPayload struct {
+	OrganizationID   *int    `json:"OrganizationID"`
+	OrganizationName *string `json:"OrganizationName"`
+	Status           *string `json:"Status"`
+}
+
 // Type is a discriminator for different subtypes: driver, sponsor, admin
 // 0 -> Driver, 1 -> Sponsor, 2 -> Admin
 // User has a custom Marshaler which omits the password hash.
@@ -62,14 +66,17 @@ type User struct {
 }
 
 // A driver can belong to multiple organizations.
+// They can have one primary organization at a time; in OrganizationID
 type Driver struct {
-	ID            int
-	UserID        int `gorm:"uniqueIndex;not null"`
-	User          User
-	Status        int `gorm:"not null;default:0"`
-	LicensePlate  string
-	TruckType     string
-	Organizations []*Organization `gorm:"many2many:driver_organizations;"`
+	ID             int
+	UserID         int `gorm:"uniqueIndex;not null"`
+	User           User
+	Status         int `gorm:"not null;default:0"`
+	LicensePlate   string
+	TruckType      string
+	OrganizationID int
+	Organization   Organization
+	Organizations  []*Organization `gorm:"many2many:driver_organizations;"`
 }
 
 // Belongs to an organization
@@ -91,6 +98,7 @@ type Admin struct {
 // An organization will always have atleast one sponsor account belonging to it
 // but it can have more than that.
 type Organization struct {
+<<<<<<< HEAD
 	ID        int
 	Name      string    `gorm:"not null"`
 	Biography string    `gorm:"default:''"`
@@ -98,6 +106,15 @@ type Organization struct {
 	Email     string    `gorm:"default:''"`
 	LogoURL   string    `gorm:"not null"`
 	Drivers   []*Driver `gorm:"many2many:driver_organizations;"`
+=======
+	ID          int
+	Name        string  `gorm:"not null"`
+	Biography   string  `gorm:"default:''"`
+	Phone       string  `gorm:"default:''"`
+	Email       string  `gorm:"default:''"`
+	PointsRatio float64 `gorm:"default:1.0"`
+	LogoURL     string  `gorm:"not null"`
+>>>>>>> main
 }
 
 // Points has a foreign key for both a driver and sponsor.
@@ -111,7 +128,31 @@ type Points struct {
 	Organization   Organization
 	NumChange      int
 	Reason         string
+<<<<<<< HEAD
 	CreatedAt      time.Time
 	Name           string
 	Catalog        int
+=======
+	CreatedAt      string
+	Name           string
+	Catalog        int
+}
+
+// used to receive data from client-side
+type CreatePointPayload struct {
+	ID             *int    `json:"id"`
+	DriverID       *int    `json:"driverID"`
+	OrganizationID *int    `json:"organizationID"`
+	NumChange      *int    `json:"numChange"`
+	Reason         *string `json:"reason"`
+	CreatedAt      *string `json:"createdAt"`
+	Name           *string `json:"name"`
+	Catalog        *int    `json:"catalog"`
+}
+
+type DriverApplication struct {
+	DriverUserID   int `gorm:"primaryKey;not null" json:"-"`
+	OrganizationID int `gorm:"primaryKey;not null"`
+	Status         string
+>>>>>>> main
 }

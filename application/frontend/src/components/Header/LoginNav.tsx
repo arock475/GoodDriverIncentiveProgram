@@ -12,13 +12,14 @@ export type LoginNav = {
 const LoginNav: React.FC<LoginNav> = ({
     loggedIn=false,
     loginUser="",
-    loginId=0
+    loginId=1
 }) => {
     if(loggedIn){
         return (
         <>
             <NavDropdown align="end" title={loginUser} id="profile-navbar-dropdown">
                 <NavDropdown.Item href={`/user/${loginId}`}>Profile</NavDropdown.Item>
+                <NavDropdown.Item href={`/applications`}>Applications</NavDropdown.Item>
                 <NavDropdown.Item href="/logout">Logout</NavDropdown.Item>
             </NavDropdown>
             <Nav>

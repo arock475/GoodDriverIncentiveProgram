@@ -49,6 +49,7 @@ func (s *Server) ConnectDatabase(schemaName string) {
 	db.AutoMigrate(&Admin{})
 	db.AutoMigrate(&Organization{})
 	db.AutoMigrate(&Points{})
+	db.AutoMigrate(&DriverApplication{})
 
 	s.DB = db
 }
@@ -56,6 +57,7 @@ func (s *Server) ConnectDatabase(schemaName string) {
 func (s *Server) MountHandlers() {
 	r := s.Router
 	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
@@ -76,6 +78,11 @@ func (s *Server) MountHandlers() {
 		r.Route("/auth", func(r chi.Router) {
 			r.Get("/is-auth", Authenticate)
 		})
+
+		r.Route("/applications", func(r chi.Router) {
+			r.Get("/driver", s.GetDriverApplications)
+			r.Post("/driver", s.DriverApplyToOrg)
+		})
 	})
 
 	// Public routes
@@ -94,17 +101,14 @@ func (s *Server) MountHandlers() {
 
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Get("/", s.GetUser)
+				r.Get("/catalog", s.GetUserCatalogCtx)
 				r.Put("/profile", s.UpdateProfile)
 			})
 		})
 
-		// points route
-		r.Route("/points", func(r chi.Router) {
-			// per user point info
-			r.Route("/{userID}", func(r chi.Router) {
-				// getting points based on user
-				r.Get("/totals", s.GetPointsTotal)
-			})
+		r.Route("/catalog", func(r chi.Router) {
+			r.Post("/", s.GetCatalog)
+
 		})
 
 		r.Route("/orgs", func(r chi.Router) {
@@ -113,6 +117,20 @@ func (s *Server) MountHandlers() {
 
 			r.Route("/{orgID}", func(r chi.Router) {
 				r.Get("/", s.GetOrg)
+			})
+		})
+
+		r.Route("/drivers", func(r chi.Router) {
+			r.Get("/", s.ListDrivers)
+		})
+
+		r.Route("/points", func(r chi.Router) {
+			r.Get("/", s.ListPoints)
+			r.Post("/create", s.CreatePoint)
+			r.Put("/", s.UpdatePoints)
+
+			r.Route("/{userID}", func(r chi.Router) {
+				r.Get("/totals", s.GetPointsTotal)
 			})
 		})
 	})
@@ -127,7 +145,7 @@ func init() {
 func main() {
 	s := CreateNewServer()
 	s.MountHandlers()
-	s.ConnectDatabase("dev")
+	s.ConnectDatabase("dev4")
 
 	fmt.Print("Running\n")
 
@@ -231,6 +249,10 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		driver.LicensePlate = *data.LicenceNumber
 		driver.TruckType = *data.TruckType
 
+		// default for now
+		// TODO: Remove this? make 1 default? make org foreign key nullable (this will break things)?
+		driver.OrganizationID = 1
+
 		// finding organization based on organization id
 		var organization Organization
 		result := s.DB.First(&organization, *data.OrganizationId)
@@ -240,9 +262,6 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Appends this single organization to the list of organizations if there is one.
-		driver.Organizations = []*Organization{&organization}
-
 		// creating the sponsor in the database
 		createResult := s.DB.Create(&driver)
 		// error checking sponsor creation
@@ -251,6 +270,22 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		user.ID = driver.UserID
+
+		// Create application to organization
+		driverApp := DriverApplication{
+			DriverUserID:   driver.UserID,
+			OrganizationID: organization.ID,
+			Status:         "Pending",
+		}
+
+		// Add application to database
+		appResult := s.DB.Create(&driverApp)
+		// error checking creation
+		if appResult.Error != nil {
+			http.Error(w, appResult.Error.Error(), http.StatusBadRequest)
+			return
+		}
+
 	// sponsor case
 	case 1:
 		// error checking sponsor specific fields
@@ -407,6 +442,115 @@ func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 	w.Write(returned)
 }
 
+// Driver Applications
+func (s *Server) GetDriverApplications(w http.ResponseWriter, r *http.Request) {
+	var orgs []Organization
+	var driver Driver
+
+	// Find Driver
+	driverID := r.URL.Query().Get("driverID")
+	if driverID != "" {
+		result := s.DB.Find(&driver, "user_id = ?", driverID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Driver Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Driver Not Found", http.StatusNotFound)
+		return
+	}
+
+	s.DB.Find(&orgs)
+
+	var appList []DriverApplicationPayload
+	for i := 0; i < len(orgs); i++ {
+		var app DriverApplication
+		result := s.DB.Where("driver_user_id = ? AND organization_id = ?", driver.UserID, orgs[i].ID).First(&app)
+
+		var status string
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			status = "Apply Now"
+		} else {
+			status = app.Status
+		}
+
+		appList = append(appList, DriverApplicationPayload{
+			OrganizationID:   &orgs[i].ID,
+			OrganizationName: &orgs[i].Name,
+			Status:           &status,
+		})
+	}
+
+	// ? writing the response
+	returned, _ := json.Marshal(appList)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(returned)
+}
+
+func (s *Server) DriverApplyToOrg(w http.ResponseWriter, r *http.Request) {
+	var driver Driver
+	var org Organization
+
+	// Find Driver
+	driverID := r.URL.Query().Get("driverID")
+	if driverID != "" {
+		result := s.DB.Find(&driver, "user_id = ?", driverID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Driver Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Driver Not Found", http.StatusNotFound)
+		return
+	}
+
+	// Find organzation
+	orgID := r.URL.Query().Get("organizationID")
+	if orgID != "" {
+		result := s.DB.Find(&org, "id = ?", orgID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Organization Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Organization Not Found", http.StatusNotFound)
+		return
+	}
+
+	// Check if the driver already belongs to the organzation
+	var count int64
+	s.DB.Preload("drivers").Where("organization_id = ?", orgID).Count(&count)
+	if count < 0 {
+		http.Error(w, "Driver already belongs to organization", http.StatusConflict)
+		return
+	}
+
+	// Check if the driver has an existing application
+	var driverApplications []DriverApplication
+	s.DB.Find(&driverApplications, "driver_user_id = ? AND organization_id = ?", driverID, orgID).Count(&count)
+	if count > 0 {
+		http.Error(w, "Driver has existing application to organization", http.StatusConflict)
+		return
+	}
+
+	driverApp := DriverApplication{
+		DriverUserID:   driver.UserID,
+		OrganizationID: org.ID,
+		Status:         "Pending",
+	}
+
+	// Add application to database
+	createResult := s.DB.Create(&driverApp)
+	// error checking creation
+	if createResult.Error != nil {
+		http.Error(w, createResult.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(200)
+	w.Write([]byte("Application Created"))
+}
+
 // / Points
 func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 	// initializing user
@@ -423,7 +567,8 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 	}
 	// returning info based on user role
 	switch user.Type {
-	case 0: // if driverf
+	case 0: // if driver
+		fmt.Print("Getting Driver Point info!\n")
 		// getting the driver
 		var driver Driver
 		resultDriver := s.DB.Model(&Driver{}).Preload(clause.Associations).First(&driver, "user_id = ?", user.ID)
@@ -471,7 +616,7 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 			var pointsTotal GetPointsTotalsPayload
 			pointsTotal.Organization = sponsor.Organization
 			pointsTotal.Driver = *driver
-			result := s.DB.Model(&Points{}).Select("sum(num_change)").Where("driver_id = ? and organization_id = ?", driver.ID, sponsor.OrganizationID).Scan(&pointsTotal.Total)
+			result := s.DB.Model(&Points{}).Select("sum(num_change)").Where("driver_id = ? and organization_id = ?", driver.ID, sponsor.OrganizationID).Scan(&pointsTotal.Total)main
 			if result.Error == nil {
 				pointsTotals = append(pointsTotals, pointsTotal)
 			} else {
@@ -485,6 +630,9 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 		returned, _ := json.Marshal(pointsTotals)
 		w.Write(returned)
 
+
+		// TESTING: Untested areas:
+		//		1. Drivers associated orgs > 1
 	case 2: // admin
 		// implement later
 		fmt.Print("Getting Admin Point info!\n")
@@ -557,6 +705,7 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		"email":      data.Email,
 		"authorized": true,
 		"role":       user.Type,
+		"id":         user.ID,
 	})
 
 	jwtCookie := http.Cookie{
@@ -665,4 +814,124 @@ func (u User) MarshalJSON() ([]byte, error) {
 	x := user(u)
 	x.PasswordHash = ""
 	return json.Marshal(x)
+}
+
+func (s *Server) ListPoints(w http.ResponseWriter, r *http.Request) {
+	var points []Points
+
+	result := s.DB.Find(&points)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	returned, _ := json.Marshal(points)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(returned)
+}
+
+func (s *Server) CreatePoint(w http.ResponseWriter, r *http.Request) {
+	// Recieing data fomr client-side json and errochecking it
+	data := CreatePointPayload{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if data.DriverID == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"DriverID\"", http.StatusBadRequest)
+		return
+	}
+	if data.OrganizationID == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"OrganizationID\"", http.StatusBadRequest)
+		return
+	}
+	if data.NumChange == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"NumChange\"", http.StatusBadRequest)
+		return
+	}
+	if data.Reason == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"Reason\"", http.StatusBadRequest)
+		return
+	}
+	if data.Name == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"Name\"", http.StatusBadRequest)
+		return
+	}
+	if data.Catalog == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"Catalog\"", http.StatusBadRequest)
+		return
+	}
+
+	// creating org variable
+	var point Points
+	point.DriverID = *data.DriverID
+	point.OrganizationID = *data.OrganizationID
+	point.NumChange = *data.NumChange
+	point.Reason = *data.Reason
+	point.Name = *data.Name
+	point.Catalog = *data.Catalog
+
+	// injecting org into database
+	result := s.DB.Create(&point)
+	// error checking injection
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	returned, _ := json.Marshal(point)
+	w.Write(returned)
+}
+
+func (s *Server) UpdatePoints(w http.ResponseWriter, r *http.Request) {
+	data := CreatePointPayload{}
+
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	updates := make(map[string]interface{})
+
+	if data.DriverID != nil {
+		updates["driver_id"] = *data.DriverID
+	}
+	if data.OrganizationID != nil {
+		updates["organization_id"] = *data.OrganizationID
+	}
+	if data.NumChange != nil {
+		updates["num_change"] = *data.NumChange
+	}
+	if data.Reason != nil {
+		updates["reason"] = *data.Reason
+	}
+	if data.Name != nil {
+		updates["name"] = *data.Name
+	}
+	if data.Catalog != nil {
+		updates["catalog"] = *data.Catalog
+	}
+
+	result := s.DB.Model(&Points{}).Where("id = ?", data.ID).Updates(updates)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		http.Error(w, "Point Not Found", http.StatusNotFound)
+		return
+	}
+
+}
+
+func (s *Server) ListDrivers(w http.ResponseWriter, r *http.Request) {
+	var drivers []Driver
+
+	result := s.DB.Find(&drivers)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	returned, _ := json.Marshal(drivers)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(returned)
 }
