@@ -145,7 +145,7 @@ func init() {
 func main() {
 	s := CreateNewServer()
 	s.MountHandlers()
-	s.ConnectDatabase("dev4")
+	s.ConnectDatabase("dev")
 
 	fmt.Print("Running\n")
 
@@ -584,11 +584,12 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 			pointsTotal.Organization = *organization
 			pointsTotal.Driver = driver
 			result := s.DB.Model(&Points{}).Select("sum(num_change)").Where("driver_id = ? and organization_id = ?", driver.ID, organization.ID).Scan(&pointsTotal.Total)
-			if result.Error != nil {
-				http.Error(w, "Error calculating driver's points.", http.StatusInternalServerError)
-				return
+			if result.Error == nil {
+				pointsTotals = append(pointsTotals, pointsTotal)
+			} else {
+				pointsTotal.Total = 0
+				pointsTotals = append(pointsTotals, pointsTotal)
 			}
-			pointsTotals = append(pointsTotals, pointsTotal)
 
 		}
 
@@ -616,7 +617,7 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 			var pointsTotal GetPointsTotalsPayload
 			pointsTotal.Organization = sponsor.Organization
 			pointsTotal.Driver = *driver
-			result := s.DB.Model(&Points{}).Select("sum(num_change)").Where("driver_id = ? and organization_id = ?", driver.ID, sponsor.OrganizationID).Scan(&pointsTotal.Total)main
+			result := s.DB.Model(&Points{}).Select("sum(num_change)").Where("driver_id = ? and organization_id = ?", driver.ID, sponsor.OrganizationID).Scan(&pointsTotal.Total)
 			if result.Error == nil {
 				pointsTotals = append(pointsTotals, pointsTotal)
 			} else {

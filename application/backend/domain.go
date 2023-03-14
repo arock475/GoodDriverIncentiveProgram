@@ -98,23 +98,14 @@ type Admin struct {
 // An organization will always have atleast one sponsor account belonging to it
 // but it can have more than that.
 type Organization struct {
-<<<<<<< HEAD
 	ID        int
 	Name      string    `gorm:"not null"`
 	Biography string    `gorm:"default:''"`
 	Phone     string    `gorm:"default:''"`
 	Email     string    `gorm:"default:''"`
+	PointsRatio float64 `gorm:"default:1.0"`
 	LogoURL   string    `gorm:"not null"`
 	Drivers   []*Driver `gorm:"many2many:driver_organizations;"`
-=======
-	ID          int
-	Name        string  `gorm:"not null"`
-	Biography   string  `gorm:"default:''"`
-	Phone       string  `gorm:"default:''"`
-	Email       string  `gorm:"default:''"`
-	PointsRatio float64 `gorm:"default:1.0"`
-	LogoURL     string  `gorm:"not null"`
->>>>>>> main
 }
 
 // Points has a foreign key for both a driver and sponsor.
@@ -128,11 +119,6 @@ type Points struct {
 	Organization   Organization
 	NumChange      int
 	Reason         string
-<<<<<<< HEAD
-	CreatedAt      time.Time
-	Name           string
-	Catalog        int
-=======
 	CreatedAt      string
 	Name           string
 	Catalog        int
@@ -154,5 +140,4 @@ type DriverApplication struct {
 	DriverUserID   int `gorm:"primaryKey;not null" json:"-"`
 	OrganizationID int `gorm:"primaryKey;not null"`
 	Status         string
->>>>>>> main
 }

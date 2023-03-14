@@ -15,10 +15,7 @@
     "emailjs-com": "^3.2.0",
     "fuse.js": "^6.6.2",
     "jwt-decode": "^3.1.2",
-<<<<<<< HEAD
-=======
     "ka-table": "^7.12.1",
->>>>>>> main
     "mdb-react-ui-kit": "^5.1.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.2",
