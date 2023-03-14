@@ -17,6 +17,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Server struct {
@@ -106,6 +107,10 @@ func (s *Server) MountHandlers() {
 		r.Route("/orgs", func(r chi.Router) {
 			r.Get("/", s.ListOrgs)
 			r.Post("/", s.CreateOrganization)
+
+			r.Route("/{orgID}", func(r chi.Router) {
+				r.Get("/", s.GetOrg)
+			})
 		})
 
 		r.Route("/drivers", func(r chi.Router) {
@@ -116,6 +121,10 @@ func (s *Server) MountHandlers() {
 			r.Get("/", s.ListPoints)
 			r.Post("/create", s.CreatePoint)
 			r.Put("/", s.UpdatePoints)
+
+			r.Route("/{userID}", func(r chi.Router) {
+				r.Get("/totals", s.GetPointsTotal)
+			})
 		})
 	})
 }
@@ -129,7 +138,7 @@ func init() {
 func main() {
 	s := CreateNewServer()
 	s.MountHandlers()
-	s.ConnectDatabase("dev3")
+	s.ConnectDatabase("dev4")
 
 	fmt.Print("Running\n")
 
@@ -331,6 +340,8 @@ func (s *Server) GetUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(returned)
 }
 
+/// Organization
+
 // desc: sends a request back containing all the orgs
 func (s *Server) ListOrgs(w http.ResponseWriter, r *http.Request) {
 	// assigning variable
@@ -342,12 +353,29 @@ func (s *Server) ListOrgs(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, result.Error.Error(), http.StatusBadRequest)
 		return
 	}
-	// ? writing the response
+	// writing the response
 	returned, _ := json.Marshal(all_orgs)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(returned)
 }
 
+func (s *Server) GetOrg(w http.ResponseWriter, r *http.Request) {
+	var org Organization
+
+	if orgID := chi.URLParam(r, "orgID"); orgID != "" {
+		result := s.DB.First(&org, "id = ?", orgID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Organization Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Organization Not Found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	returned, _ := json.Marshal(org)
+	w.Write(returned)
+}
 func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 	// Recieing data fomr client-side json and errochecking it
 	data := CreateOrgPayload{}
@@ -390,6 +418,66 @@ func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 
 	returned, _ := json.Marshal(org)
 	w.Write(returned)
+}
+
+// / Points
+func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
+	// initializing user
+	var user User
+	if userID := chi.URLParam(r, "userID"); userID != "" {
+		result := s.DB.First(&user, "id = ?", userID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "User Not Found", http.StatusNotFound)
+		return
+	}
+	// returning info based on user role
+	switch user.Type {
+	case 0: // if driver
+		fmt.Print("Getting Driver Point info!\n")
+		// getting the driver
+		var driver Driver
+		resultDriver := s.DB.Model(&Driver{}).Preload(clause.Associations).First(&driver, "user_id = ?", user.ID)
+		if errors.Is(resultDriver.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Driver Not Found", http.StatusNotFound)
+			return
+		}
+		// getting all the points based on the drivers orgs
+		var pointsTotals []GetPointsTotalsPayload
+		for _, organization := range driver.Organizations {
+			// getting points totals
+			var pointsTotal GetPointsTotalsPayload
+			pointsTotal.Organization = *organization
+			pointsTotal.Driver = driver
+			result := s.DB.Model(&Points{}).Select("sum(num_change)").Where("driver_id = ? and organization_id = ?", driver.ID, organization.ID).Scan(&pointsTotal.Total)
+			if result.Error == nil {
+				pointsTotals = append(pointsTotals, pointsTotal)
+			} else {
+				pointsTotal.Total = 0
+				pointsTotals = append(pointsTotals, pointsTotal)
+			}
+		}
+
+		// writing return
+		w.Header().Set("Content-Type", "application/json")
+		returned, _ := json.Marshal(pointsTotals)
+		w.Write(returned)
+
+		// TESTING: Untested areas:
+		//		1. Drivers associated orgs > 1
+
+	case 1: // sponsor
+		// implement later
+		fmt.Print("Getting Sponsor Point info!\n")
+	case 2: // admin
+		// implement later
+		fmt.Print("Getting Admin Point info!\n")
+	default:
+		fmt.Print("Error! Attempting to get point info for a user with no role!\n")
+	}
 }
 
 ///  Authentication

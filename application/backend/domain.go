@@ -31,6 +31,13 @@ type CreateOrgPayload struct {
 	LogoURL *string `json:"logoURL"`
 }
 
+// used to send data about points totals
+type GetPointsTotalsPayload struct {
+	Driver       Driver
+	Organization Organization
+	Total        int
+}
+
 type LoginUserPayload struct {
 	Email             *string `json:"email"`
 	PlaintextPassword *string `json:"password"`
@@ -69,9 +76,9 @@ type Driver struct {
 // Belongs to an organization
 type Sponsor struct {
 	ID             int
-	UserID         int `gorm:"uniqueIndex;not null"`
+	UserID         int `gorm:"uniqueIndex; not null"`
 	User           User
-	OrganizationID int `gorm:"uniqueIndex"`
+	OrganizationID int `gorm:"not null"`
 	Organization   Organization
 }
 
