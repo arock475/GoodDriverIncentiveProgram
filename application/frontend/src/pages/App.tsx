@@ -23,6 +23,9 @@ import SponsorDashboard from './Dashboard/SponsorDashboard';
 import AdminDashboard from './Dashboard/AdminDashboard';
 //
 import Logout from '../components/Login/Logout';
+import ResetPassword from './Profile/ResetPassword';
+import PointManagment from './Points/PointManagment';
+import CreateCategory from './Points/CreateCategory';import AddPoints from './Points/AddPoints';
 import ShopCatalog from './Shop/ShopCatalog'
 
 const App = () => {
@@ -79,6 +82,8 @@ const App = () => {
         <Route path="user/:userID">
           <Route index element={<Profile />} />
           <Route path="edit" element={<EditProfile />} />
+          <Route path="reset" element={<ResetPassword />} />
+
         </Route>
 
         {/* Catalog Link */}
@@ -97,6 +102,13 @@ const App = () => {
           <Route path="create-org" element={<CreateOrganization />} />
           <Route path="create-sponsor" element={<CreateSponsor />} />
           <Route path="create-admin" element={<CreateAdmin />} />
+        </Route>
+
+        {/* Point Pages */}
+        <Route path="points-change">
+          <Route index element={<PointManagment />} />
+          <Route path="create" element={<CreateCategory />} />
+          <Route path="add" element={<AddPoints />} />
         </Route>
 
         {/* Footer Links */}

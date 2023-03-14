@@ -1,7 +1,5 @@
 package main
 
-import "time"
-
 type UserProfilePayload struct {
 	FirstName *string `json:"firstName"`
 	LastName  *string `json:"lastName"`
@@ -107,6 +105,19 @@ type Points struct {
 	Organization   Organization
 	NumChange      int
 	Reason         string
-	Total          int
-	CreatedAt      time.Time
+	CreatedAt      string
+	Name           string
+	Catalog        int
+}
+
+// used to receive data from client-side
+type CreatePointPayload struct {
+	ID             *int    `json:"id"`
+	DriverID       *int    `json:"driverID"`
+	OrganizationID *int    `json:"organizationID"`
+	NumChange      *int    `json:"numChange"`
+	Reason         *string `json:"reason"`
+	CreatedAt      *string `json:"createdAt"`
+	Name           *string `json:"name"`
+	Catalog        *int    `json:"catalog"`
 }

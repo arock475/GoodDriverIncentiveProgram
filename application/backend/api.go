@@ -107,6 +107,16 @@ func (s *Server) MountHandlers() {
 			r.Get("/", s.ListOrgs)
 			r.Post("/", s.CreateOrganization)
 		})
+
+		r.Route("/drivers", func(r chi.Router) {
+			r.Get("/", s.ListDrivers)
+		})
+
+		r.Route("/points", func(r chi.Router) {
+			r.Get("/", s.ListPoints)
+			r.Post("/create", s.CreatePoint)
+			r.Put("/", s.UpdatePoints)
+		})
 	})
 }
 
@@ -119,7 +129,7 @@ func init() {
 func main() {
 	s := CreateNewServer()
 	s.MountHandlers()
-	s.ConnectDatabase("dev2")
+	s.ConnectDatabase("dev3")
 
 	fmt.Print("Running\n")
 
@@ -554,4 +564,124 @@ func (u User) MarshalJSON() ([]byte, error) {
 	x := user(u)
 	x.PasswordHash = ""
 	return json.Marshal(x)
+}
+
+func (s *Server) ListPoints(w http.ResponseWriter, r *http.Request) {
+	var points []Points
+
+	result := s.DB.Find(&points)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	returned, _ := json.Marshal(points)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(returned)
+}
+
+func (s *Server) CreatePoint(w http.ResponseWriter, r *http.Request) {
+	// Recieing data fomr client-side json and errochecking it
+	data := CreatePointPayload{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if data.DriverID == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"DriverID\"", http.StatusBadRequest)
+		return
+	}
+	if data.OrganizationID == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"OrganizationID\"", http.StatusBadRequest)
+		return
+	}
+	if data.NumChange == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"NumChange\"", http.StatusBadRequest)
+		return
+	}
+	if data.Reason == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"Reason\"", http.StatusBadRequest)
+		return
+	}
+	if data.Name == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"Name\"", http.StatusBadRequest)
+		return
+	}
+	if data.Catalog == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"Catalog\"", http.StatusBadRequest)
+		return
+	}
+
+	// creating org variable
+	var point Points
+	point.DriverID = *data.DriverID
+	point.OrganizationID = *data.OrganizationID
+	point.NumChange = *data.NumChange
+	point.Reason = *data.Reason
+	point.Name = *data.Name
+	point.Catalog = *data.Catalog
+
+	// injecting org into database
+	result := s.DB.Create(&point)
+	// error checking injection
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	returned, _ := json.Marshal(point)
+	w.Write(returned)
+}
+
+func (s *Server) UpdatePoints(w http.ResponseWriter, r *http.Request) {
+	data := CreatePointPayload{}
+
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	updates := make(map[string]interface{})
+
+	if data.DriverID != nil {
+		updates["driver_id"] = *data.DriverID
+	}
+	if data.OrganizationID != nil {
+		updates["organization_id"] = *data.OrganizationID
+	}
+	if data.NumChange != nil {
+		updates["num_change"] = *data.NumChange
+	}
+	if data.Reason != nil {
+		updates["reason"] = *data.Reason
+	}
+	if data.Name != nil {
+		updates["name"] = *data.Name
+	}
+	if data.Catalog != nil {
+		updates["catalog"] = *data.Catalog
+	}
+
+	result := s.DB.Model(&Points{}).Where("id = ?", data.ID).Updates(updates)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		http.Error(w, "Point Not Found", http.StatusNotFound)
+		return
+	}
+
+}
+
+func (s *Server) ListDrivers(w http.ResponseWriter, r *http.Request) {
+	var drivers []Driver
+
+	result := s.DB.Find(&drivers)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	returned, _ := json.Marshal(drivers)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(returned)
 }

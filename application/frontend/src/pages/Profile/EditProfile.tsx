@@ -20,27 +20,20 @@ import {
 } from 'mdb-react-ui-kit';
 import { useNavigate, useParams } from "react-router-dom";
 import{ useState, useEffect } from 'react';
-import AWS from 'aws-sdk';
-
-// TODO: Change to environmnet/protected variables
-const S3_BUCKET ='team25-s3bucket';
-const REGION ='us-east-1';
+import AWS from 'aws-sdk'
 
 AWS.config.update({
-    // TODO: Change to environmnet/protected variables
-    accessKeyId: 'AKIAT77CFA376PT2Y752',
-    secretAccessKey: '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'
+    accessKeyId: process.env.REACT_APP_ACCESS_KEY_ID,
+    secretAccessKey: process.env.REACT_APP_SECRET_ACCESS_KEY
 })
 
 const myBucket = new AWS.S3({
-    params: { Bucket: S3_BUCKET},
-    region: REGION,
+    params: { Bucket: process.env.REACT_APP_S3_BUCKET},
+    region: process.env.REACT_APP_REGION,
 })
 
 export default function EditProfilePage() {
-    // TODO: Change to token variable to get user by login
     const { userID } = useParams();
-
     const [Data,setData]=useState({
       email:'',
       firstName:'',
@@ -62,6 +55,11 @@ export default function EditProfilePage() {
           });
     }, []);
 
+    const email = {      
+      name: Data.firstName + ' ' + Data.lastName,
+      email: Data.email
+    }
+
     // Updates Data struct when user changes a field
     const handleChange = (event) => {
       const value = event.target.value;
@@ -79,7 +77,7 @@ export default function EditProfilePage() {
     // Handle File input
     const handleFileInput = (e) => {
         setSelectedFile(e.target.files[0]);
-        Data.image = 'https://team25-s3bucket.s3.amazonaws.com/' + e.target.files[0].name;
+        Data.image = process.env.REACT_APP_URL + e.target.files[0].name;
     }
 
     // Upload file to the S3 bucket
@@ -87,7 +85,7 @@ export default function EditProfilePage() {
         const params = {
             ACL: 'public-read',
             Body: file,
-            Bucket: S3_BUCKET,
+            Bucket: process.env.REACT_APP_S3_BUCKET,
             Key: file.name,
             ContentType:'image/jpg',
             ContentDisposition:'inline', 
@@ -104,7 +102,6 @@ export default function EditProfilePage() {
 
     // Send Data struct info to database
     const sendRequest = () => {
-      console.log(Data.image);
       const requestOptions = {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -254,6 +251,9 @@ export default function EditProfilePage() {
           <p></p><p></p>
           <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={function(event){ sendRequest(); routeChange('../')}}>
             Save Profile
+          </MDBBtn></div>
+          <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={function(event){ routeChange('../reset')}}>
+              Reset Password
           </MDBBtn></div>
         </MDBRow>
     </section>
