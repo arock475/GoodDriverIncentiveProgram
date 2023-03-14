@@ -23,6 +23,7 @@ import SponsorDashboard from './Dashboard/SponsorDashboard';
 import AdminDashboard from './Dashboard/AdminDashboard';
 //
 import Logout from '../components/Login/Logout';
+import ShopCatalog from './Shop/ShopCatalog'
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -78,6 +79,11 @@ const App = () => {
         <Route path="user/:userID">
           <Route index element={<Profile />} />
           <Route path="edit" element={<EditProfile />} />
+        </Route>
+
+        {/* Catalog Link */}
+        <Route path="catalog">
+          <Route index element={<ShopCatalog />} />
         </Route>
 
         {/* Search Links */}

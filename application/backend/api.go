@@ -55,6 +55,7 @@ func (s *Server) ConnectDatabase(schemaName string) {
 func (s *Server) MountHandlers() {
 	r := s.Router
 	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
@@ -93,8 +94,13 @@ func (s *Server) MountHandlers() {
 
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Get("/", s.GetUser)
+				r.Get("/catalog", s.GetUserCatalogCtx)
 				r.Put("/profile", s.UpdateProfile)
 			})
+		})
+
+		r.Route("/catalog", func(r chi.Router) {
+			r.Post("/", s.GetCatalog)
 		})
 
 		r.Route("/orgs", func(r chi.Router) {
@@ -113,7 +119,7 @@ func init() {
 func main() {
 	s := CreateNewServer()
 	s.MountHandlers()
-	s.ConnectDatabase("dev")
+	s.ConnectDatabase("dev2")
 
 	fmt.Print("Running\n")
 
@@ -227,6 +233,8 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Appends this single organization to the list of organizations if there is one.
+		// Also make this organization the primary one until specified otherwise
+		driver.OrganizationID = organization.ID
 		driver.Organizations = []*Organization{&organization}
 
 		// creating the sponsor in the database

@@ -55,14 +55,17 @@ type User struct {
 }
 
 // A driver can belong to multiple organizations.
+// They can have one primary organization at a time; in OrganizationID
 type Driver struct {
-	ID            int
-	UserID        int `gorm:"uniqueIndex;not null"`
-	User          User
-	Status        int `gorm:"not null;default:0"`
-	LicensePlate  string
-	TruckType     string
-	Organizations []*Organization `gorm:"many2many:driver_organizations;"`
+	ID             int
+	UserID         int `gorm:"uniqueIndex;not null"`
+	User           User
+	Status         int `gorm:"not null;default:0"`
+	LicensePlate   string
+	TruckType      string
+	OrganizationID int
+	Organization   Organization
+	Organizations  []*Organization `gorm:"many2many:driver_organizations;"`
 }
 
 // Belongs to an organization
@@ -84,12 +87,13 @@ type Admin struct {
 // An organization will always have atleast one sponsor account belonging to it
 // but it can have more than that.
 type Organization struct {
-	ID        int
-	Name      string `gorm:"not null"`
-	Biography string `gorm:"default:''"`
-	Phone     string `gorm:"default:''"`
-	Email     string `gorm:"default:''"`
-	LogoURL   string `gorm:"not null"`
+	ID          int
+	Name        string  `gorm:"not null"`
+	Biography   string  `gorm:"default:''"`
+	Phone       string  `gorm:"default:''"`
+	Email       string  `gorm:"default:''"`
+	PointsRatio float64 `gorm:"default:1.0"`
+	LogoURL     string  `gorm:"not null"`
 }
 
 // Points has a foreign key for both a driver and sponsor.
@@ -97,9 +101,9 @@ type Organization struct {
 // Organization is the organization who assigned those points.
 type Points struct {
 	ID             int
-	DriverID       int `gorm:"uniqueIndex;not null"`
+	DriverID       int `gorm:"not null"`
 	Driver         Driver
-	OrganizationID int `gorm:"uniqueIndex;not null"`
+	OrganizationID int `gorm:"not null"`
 	Organization   Organization
 	NumChange      int
 	Reason         string
