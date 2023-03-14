@@ -98,6 +98,29 @@ const App = () => {
 
         {/* Error Page Eventually */}
         <Route path="*" element={<></>} />
+
+        {/* Logs Link */}
+        <Route path="logs" element={<></>}/>
+
+        {/* Reports Link */}
+        <Route path="reports" element={<></>}/>
+
+        {/* Notifications Link */}
+        <Route path="notifications" element={<></>}/>
+
+        {/* Orders Link */}
+        <Route path="orders" element={<></>}/>
+
+        {/* Points History Link */}
+        <Route path="points-change" element={<></>}/>
+        
+        {/* Applications Links */}
+        <Route path="applications">
+          <Route path="driver" element={<></>}/>
+          <Route path="sponsor" element={<></>}/>
+          <Route path="admin" element={<></>}/>
+        </Route>
+        
       </Route>
     </Routes>
   );
