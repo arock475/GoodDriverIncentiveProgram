@@ -13,6 +13,7 @@ import {
 } from 'mdb-react-ui-kit';
 import { useNavigate, useParams } from "react-router-dom";
 import{ useState, useEffect } from 'react';
+import defaultpfp from '../../assets/default-pfp.jpg'
 
 export default function ProfilePage() {
   const { userID } = useParams();
@@ -51,7 +52,7 @@ export default function ProfilePage() {
             <MDBCard className="mb-4">
               <MDBCardBody className="text-center">
                 <MDBCardImage
-                  src={Data.image}
+                  src={Data.image ? Data.image : defaultpfp}
                   alt="avatar"
                   className="rounded-circle"
                   style={{ width: '150px' }}

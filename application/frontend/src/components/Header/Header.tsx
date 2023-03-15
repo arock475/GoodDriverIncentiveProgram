@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
                     <Nav className="me-auto">
                         <Nav.Link href="/" className="nav-link">Home</Nav.Link>
                         <NavDropdown title="Points" id="points-navbar-dropdown">
-                            <NavDropdown.Item href="/store">Store</NavDropdown.Item>
+                            <NavDropdown.Item href="/catalog">Store</NavDropdown.Item>
                             <NavDropdown.Item href="/points">Point History</NavDropdown.Item>
                         </NavDropdown>
                         <NavDropdown title="Create" id="create-navbar-dropdown">
