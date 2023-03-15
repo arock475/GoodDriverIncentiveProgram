@@ -55,7 +55,7 @@ const CreateDriver: React.FC = () => {
         const organizationId = selectedOrg.ID;
 
         // making call to api
-        const response = await fetch('http://localhost:3333/users', {
+        const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users', {
             method: 'POST',
             body: JSON.stringify({
                 firstName: firstName,
@@ -99,7 +99,7 @@ const CreateDriver: React.FC = () => {
     useEffect(() => {
         // Fetch names from API and update state
         const fetchOrgs = async () => {
-            const response = await fetch('http://localhost:3333/orgs');
+            const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs');
             const data = await response.json();
             setOrgsArray(data);
         };

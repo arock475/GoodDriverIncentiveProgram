@@ -49,7 +49,7 @@ const PointsTable = ({}) => {
         // making call to api
         // console.log(`Component/PointsTable: TESTING: cookies.id = ${cookies.id}`);
         const fetchPoints = async () => {
-            const response = await fetch(`http://localhost:3333/points/${1}/totals`); // DEBUG: Temp code
+            const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/points/${1}/totals`); // DEBUG: Temp code
             const data = await response.json();
             setPoints(data);
         };

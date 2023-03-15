@@ -27,7 +27,7 @@ const CreateAdmin = ({}) => {
         const password = target.password.value;
         const type = 2;
         // making call to api
-        const response = await fetch('http://localhost:3333/users', {
+        const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users', {
             method: 'POST',
             body: JSON.stringify({
                 firstName: firstName,

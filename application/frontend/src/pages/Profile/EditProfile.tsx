@@ -45,7 +45,7 @@ export default function EditProfilePage() {
 
     // Gets user info from database
     useEffect(() => {
-       fetch('http://localhost:3333/users/' + userID)
+       fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID)
           .then((res) => res.json())
           .then((data) => {
              setData({email:data.email, firstName:data.firstName, lastName:data.lastName, phone:data.phone, bio:data.bio, image:data.image})
@@ -114,7 +114,7 @@ export default function EditProfilePage() {
             image: Data.image
           })
       };
-      fetch('http://localhost:3333/users/' + userID + '/profile', requestOptions)
+      fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID + '/profile', requestOptions)
           .then(response => response.json())
     };
     

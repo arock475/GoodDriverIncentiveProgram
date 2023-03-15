@@ -27,7 +27,7 @@ export default function ProfilePage() {
 
   // Gets user info from database
   useEffect(() => {
-     fetch('http://localhost:3333/users/' + userID)
+     fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID)
         .then((res) => res.json())
         .then((data) => {
            setData({firstName:data.firstName, lastName:data.lastName, email:data.email, phone:data.phone, bio:data.bio, image:data.image})
