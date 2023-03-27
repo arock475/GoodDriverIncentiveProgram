@@ -81,16 +81,9 @@ func (s *Server) MountHandlers() {
 			r.Get("/driver", s.GetDriverApplications)
 			r.Post("/driver", s.DriverApplyToOrg)
 		})
-	})
 
-	// Public routes
-	r.Group(func(r chi.Router) {
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("Available routes: /users"))
-		})
-
-		r.Route("/login", func(r chi.Router) {
-			r.Post("/", s.LoginHandler)
+		r.Route("/drivers", func(r chi.Router) {
+			r.Get("/", s.ListDrivers)
 		})
 
 		r.Route("/users", func(r chi.Router) {
@@ -117,10 +110,6 @@ func (s *Server) MountHandlers() {
 			})
 		})
 
-		r.Route("/drivers", func(r chi.Router) {
-			r.Get("/", s.ListDrivers)
-		})
-
 		r.Route("/points", func(r chi.Router) {
 			r.Get("/", s.ListPoints)
 			r.Post("/create", s.CreatePoint)
@@ -134,6 +123,14 @@ func (s *Server) MountHandlers() {
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Get("/totals", s.GetPointsTotal)
 			})
+		})
+	})
+
+	// Public routes
+	r.Group(func(r chi.Router) {
+
+		r.Route("/login", func(r chi.Router) {
+			r.Post("/", s.LoginHandler)
 		})
 	})
 }
