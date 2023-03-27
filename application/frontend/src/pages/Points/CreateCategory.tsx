@@ -6,7 +6,7 @@ import { useState } from 'react';
 export default function CreateCategory() {
   const [Points, setPoints] = useState({
     Name: '',
-    Reason: '',
+    Description: '',
     NumChange: ''
   })
 
@@ -15,15 +15,12 @@ export default function CreateCategory() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        DriverID: 1,
-        OrganizationID: 1,
         NumChange: parseInt(Points.NumChange),
-        Reason: Points.Reason,
+        Description: Points.Description,
         Name: Points.Name,
-        Catalog: 0
       })
     };
-    fetch('http://localhost:3333/points/create', requestOptions)
+    fetch('http://localhost:3333/points/category/create', requestOptions)
       .then(response => response.json())
       .catch((err) => {
         console.log(err.message);
@@ -54,7 +51,7 @@ export default function CreateCategory() {
         </Form.Group>
         <Form.Group>
           <Form.Label>Description</Form.Label>
-          <Form.Control name="Reason" placeholder="Example description" onChange={handleChange} />
+          <Form.Control name="Description" placeholder="Example description" onChange={handleChange} />
         </Form.Group>
         <Form.Group>
           <Form.Label>Point Value</Form.Label>

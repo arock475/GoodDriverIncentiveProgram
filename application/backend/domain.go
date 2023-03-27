@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 type UserProfilePayload struct {
 	FirstName *string `json:"firstName"`
 	LastName  *string `json:"lastName"`
@@ -107,32 +109,42 @@ type Organization struct {
 	LogoURL     string  `gorm:"not null"`
 }
 
+type PointsCategory struct {
+	ID          int
+	NumChange   int
+	Name        string
+	Description string
+}
+
+type CreatePointCategoryPayload struct {
+	ID          *int    `json:"id"`
+	NumChange   *int    `json:"numChange"`
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+}
+
 // Points has a foreign key for both a driver and sponsor.
 // DriverID is the driver whose the points change belongs to
 // Organization is the organization who assigned those points.
 type Points struct {
-	ID             int
-	DriverID       int `gorm:"not null"`
-	Driver         Driver
-	OrganizationID int `gorm:"not null"`
-	Organization   Organization
-	NumChange      int
-	Reason         string
-	CreatedAt      string
-	Name           string
-	Catalog        int
+	ID               int
+	DriverID         int `gorm:"not null"`
+	Driver           Driver
+	OrganizationID   int `gorm:"not null"`
+	Organization     Organization
+	PointsCategoryID int `gorm:"not null"`
+	PointsCategory   PointsCategory
+	Reason           string
+	CreatedAt        time.Time
 }
 
 // used to receive data from client-side
 type CreatePointPayload struct {
-	ID             *int    `json:"id"`
-	DriverID       *int    `json:"driverID"`
-	OrganizationID *int    `json:"organizationID"`
-	NumChange      *int    `json:"numChange"`
-	Reason         *string `json:"reason"`
-	CreatedAt      *string `json:"createdAt"`
-	Name           *string `json:"name"`
-	Catalog        *int    `json:"catalog"`
+	ID               *int    `json:"id"`
+	DriverID         *int    `json:"driverID"`
+	OrganizationID   *int    `json:"organizationID"`
+	PointsCategoryID *int    `json:"pointscategoryID"`
+	Reason           *string `json:"reason"`
 }
 
 type DriverApplication struct {

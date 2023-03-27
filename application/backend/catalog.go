@@ -262,7 +262,9 @@ func (s *Server) GetUserCatalogCtx(w http.ResponseWriter, r *http.Request) {
 	var points int64
 	// Get all organization specific points given to the driver.
 	result := s.DB.Model(&Points{}).
-		Select("sum(num_change)").
+		Preload("PointsCategory").
+		Joins("JOIN points_categories pc ON pc.id = points.points_category_id").
+		Select("sum(pc.num_change)").
 		Where("driver_id = ? and organization_id = ?", driver.ID, driver.OrganizationID).
 		Scan(&points)
 

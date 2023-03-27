@@ -16,7 +16,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type Server struct {
@@ -125,7 +124,12 @@ func (s *Server) MountHandlers() {
 		r.Route("/points", func(r chi.Router) {
 			r.Get("/", s.ListPoints)
 			r.Post("/create", s.CreatePoint)
-			r.Put("/", s.UpdatePoints)
+
+			r.Route("/category", func(r chi.Router) {
+				r.Get("/", s.ListPointsCategory)
+				r.Post("/create", s.CreatePointCategory)
+				r.Put("/", s.UpdatePointsCategory)
+			})
 
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Get("/totals", s.GetPointsTotal)
@@ -143,7 +147,7 @@ func init() {
 func main() {
 	s := CreateNewServer()
 	s.MountHandlers()
-	s.ConnectDatabase("dev4")
+	s.ConnectDatabase("dev6")
 
 	fmt.Print("Running\n")
 
@@ -247,10 +251,6 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		driver.LicensePlate = *data.LicenceNumber
 		driver.TruckType = *data.TruckType
 
-		// default for now
-		// TODO: Remove this? make 1 default? make org foreign key nullable (this will break things)?
-		driver.OrganizationID = 1
-
 		// finding organization based on organization id
 		var organization Organization
 		result := s.DB.First(&organization, *data.OrganizationId)
@@ -259,6 +259,12 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Organization Not Found\n", http.StatusNotFound)
 			return
 		}
+
+		// default for now
+		// TODO: Remove this? make 1 default? make org foreign key nullable (this will break things)?
+		// TODO: we need a way to actually get accepted to an org from an app before removing this.
+		driver.OrganizationID = organization.ID
+		driver.Organizations = []*Organization{&organization}
 
 		// creating the sponsor in the database
 		createResult := s.DB.Create(&driver)
@@ -566,10 +572,13 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 	// returning info based on user role
 	switch user.Type {
 	case 0: // if driver
-		fmt.Print("Getting Driver Point info!\n")
 		// getting the driver
 		var driver Driver
-		resultDriver := s.DB.Model(&Driver{}).Preload(clause.Associations).First(&driver, "user_id = ?", user.ID)
+
+		resultDriver := s.DB.Model(&Driver{}).
+			Preload("Organizations").
+			First(&driver, "user_id = ?", user.ID)
+
 		if errors.Is(resultDriver.Error, gorm.ErrRecordNotFound) {
 			http.Error(w, "Driver Not Found", http.StatusNotFound)
 			return
@@ -581,13 +590,19 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 			var pointsTotal GetPointsTotalsPayload
 			pointsTotal.Organization = *organization
 			pointsTotal.Driver = driver
-			result := s.DB.Model(&Points{}).Select("sum(num_change)").Where("driver_id = ? and organization_id = ?", driver.ID, organization.ID).Scan(&pointsTotal.Total)
-			if result.Error == nil {
-				pointsTotals = append(pointsTotals, pointsTotal)
-			} else {
+
+			result := s.DB.Model(&Points{}).
+				Preload("PointsCategory").
+				Joins("JOIN points_categories pc ON pc.id = points.points_category_id").
+				Select("sum(pc.num_change)").
+				Where("driver_id = ? and organization_id = ?", driver.ID, organization.ID).
+				Scan(&pointsTotal.Total)
+
+			if result.Error != nil {
 				pointsTotal.Total = 0
-				pointsTotals = append(pointsTotals, pointsTotal)
 			}
+
+			pointsTotals = append(pointsTotals, pointsTotal)
 		}
 
 		// writing return
@@ -778,20 +793,12 @@ func (s *Server) CreatePoint(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "CreatePointPayload missing required field: \"OrganizationID\"", http.StatusBadRequest)
 		return
 	}
-	if data.NumChange == nil {
-		http.Error(w, "CreatePointPayload missing required field: \"NumChange\"", http.StatusBadRequest)
+	if data.PointsCategoryID == nil {
+		http.Error(w, "CreatePointPayload missing required field: \"PointsCategoryID\"", http.StatusBadRequest)
 		return
 	}
 	if data.Reason == nil {
 		http.Error(w, "CreatePointPayload missing required field: \"Reason\"", http.StatusBadRequest)
-		return
-	}
-	if data.Name == nil {
-		http.Error(w, "CreatePointPayload missing required field: \"Name\"", http.StatusBadRequest)
-		return
-	}
-	if data.Catalog == nil {
-		http.Error(w, "CreatePointPayload missing required field: \"Catalog\"", http.StatusBadRequest)
 		return
 	}
 
@@ -799,10 +806,8 @@ func (s *Server) CreatePoint(w http.ResponseWriter, r *http.Request) {
 	var point Points
 	point.DriverID = *data.DriverID
 	point.OrganizationID = *data.OrganizationID
-	point.NumChange = *data.NumChange
+	point.PointsCategoryID = *data.PointsCategoryID
 	point.Reason = *data.Reason
-	point.Name = *data.Name
-	point.Catalog = *data.Catalog
 
 	// injecting org into database
 	result := s.DB.Create(&point)
@@ -816,8 +821,61 @@ func (s *Server) CreatePoint(w http.ResponseWriter, r *http.Request) {
 	w.Write(returned)
 }
 
-func (s *Server) UpdatePoints(w http.ResponseWriter, r *http.Request) {
-	data := CreatePointPayload{}
+func (s *Server) ListPointsCategory(w http.ResponseWriter, r *http.Request) {
+	var pointsCat []PointsCategory
+
+	result := s.DB.Find(&pointsCat)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	returned, _ := json.Marshal(pointsCat)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(returned)
+}
+
+func (s *Server) CreatePointCategory(w http.ResponseWriter, r *http.Request) {
+	// Recieing data fomr client-side json and errochecking it
+	data := CreatePointCategoryPayload{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if data.NumChange == nil {
+		http.Error(w, "CreatePointCategory missing required field: \"NumChange\"", http.StatusBadRequest)
+		return
+	}
+	if data.Name == nil {
+		http.Error(w, "CreatePointCategory missing required field: \"Name\"", http.StatusBadRequest)
+		return
+	}
+	if data.Description == nil {
+		http.Error(w, "CreatePointCategory missing required field: \"Description\"", http.StatusBadRequest)
+		return
+	}
+
+	// creating points category variable
+	var pointsCat PointsCategory
+	pointsCat.NumChange = *data.NumChange
+	pointsCat.Name = *data.Name
+	pointsCat.Description = *data.Description
+
+	// injecting org into database
+	result := s.DB.Create(&pointsCat)
+	// error checking injection
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	returned, _ := json.Marshal(pointsCat)
+	w.Write(returned)
+}
+
+func (s *Server) UpdatePointsCategory(w http.ResponseWriter, r *http.Request) {
+	data := CreatePointCategoryPayload{}
 
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
@@ -827,28 +885,19 @@ func (s *Server) UpdatePoints(w http.ResponseWriter, r *http.Request) {
 
 	updates := make(map[string]interface{})
 
-	if data.DriverID != nil {
-		updates["driver_id"] = *data.DriverID
-	}
-	if data.OrganizationID != nil {
-		updates["organization_id"] = *data.OrganizationID
-	}
 	if data.NumChange != nil {
 		updates["num_change"] = *data.NumChange
 	}
-	if data.Reason != nil {
-		updates["reason"] = *data.Reason
+	if data.Description != nil {
+		updates["description"] = *data.Description
 	}
 	if data.Name != nil {
 		updates["name"] = *data.Name
 	}
-	if data.Catalog != nil {
-		updates["catalog"] = *data.Catalog
-	}
 
-	result := s.DB.Model(&Points{}).Where("id = ?", data.ID).Updates(updates)
+	result := s.DB.Model(&PointsCategory{}).Where("id = ?", data.ID).Updates(updates)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		http.Error(w, "Point Not Found", http.StatusNotFound)
+		http.Error(w, "Point Category Not Found", http.StatusNotFound)
 		return
 	}
 

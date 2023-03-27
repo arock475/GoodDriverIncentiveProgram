@@ -11,24 +11,26 @@ export default function CreateCategory() {
     interface User {
         id: number;
         driverID: number;
+        organizationID: number;
         first: string;
         last: string;
         full: string;
         email: string;
       }
-      interface Point {
+      interface PointCategory {
         ID:string,
         Name:string,
-        Reason:string,
         NumChange:string,
-        Catalog:string
+        Description:string,
       }
       
     const [users, setUsers] = useState<User[]>([]);
     const [user, setUser] = useState<User>();
     const [tableUsers, setTableUsers] = useState<User[]>([]);
-    const [Points, setPoints] = useState<Point>();
-    const [PointsArray, setPointsArray] = useState<Point[]>([]);
+    const [Points, setPoints] = useState<PointCategory>();
+    const [PointsArray, setPointsArray] = useState<PointCategory[]>([]);
+    const [checked, setChecked] = useState(true);
+    const [reason, setReason] = useState<string>('');
     const columns = [{
         dataField: 'name',
         text: 'Name'
@@ -38,7 +40,7 @@ export default function CreateCategory() {
         }, {
         dataField: 'points',
         text: 'Point Value'
-        }];
+    }];
       
     useEffect(() => {
         const fetchUsers = async () => {
@@ -61,6 +63,7 @@ export default function CreateCategory() {
                 users.map((user) => {
                     if(driver.UserID === user.id) {
                         user.driverID = driver.ID;
+                        user.organizationID = driver.OrganizationID;
                         setTableUsers(tableUsers => [...tableUsers, user]);
                     }
                 });
@@ -68,7 +71,7 @@ export default function CreateCategory() {
         };
     
         fetchUsers();
-        fetch('http://localhost:3333/points')
+        fetch('http://localhost:3333/points/category')
         .then((res) => res.json())
         .then((data) => {
             setPointsArray(data);
@@ -80,14 +83,12 @@ export default function CreateCategory() {
 
     var PointArray = []
     PointsArray.map((point) => {
-        if(parseInt(point.Catalog) != 1) {
-            PointArray.push({
-            id: point.ID,
-            name:point.Name,
-            description:point.Reason,
-            points:point.NumChange
-            })
-        }
+        PointArray.push({
+          id: point.ID,
+          name:point.Name,
+          description:point.Description,
+          points:point.NumChange
+        })
     }) 
     
     const sendRequest = () => {
@@ -96,11 +97,9 @@ export default function CreateCategory() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               DriverID: user.driverID,
-              OrganizationID: 1,
-              NumChange: parseInt(Points.NumChange),
-              Reason: Points.Reason, 
-              Name: Points.Name,
-              Catalog: parseInt(Points.Catalog)
+              OrganizationID: user.organizationID,
+              PointsCategoryID: Points.ID,
+              Reason: reason
             })
         };
         fetch('http://localhost:3333/points/create', requestOptions)
@@ -122,12 +121,25 @@ export default function CreateCategory() {
         let point = {
             ID: row.id,
             Name: row.name,
-            Reason: row.description,
+            Description: row.description,
             NumChange: row.points,
-            Catalog: "1"
         };
         setPoints(point);
     }
+
+    const handleInputChange = (event) => {
+        const val = event.target.value;
+        if(checked == true) {
+            setReason(val);
+        }
+    };
+
+    const handleCheckChange = () => {
+        if(checked == true) {
+            setReason(Points.Description);
+        }
+        setChecked(!checked);
+      };
     
 
     let navigate = useNavigate(); 
@@ -157,6 +169,13 @@ export default function CreateCategory() {
             <Form.Group>
                     <Form.Label><h3>2. Select Category</h3></Form.Label>
                         <BootstrapTable keyField='name' data = {PointArray} columns={ columns } selectRow={ selectRow } bordered={ false } striped hover condensed pagination={ paginationFactory() }/> 
+            </Form.Group>
+            <hr></hr>
+            <Form.Group>
+                    <Form.Label><h3>3. Add Reason</h3></Form.Label><p></p>
+                    <input type="text" placeholder="Additional Reason" onChange={handleInputChange}/><p></p>
+                    <input type="checkbox" onChange={handleCheckChange}/>
+                    <label> &nbsp; Use generic description</label>
             </Form.Group>
             <hr></hr>
             <Button onClick={function(event){ sendRequest(); routeChange('../')}}>Submit</Button>

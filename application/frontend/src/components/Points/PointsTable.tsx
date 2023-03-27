@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Table } from 'react-bootstrap';
-import jwt_decode from 'jwt-decode'
 import { useCookies } from 'react-cookie';
+import { getUserClaims } from '../../utils/getUserClaims';
 
 export type jwtClaim = {
     authorized: boolean,
@@ -35,29 +35,27 @@ interface PointsTotals {
 const PointsTable = ({}) => {  
 
     // user role and cookies variables
-    const [userRole, setUserRole] = useState(null);
-    const [cookies, setCookie, removeCookie] = useCookies();
+    const [userClaims, setUserClaims] = useState(getUserClaims());
     const [points, setPoints,] = useState<PointsTotals[]>([]);
 
     // On load, set claim using cookies, get user role from it, then use user role to fetch from backend
     useEffect(() => {
-        const token = cookies.jwt;
-        if (token) {
-            const claim: jwtClaim = jwt_decode(token);
-            setUserRole(claim.role);
+        if (!userClaims.authorized) {
+            return;
         }
+
         // making call to api
-        // console.log(`Component/PointsTable: TESTING: cookies.id = ${cookies.id}`);
         const fetchPoints = async () => {
-            const response = await fetch(`http://localhost:3333/points/${1}/totals`); // DEBUG: Temp code
+            const response = await fetch(`http://localhost:3333/points/${userClaims.id}/totals`); 
             const data = await response.json();
             setPoints(data);
         };
+
         fetchPoints();
     }, [])
 
     // Returning conditionally rendered table based on role
-    switch (userRole) {
+    switch (userClaims.role) {
         case 0: // driver
             try {
                 return (
@@ -95,7 +93,7 @@ const PointsTable = ({}) => {
         // implement later
         break;
     default: // loggedIn w/o role -> error from depreciated user
-        // console.log("PointsTable component: depreciated user attempting to access points!");
+        console.log("PointsTable component: depreciated user attempting to access points!");
         break;
 }
 }

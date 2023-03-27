@@ -5,19 +5,18 @@ import { useNavigate} from "react-router-dom";
 import{ useState, useEffect } from 'react';
 import cellEditFactory from 'react-bootstrap-table2-editor';
 
-interface Point {
+interface PointCategory {
   ID:string,
   Name:string,
-  Reason:string,
   NumChange:string,
-  Catalog:string
+  Description:string,
 }
 
 export default function PointManagment() {
-  const [PointsArray, setPointsArray] = useState<Point[]>([])
+  const [PointsArray, setPointsArray] = useState<PointCategory[]>([])
 
   useEffect(() => {
-    fetch('http://localhost:3333/points')
+    fetch('http://localhost:3333/points/category')
       .then((res) => res.json())
       .then((data) => {
           setPointsArray(data);
@@ -31,14 +30,12 @@ export default function PointManagment() {
   // Set up table rows for each point
   var PointArray = []
   PointsArray.map((point) => {
-    if(parseInt(point.Catalog) != 1) {
       PointArray.push({
         id: point.ID,
         name:point.Name,
-        description:point.Reason,
+        description:point.Description,
         points:point.NumChange
       })
-    }
   }) 
 
   // Set up table columns
@@ -84,15 +81,12 @@ export default function PointManagment() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             ID: id,
-            DriverID: 3,
-            OrganizationID: 1,
             NumChange: numChangeEdit,
-            Reason: reasonEdit, 
+            Description: reasonEdit, 
             Name: row.name,
-            Catalog: 0
           })
         };
-        fetch('http://localhost:3333/points', requestOptions)
+        fetch('http://localhost:3333/points/category', requestOptions)
           .then(response => response.json())
         done(true);
       } else {
