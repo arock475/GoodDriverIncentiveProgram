@@ -32,44 +32,36 @@ import ShopCatalog from './Shop/ShopCatalog'
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
-  const [loggedInAs, setLoggedInAs] = useState("");
-  const [loggedInId, setLoggedInId] = useState(0);
   const [loggedInRole, setLoggedInRole] = useState(0);
   const [cookies, setCookie, removeCookie] = useCookies();
-  const location = useLocation();
 
-  useEffect(() => {
-    const fetchAuth = async () => {
-      fetch("http://localhost:3333/auth/is-auth", {
-        method: "GET",
-        credentials: "include"
-      }).then(async response => {
-        // check for error response
-        if (!response.ok) {
-          setLoggedIn(false);
-          setLoggedInAs("");
-          setLoggedInId(null);
-          setLoggedInRole(null);
-          return Promise.reject();
-        }
-        // Login Successful
-        if (!loggedIn) {
-          setLoggedInAs(cookies.user);
-          setLoggedInId(cookies.id);
-          setLoggedInRole(cookies.role);
-          setLoggedIn(true);
-        }
-      })
-    }
-
-    fetchAuth().catch(error => {
-      console.log("Catch: ", error)
-    })
-  }, [])
+  // useEffect(() => {
+  //   const fetchAuth = async () => {
+  //     fetch("http://localhost:3333/auth/is-auth", {
+  //       method: "GET",
+  //       credentials: "include"
+  //     }).then(async response => {
+  //       // check for error response
+  //       if (!response.ok) {
+  //         setLoggedIn(false);
+  //         setLoggedInRole(null);
+  //         return Promise.reject();
+  //       }
+  //       // Login Successful
+  //       if (!loggedIn) {
+  //         setLoggedInRole(cookies.role);
+  //         setLoggedIn(true);
+  //       }
+  //     })
+  //   }
+  //   fetchAuth().catch(error => {
+  //     console.log("Catch: ", error)
+  //   })
+  // }, [])
 
   return (
     <Routes>
-      <Route path="/" element={<Layout key={loggedInAs} loggedIn={loggedIn} loginUser={loggedInAs} loginId={loggedInId} />}>
+      <Route path="/" element={<Layout colorTheme=""/>}>
         {/* Home Page */}
         <Route index element={<DriverDashboard />} />
         <Route path="logout" element={<Logout />} />

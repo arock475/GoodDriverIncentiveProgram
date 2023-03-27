@@ -1,4 +1,4 @@
-import react, { useState } from 'react';
+import react, { useState, useEffect } from 'react';
 import { FormGroup } from 'react-bootstrap';
 import { useNavigate } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
@@ -37,10 +37,11 @@ const Login = () => {
           }
 
           setCredentialError(false)
-          navigate("/")
+
+          sessionStorage.setItem("reload", "true")
+          navigate(0)
         }).catch(error => {
           setCredentialError(true)
-          console.log("Catch: ", error)
         })
       }
       catch(err) {
@@ -48,6 +49,14 @@ const Login = () => {
         setCredentialError(true)
       }
   }
+
+  useEffect(() => {
+    const isReload = sessionStorage.getItem("reload")
+    if(isReload === "true") {
+      sessionStorage.removeItem("reload");
+      navigate("/")
+    }
+  }, [])
 
   return (
     <Container className="d-flex flex-column">

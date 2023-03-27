@@ -5,25 +5,21 @@ import Header from '../components/Header/Header';
 import Footer from '../components/Footer/FooterComponent'
 
 export type LayoutProps = {
-    loggedIn?: boolean,
-    loginUser?: string,
-    loginId?: number
+    colorTheme?: string
 }
 
 const Layout: React.FC<LayoutProps> = ({
-    loggedIn=false,
-    loginUser="",
-    loginId
+    colorTheme="light"
 }) => {
     return (
         <div className='d-flex flex-column' style={{minHeight: "100vh"}}>
-            <Header colorTheme={"light"} loggedIn={loggedIn} loginUser={loginUser} loginId={loginId}/>
+            <Header colorTheme={colorTheme}/>
             
             <Container fluid className='flex-fill'>
                 <Outlet/>
             </Container>`
             
-            <Footer colorTheme={"light"}/>
+            <Footer colorTheme={colorTheme}/>
         </div>
     )
 }

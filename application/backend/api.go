@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -688,43 +687,7 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Value: token,
 	}
 
-	userCookie := http.Cookie{
-		HttpOnly: false,
-		Expires:  time.Now().Add(time.Hour * 2),
-		SameSite: http.SameSiteLaxMode,
-		Path:     "/",
-		// Uncomment for https
-		// Secure: True
-		Name:  "user",
-		Value: user.FirstName,
-	}
-
-	roleCookie := http.Cookie{
-		HttpOnly: false,
-		Expires:  time.Now().Add(time.Hour * 2),
-		SameSite: http.SameSiteLaxMode,
-		Path:     "/",
-		// Uncomment for https
-		// Secure: True
-		Name:  "role",
-		Value: strconv.Itoa(user.Type),
-	}
-
-	userIdCookie := http.Cookie{
-		HttpOnly: false,
-		Expires:  time.Now().Add(time.Hour * 2),
-		SameSite: http.SameSiteLaxMode,
-		Path:     "/",
-		// Uncomment for https
-		// Secure: True
-		Name:  "id",
-		Value: strconv.Itoa(user.ID),
-	}
-
 	http.SetCookie(w, &jwtCookie)
-	http.SetCookie(w, &userCookie)
-	http.SetCookie(w, &userIdCookie)
-	http.SetCookie(w, &roleCookie)
 
 	w.WriteHeader(200)
 	w.Write([]byte(""))

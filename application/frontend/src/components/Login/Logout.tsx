@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { useNavigate } from "react-router-dom";
@@ -14,12 +14,18 @@ const Logout: React.FC<LogoutProps> = (props) => {
     const handleSubmit = (e: React.SyntheticEvent) => {
         // Jwt is stateless so we only have to remove the cookies
         removeCookie('jwt', {path:'/'});
-        removeCookie('user', {path:'/'});
-        removeCookie('id', {path:'/'});
 
-        navigate("/");
+        sessionStorage.setItem("reload", "true")
+        navigate(0)
     }
 
+    useEffect(() => {
+        const isReload = sessionStorage.getItem("reload")
+        if(isReload === "true") {
+          sessionStorage.removeItem("reload")
+          navigate("/")
+        }
+    }, [])
 
     return (
         <Form onSubmit={handleSubmit}>

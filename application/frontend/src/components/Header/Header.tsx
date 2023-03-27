@@ -8,17 +8,11 @@ import logo from '../../assets/truck-logo.jpg';
 import "../../styles/components/Header.css";
 
 export type HeaderProps = {
-    colorTheme: string,
-    loggedIn: boolean,
-    loginUser?: string,
-    loginId?: number,
+    colorTheme?: string,
 }
 
 const Header: React.FC<HeaderProps> = ({
-    colorTheme = "dark",
-    loggedIn = false,
-    loginUser = "",
-    loginId = 0
+    colorTheme="dark",
 }) => {
     return (
         <Navbar bg={colorTheme} expand="sm" className="header navbar-header mb-3" id="header-navbar">
@@ -47,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({
                         <Nav.Link href="/search" className="nav-link">Search</Nav.Link>
                     </Nav>
 
-                    <LoginNav loggedIn={loggedIn} loginUser={loginUser} loginId={loginId} />
+                    <LoginNav />
                 </Navbar.Collapse>
             </Container>
         </Navbar>
