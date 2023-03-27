@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +11,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func executeRequest(req *http.Request, s *Server) *httptest.ResponseRecorder {
@@ -349,4 +352,75 @@ func TestFailedLogin(t *testing.T) {
 	ts.DB.Model(&driver).Association("Organizations").Clear()
 	ts.DB.Delete(&driver)
 	ts.DB.Delete(&User{}, user.ID)
+}
+
+func TestCreateAdmin(t *testing.T) {
+	// creating test data
+	firstName := "New"
+	lastName := "Admin"
+	email := "newadmin@testing.com"
+	password := "x"
+	ttype := 2
+	data := CreateUserPayload{
+		FirstName:         &firstName,
+		LastName:          &lastName,
+		Email:             &email,
+		PlaintextPassword: &password,
+		Type:              &ttype,
+	}
+
+	// turning test data into a json body that can be used
+	jsonBody, _ := json.Marshal(data)
+	bodyReader := bytes.NewReader(jsonBody)
+
+	req, _ := http.NewRequest("POST", "/users", bodyReader)
+
+	response := executeRequest(req, ts)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	// putting the returned response into User to compare
+	t.Log(response.Body.String())
+	var user User
+	err := json.Unmarshal(response.Body.Bytes(), &user)
+	if err != nil {
+		t.Error("Failed to unmarshal response body from GET /users/{id}")
+	}
+	require.NotEqual(t, user.ID, 0, "Newly created user does not have a new ID.")
+	require.Equal(t, user.FirstName, firstName)
+	require.Equal(t, user.LastName, lastName)
+	require.Equal(t, user.Email, email)
+	require.Equal(t, user.Type, ttype)
+	// clearing out admin
+	var admin Admin
+	ts.DB.Where("user_id = ?", user.ID).Delete(&admin)
+}
+
+func TestDeleteAdmin(t *testing.T) {
+	// test data
+	var user User
+	var admin Admin
+	user.FirstName = "New"
+	user.LastName = "Admin"
+	user.Email = "newadmin@testing.com"
+	hashedBytes, _ := bcrypt.GenerateFromPassword([]byte("x"), bcrypt.MinCost)
+	user.PasswordHash = string(hashedBytes)
+	user.Type = 2
+	admin.User = user
+	ts.DB.Create(&admin)
+
+	// request to api
+	jsonBody, _ := json.Marshal(admin)
+	bodyReader := bytes.NewReader(jsonBody)
+	url := fmt.Sprintf("/users/%d", admin.User.ID)
+	req, _ := http.NewRequest("DELETE", url, bodyReader)
+	response := executeRequest(req, ts)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	// response and comparison
+	t.Log(response.Body.String())
+	result := ts.DB.First(&Admin{}, &admin)
+	require.True(t, errors.Is(result.Error, gorm.ErrRecordNotFound), "Failed to Delete Admin")
+	result = ts.DB.First(&User{}, &user)
+	require.True(t, errors.Is(result.Error, gorm.ErrRecordNotFound), "Failed to Delete User associated with Admin")
 }
