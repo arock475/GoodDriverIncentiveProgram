@@ -86,17 +86,6 @@ func (s *Server) MountHandlers() {
 			r.Get("/", s.ListDrivers)
 		})
 
-		r.Route("/users", func(r chi.Router) {
-			r.Get("/", s.ListUsers)
-			r.Post("/", s.CreateUser)
-
-			r.Route("/{userID}", func(r chi.Router) {
-				r.Get("/", s.GetUser)
-				r.Get("/catalog", s.GetUserCatalogCtx)
-				r.Put("/profile", s.UpdateProfile)
-			})
-		})
-
 		r.Route("/catalog", func(r chi.Router) {
 			r.Post("/", s.GetCatalog)
 		})
@@ -131,6 +120,17 @@ func (s *Server) MountHandlers() {
 
 		r.Route("/login", func(r chi.Router) {
 			r.Post("/", s.LoginHandler)
+		})
+
+		r.Route("/users", func(r chi.Router) {
+			r.Get("/", s.ListUsers)
+			r.Post("/", s.CreateUser)
+
+			r.Route("/{userID}", func(r chi.Router) {
+				r.Get("/", s.GetUser)
+				r.Get("/catalog", s.GetUserCatalogCtx)
+				r.Put("/profile", s.UpdateProfile)
+			})
 		})
 	})
 }
