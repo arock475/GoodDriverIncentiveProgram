@@ -1,4 +1,4 @@
-import React, {useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
@@ -16,7 +16,7 @@ interface Organization {
 
 interface Sponsor {
     ID: number,
-    UserID: number, 
+    UserID: number,
     OrganizationID: number
 }
 
@@ -26,10 +26,10 @@ enum User {
     Admin = 2,
 }
 
-const CreateUser = ({}) => {
+const CreateUser = ({ }) => {
     // claim
     const [userClaims, setUserClaims] = useState(getUserClaims());
-    
+
     // organizations
     const [orgs, setOrgs] = useState<Organization[]>([])
     const [selectedOrg, setSelectedOrg] = useState<Organization>({
@@ -68,21 +68,21 @@ const CreateUser = ({}) => {
     useEffect(() => {
         // load sponsor's org
         const fetchSponsorOrg = async () => {
-            const s_response = await fetch(`http://localhost:3333/sponsors/u:${userClaims.id}`);
+            const s_response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaims.id}`);
             const sponsor: Sponsor = await s_response.json();
-            const o_response = await fetch(`http://localhost:3333/orgs/${sponsor.OrganizationID}`);
+            const o_response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/${sponsor.OrganizationID}`);
             const org: Organization = await o_response.json();
             setSelectedOrg(org);
         }
         if (userClaims.role == User.Sponsor) {
-            fetchSponsorOrg(); 
+            fetchSponsorOrg();
         }
     }, [creating])
 
     useEffect(() => {
         // load orgs
         const fetchOrgs = async () => {
-            const response = await fetch('http://localhost:3333/orgs');
+            const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs');
             const data = await response.json();
             setOrgs(data);
         };
@@ -110,11 +110,11 @@ const CreateUser = ({}) => {
             email: target.email.value,
             password: target.password.value,
             type: creating,
-            ...((creating==User.Driver || creating==User.Sponsor) ? {organizationId: selectedOrg.ID} : {}),
-            ...((creating==User.Driver) ? {truckType: target.truckType.value,} : {}),
-            ...((creating==User.Driver) ? {licenceNumber: target.licenceNumber.value,} : {})
+            ...((creating == User.Driver || creating == User.Sponsor) ? { organizationId: selectedOrg.ID } : {}),
+            ...((creating == User.Driver) ? { truckType: target.truckType.value, } : {}),
+            ...((creating == User.Driver) ? { licenceNumber: target.licenceNumber.value, } : {})
         }
-        const response = await fetch('http://localhost:3333/users', {
+        const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users', {
             method: 'POST',
             body: JSON.stringify(formData)
         }).then(async response => {
@@ -124,7 +124,7 @@ const CreateUser = ({}) => {
             }
             else if (response.status >= 200 && response.status < 300) {
                 // resubmit dialog
-                const resubmit = (userClaims.role == User.Sponsor || userClaims.role == User.Admin) ? window.confirm('Do you want to create another user?') : false;   
+                const resubmit = (userClaims.role == User.Sponsor || userClaims.role == User.Admin) ? window.confirm('Do you want to create another user?') : false;
                 if (resubmit) {
                     window.location.href = '/login/create';
                 }
@@ -148,13 +148,13 @@ const CreateUser = ({}) => {
     return (
         <Form onSubmit={handleSubmit}>
             <div>
-                { (userClaims.role == User.Admin || userClaims.role == User.Sponsor) && (    
+                {(userClaims.role == User.Admin || userClaims.role == User.Sponsor) && (
                     <Form.Group>
-                        <Form.Label>Select a User to Create </Form.Label>           
+                        <Form.Label>Select a User to Create </Form.Label>
                         <Form.Control as='select' onChange={handleCreatingChange}>
                             <option value={User.Driver}>Driver</option>
                             <option value={User.Sponsor}>Sponsor</option>
-                            { userClaims.role == User.Admin && <option value={User.Admin}>Admin</option>}
+                            {userClaims.role == User.Admin && <option value={User.Admin}>Admin</option>}
                         </Form.Control>
                     </Form.Group>
                 )}
@@ -174,10 +174,10 @@ const CreateUser = ({}) => {
             <Row>
                 <Col>
                     <Form.Label>Email</Form.Label>
-                    <Form.Control 
-                        type="email" 
-                        name="email" 
-                        placeholder='johndoe@email.com' 
+                    <Form.Control
+                        type="email"
+                        name="email"
+                        placeholder='johndoe@email.com'
                         isInvalid={emailInUse}
                     />
                     <Form.Control.Feedback type='invalid'>
@@ -188,11 +188,11 @@ const CreateUser = ({}) => {
             <Row>
                 <Col>
                     <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" name="password"/>
+                    <Form.Control type="password" name="password" />
                 </Col>
             </Row>
             <div>
-                { (creating == User.Driver) && (
+                {(creating == User.Driver) && (
                     <div>
                         <Form.Group>
                             <Form.Label>Truck Type</Form.Label>
@@ -206,7 +206,7 @@ const CreateUser = ({}) => {
                 )}
             </div>
             <div>
-                { /* Assigning Organizations by Choice */ }
+                { /* Assigning Organizations by Choice */}
                 {((creating == User.Driver && userClaims.role != User.Sponsor) || (creating == User.Sponsor && userClaims.role == User.Admin)) &&
                     <div>
                         <Form.Group>
@@ -223,8 +223,8 @@ const CreateUser = ({}) => {
                         </Form.Group>
                     </div>
                 }
-                { /* Assigning Organizations by Default */ }
-                { ((creating == User.Driver || creating == User.Sponsor) && userClaims.role == User.Sponsor) && 
+                { /* Assigning Organizations by Default */}
+                {((creating == User.Driver || creating == User.Sponsor) && userClaims.role == User.Sponsor) &&
                     <div>
                         <Form.Group>
                             <Form.Label>Associated Organization</Form.Label>

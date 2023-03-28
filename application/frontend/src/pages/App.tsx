@@ -36,7 +36,7 @@ const App = () => {
 
   // useEffect(() => {
   //   const fetchAuth = async () => {
-  //     fetch("http://localhost:3333/auth/is-auth", {
+  //     fetch("http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/auth/is-auth", {
   //       method: "GET",
   //       credentials: "include"
   //     }).then(async response => {
@@ -60,7 +60,7 @@ const App = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Layout colorTheme=""/>}>
+      <Route path="/" element={<Layout colorTheme="" />}>
         {/* Home Page */}
         <Route index element={<Dashboard />} />
         <Route path="logout" element={<Logout />} />

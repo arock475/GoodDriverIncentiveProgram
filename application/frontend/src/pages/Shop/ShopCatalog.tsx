@@ -44,7 +44,7 @@ const ShopCatalog: React.FC = () => {
   const entriesPerPage = 25;
 
   useEffect(() => {
-    fetch(`http://localhost:3333/users/${userClaims.id}/catalog`)
+    fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/${userClaims.id}/catalog`)
       .then((response) => response.json())
       .then((data: DriverCatalogCtx) => {
         setDriverCtx(data);
@@ -87,7 +87,7 @@ const ShopCatalog: React.FC = () => {
       }),
     };
 
-    fetch("http://localhost:3333/catalog", requestOptions)
+    fetch("http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/catalog", requestOptions)
       .then((response) => response.json())
       .then((data: EbayResponse) => {
         setTotalEntries(+data.totalEntries);
