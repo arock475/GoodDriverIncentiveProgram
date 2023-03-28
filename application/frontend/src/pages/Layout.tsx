@@ -1,6 +1,8 @@
 import React from 'react';
 import { Outlet } from "react-router-dom";
 import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/FooterComponent'
 
@@ -16,8 +18,12 @@ const Layout: React.FC<LayoutProps> = ({
             <Header colorTheme={colorTheme}/>
             
             <Container fluid className='flex-fill'>
-                <Outlet/>
-            </Container>`
+                <Row className="justify-content-md-center">
+                    <Col lg={8}>
+                        <Outlet/>
+                    </Col>
+                </Row>
+            </Container>
             
             <Footer colorTheme={colorTheme}/>
         </div>
