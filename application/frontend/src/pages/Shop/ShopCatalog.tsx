@@ -10,6 +10,7 @@ import {
   FormControl,
   Button,
 } from "react-bootstrap";
+import { getUserClaims } from '../../utils/getUserClaims';
 
 interface EbayResponse {
   items: ShopItem[];
@@ -38,13 +39,12 @@ const ShopCatalog: React.FC = () => {
   const [totalEntries, setTotalEntries] = useState(0);
   const [showAffordableOnly, setShowAffordableOnly] = useState(false);
 
-  // userID should be decoded from jwt token
-  const userID = 1;
+  const [userClaims, setUserClaims] = useState(getUserClaims());
 
   const entriesPerPage = 25;
 
   useEffect(() => {
-    fetch(`http://localhost:3333/users/${userID}/catalog`)
+    fetch(`http://localhost:3333/users/${userClaims.id}/catalog`)
       .then((response) => response.json())
       .then((data: DriverCatalogCtx) => {
         setDriverCtx(data);

@@ -1,10 +1,9 @@
 import react, { useState, useEffect } from 'react';
 import { useCookies } from 'react-cookie';
 import jwt_decode from "jwt-decode";
-import App from '../App';
-import { format } from 'path';
 import DriverApp from '../../components/Applications/DriverApp';
 import { Table } from 'react-bootstrap';
+import { getUserClaims } from '../../utils/getUserClaims';
 
 
 type Application = {
@@ -20,14 +19,11 @@ type jwtClaim = {
 }
 
 const DriverApplications: React.FC<{}> = () => {
-    const [userId, setUserId] = useState(-1);
+    const [userClaims, setUserClaims] = useState(getUserClaims());
     const [orgList, setOrgList] = useState([]);
-    const [cookies, setCookie, removeCookie] = useCookies();
 
     const renderApplications = () => {
-        if (userId === -1) return;
-
-        fetch(`http://localhost:3333/applications/driver?driverID=${userId}`, {
+        fetch(`http://localhost:3333/applications/driver?driverID=${userClaims.id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -52,22 +48,8 @@ const DriverApplications: React.FC<{}> = () => {
         }).catch()
     }
 
-    // Run when userId loads
     useEffect(() => {
-        renderApplications()
-    }, [userId])
-
-    // On load use effect
-    useEffect(() => {
-        const token = cookies.jwt;
-        if (token) {
-            const decoded: jwtClaim = jwt_decode(token)
-
-            setUserId(decoded.id)
-        }
-        else {
-            throw new Error("Invalid login")
-        }
+        renderApplications();
     }, [])
 
 
@@ -85,7 +67,7 @@ const DriverApplications: React.FC<{}> = () => {
                     return <DriverApp
                         key={`${item.organizationId}-${item.status}`}
                         OrgID={item.organizationId}
-                        UserID={userId}
+                        UserID={userClaims.id}
                         Name={item.organizationName}
                         Status={item.status}
                         ParentCallback={renderApplications}
