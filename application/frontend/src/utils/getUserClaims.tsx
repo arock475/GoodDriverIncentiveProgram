@@ -2,7 +2,7 @@ import jwt_decode from "jwt-decode";
 import cookies from "js-cookies";
 
 
-type userClaims = {
+export type UserClaims = {
     authorized: boolean,
     role: number,
     user: string,
@@ -13,9 +13,9 @@ export const getUserClaims = () => {
     const token = cookies.getItem("jwt");
     
     if (token) {
-        const decoded: userClaims = jwt_decode(token)
+        const decoded: UserClaims = jwt_decode(token)
 
-        const claims: userClaims = {
+        const claims: UserClaims = {
             authorized: true,
             id: decoded.id,
             user: decoded.user,
@@ -25,7 +25,7 @@ export const getUserClaims = () => {
         return claims
     }
     
-    const claims: userClaims = {
+    const claims: UserClaims = {
         authorized: false,
         id: 0,
         user: "",

@@ -29,6 +29,7 @@ import ResetPassword from './Profile/ResetPassword';
 import PointManagment from './Points/PointManagment';
 import CreateCategory from './Points/CreateCategory'; import AddPoints from './Points/AddPoints';
 import ShopCatalog from './Shop/ShopCatalog'
+import Dashboard from './Dashboard/Dashboard';
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -63,7 +64,7 @@ const App = () => {
     <Routes>
       <Route path="/" element={<Layout colorTheme=""/>}>
         {/* Home Page */}
-        <Route index element={<DriverDashboard />} />
+        <Route index element={<Dashboard />} />
         <Route path="logout" element={<Logout />} />
 
         {/* Login Pages */}
