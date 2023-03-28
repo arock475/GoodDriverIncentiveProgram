@@ -32,7 +32,7 @@ interface PointsTotals {
     Driver: Driver
 }
 
-const PointsTable = ({}) => {  
+const PointsTable = ({ }) => {
 
     // user role and cookies variables
     const [userClaims, setUserClaims] = useState(getUserClaims());
@@ -46,7 +46,7 @@ const PointsTable = ({}) => {
 
         // making call to api
         const fetchPoints = async () => {
-            const response = await fetch(`http://localhost:3333/points/${userClaims.id}/totals`); 
+            const response = await fetch(`http://localhost:3333/points/${userClaims.id}/totals`);
             const data = await response.json();
             setPoints(data);
         };
@@ -61,22 +61,22 @@ const PointsTable = ({}) => {
                 return (
                     <Table striped bordered hover>
                         <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Organization Name</th>
-                            <th>Points</th>
-                        </tr>
+                            <tr>
+                                <th>ID</th>
+                                <th>Organization Name</th>
+                                <th>Points</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        {
-                            points.map((pointsTotal) => (
-                                <tr key={pointsTotal.Organization.ID}>
-                                    <td>{pointsTotal.Organization.ID}</td>
-                                    <td>{pointsTotal.Organization.Name}</td>
-                                    <td>{pointsTotal.Total}</td>
-                                </tr>
-                            ))
-                        }
+                            {
+                                points.map((pointsTotal) => (
+                                    <tr key={pointsTotal.Organization.ID}>
+                                        <td>{pointsTotal.Organization.ID}</td>
+                                        <td>{pointsTotal.Organization.Name}</td>
+                                        <td>{pointsTotal.Total}</td>
+                                    </tr>
+                                ))
+                            }
                         </tbody>
                     </Table>
                 );
@@ -86,16 +86,16 @@ const PointsTable = ({}) => {
                     <div> Error loading Points Table </div>
                 );
             }
-    case 1: // sponsor
-        // implement later
-        break;
-    case 2: // admin
-        // implement later
-        break;
-    default: // loggedIn w/o role -> error from depreciated user
-        console.log("PointsTable component: depreciated user attempting to access points!");
-        break;
-}
+        case 1: // sponsor
+            // implement later
+            break;
+        case 2: // admin
+            // implement later
+            break;
+        default: // loggedIn w/o role -> error from depreciated user
+            console.log("PointsTable component: depreciated user attempting to access points!");
+            break;
+    }
 }
 
 export default PointsTable;

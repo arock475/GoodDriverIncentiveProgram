@@ -22,6 +22,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import{ useState, useEffect } from 'react';
 import AWS from 'aws-sdk'
 
+interface Orgs {
+  OrganizationID: number,
+  OrganizationName: string,
+  Status: string
+}
+
 AWS.config.update({
     accessKeyId: process.env.REACT_APP_ACCESS_KEY_ID,
     secretAccessKey: process.env.REACT_APP_SECRET_ACCESS_KEY
@@ -34,6 +40,7 @@ const myBucket = new AWS.S3({
 
 export default function EditProfilePage() {
     const { userID } = useParams();
+    const [orgs, setOrgs] = useState<Orgs[]>([]);
     const [Data,setData]=useState({
       email:'',
       firstName:'',
@@ -48,17 +55,55 @@ export default function EditProfilePage() {
        fetch('http://localhost:3333/users/' + userID)
           .then((res) => res.json())
           .then((data) => {
+            if(data.image == '') {
+              data.image = 'https://team25-s3bucket.s3.amazonaws.com/Default-PFP.jpg'
+            }
              setData({email:data.email, firstName:data.firstName, lastName:data.lastName, phone:data.phone, bio:data.bio, image:data.image})
+          })
+          .catch((err) => {
+             console.log(err.message);
+          });
+          fetch(`http://localhost:3333/applications/driver?driverID=${userID}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: "include",
+        })
+          .then((res) => res.json())
+          .then((data) => {
+             setOrgs(data);
           })
           .catch((err) => {
              console.log(err.message);
           });
     }, []);
 
-    const email = {      
-      name: Data.firstName + ' ' + Data.lastName,
-      email: Data.email
-    }
+    var OrgsArray = [], PendingArray = [];
+    orgs.map((org) => {
+      if(org.Status ==='Employed') {
+        OrgsArray.push({
+          OrganizationID: org.OrganizationID,
+          OrganizationName:org.OrganizationName,
+          Status:org.Status
+        })
+      }
+      else if(org.Status === 'Pending') {
+        PendingArray.push({
+          OrganizationID: org.OrganizationID,
+          OrganizationName:org.OrganizationName,
+          Status:org.Status
+        })
+      }
+    }) 
+  
+    var index = 0;
+    OrgsArray.map((org) => {
+        if(index != OrgsArray.length - 1) {
+          org.OrganizationName = org.OrganizationName + ', ';
+        }
+        index++;
+    })
 
     // Updates Data struct when user changes a field
     const handleChange = (event) => {
@@ -139,8 +184,10 @@ export default function EditProfilePage() {
                   style={{ width: '150px' }}
                   fluid />
                 <p className="text-muted mb-1">{Data.email}</p>
-                <p className="text-muted mb-1">Company Name</p>
-                <p className="text-muted mb-4">Organization Name</p>
+                <p className="text-muted mb-1">Affiliated Organizations:</p>
+                <p className="text-muted mb-4"> {OrgsArray.map((org) => (
+                  org.OrganizationName
+                ))}</p>
               </MDBCardBody>
               <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={toggleShow}>Update Profile Picture</MDBBtn></div>
               <MDBModal show={basicModal} setShow={setBasicModal} tabIndex="-1">
@@ -233,9 +280,10 @@ export default function EditProfilePage() {
 
             <MDBRow>
               <MDBCol md="6">
-                <MDBCard className="mb-4 mb-md-0">
-                  <MDBCardBody>
-                    <MDBCardText className="mb-4"><span className="text-primary font-italic me-1">Driver</span> Application Status</MDBCardText>
+              {PendingArray.map((org) => (
+                <MDBCard className="mb-4 mb-md-0" key={org.OrganizationID}>
+                    <MDBCardBody>
+                    <MDBCardText className="mb-4"><span className="text-primary font-italic me-1">{org.OrganizationName}</span>Application Status</MDBCardText>
                     <MDBCardText className="mb-1" style={{ fontSize: '.77rem' }}>Completion Progress</MDBCardText>
                     <MDBProgress className="rounded">
                       <MDBProgressBar width={80} valuemin={0} valuemax={100} />
@@ -245,6 +293,7 @@ export default function EditProfilePage() {
                     </MDBCol>
                   </MDBCardBody>
                 </MDBCard>
+              ))}
               </MDBCol>
             </MDBRow>
           </MDBCol>
