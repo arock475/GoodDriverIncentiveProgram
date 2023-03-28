@@ -152,3 +152,14 @@ type DriverApplication struct {
 	OrganizationID int `gorm:"primaryKey;not null"`
 	Status         string
 }
+
+// Logs
+
+type AuthenticationLog struct {
+	LogID       int       `gorm:"primaryKey;not null"`
+	Event       string    `gorm:"not null"`
+	Status      string    `gorm:"not null"`
+	Description string    ``
+	Email       string    ``
+	Time        time.Time `gorm:"not null"`
+}

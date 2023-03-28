@@ -49,6 +49,8 @@ func (s *Server) ConnectDatabase(schemaName string) {
 	db.AutoMigrate(&Points{})
 	db.AutoMigrate(&DriverApplication{})
 
+	db.AutoMigrate(&AuthenticationLog{})
+
 	s.DB = db
 }
 
@@ -678,21 +680,42 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&data)
 
+	log := AuthenticationLog{
+		Event: "Login",
+		Email: "",
+		Time:  time.Now(),
+	}
+
 	if err != nil {
 		fmt.Print("Http error\n")
 		http.Error(w, err.Error(), http.StatusBadRequest)
+
+		log.Description = "Http error"
+		log.Status = "Error"
+		s.DB.Create(&log)
+
 		return
 	}
 
 	if data.Email == nil {
 		fmt.Print("Email error\n")
 		http.Error(w, "LoginUserPayload missing required field: \"email\"", http.StatusNotFound)
+
+		log.Description = "LoginUserPayload missing required field: \"email\""
+		log.Status = "Error"
+		s.DB.Create(&log)
+
 		return
 	}
 
 	if data.PlaintextPassword == nil {
 		fmt.Print("Password error\n")
 		http.Error(w, "LoginUserPayload missing required field: \"password\"", http.StatusNotFound)
+
+		log.Description = "LoginUserPayload missing required field: \"password\""
+		log.Status = "Error"
+		s.DB.Create(&log)
+
 		return
 	}
 
@@ -702,12 +725,24 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	result := s.DB.Where("email = ?", data.Email).First(&user)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) || result.Error != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
+
+		log.Description = "User not found"
+		log.Status = "Error"
+		log.Email = *data.Email
+		s.DB.Create(&log)
+
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(*data.PlaintextPassword))
 	if err != nil {
 		http.Error(w, "User authentication failed: wrong password.", http.StatusUnauthorized)
+
+		log.Description = "User authentication failed: wrong password."
+		log.Status = "Error"
+		log.Email = *data.Email
+		s.DB.Create(&log)
+
 		return
 	}
 
@@ -731,6 +766,11 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &jwtCookie)
+
+	log.Status = "Success"
+	log.Description = ""
+	log.Email = *data.Email
+	s.DB.Create(&log)
 
 	w.WriteHeader(200)
 	w.Write([]byte(""))
