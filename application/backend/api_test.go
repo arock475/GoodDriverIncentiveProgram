@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -232,66 +233,6 @@ func TestUpdateProfile(t *testing.T) {
 	ts.DB.Delete(&User{}, user.ID)
 }
 
-func TestSuccessfulLogin(t *testing.T) {
-	firstName := "New"
-	lastName := "User"
-	email := "newuser@testing.com"
-	password := "mypassword$"
-	license := "123USP"
-	truck := "Semi-Truck"
-	org := 1
-	ttype := 0
-
-	data := CreateUserPayload{
-		FirstName:         &firstName,
-		LastName:          &lastName,
-		Email:             &email,
-		PlaintextPassword: &password,
-		LicenceNumber:     &license,
-		TruckType:         &truck,
-		OrganizationId:    &org,
-		Type:              &ttype,
-	}
-
-	jsonBody, _ := json.Marshal(data)
-	bodyReader := bytes.NewReader(jsonBody)
-
-	// Create new user
-	req, _ := http.NewRequest("POST", "/users", bodyReader)
-	response := executeRequest(req, ts)
-	checkResponseCode(t, http.StatusOK, response.Code)
-
-	var user User
-	err := json.Unmarshal(response.Body.Bytes(), &user)
-	if err != nil {
-		t.Error("Failed to unmarshal response body from GET /users/{id}")
-	}
-
-	// Test login payload with the same email and password
-	// for the newly created user
-	data2 := LoginUserPayload{
-		Email:             &email,
-		PlaintextPassword: &password,
-	}
-
-	jsonBody, _ = json.Marshal(data2)
-	bodyReader = bytes.NewReader(jsonBody)
-
-	// Attempt to login the new user
-	req, _ = http.NewRequest("POST", "/login", bodyReader)
-	response = executeRequest(req, ts)
-	checkResponseCode(t, http.StatusOK, response.Code)
-
-	require.Equal(t, http.StatusOK, response.Code)
-
-	// Cleanup created user from test
-	var driver Driver
-	driver.ID = user.ID
-	ts.DB.Model(&driver).Association("Organizations").Clear()
-	ts.DB.Delete(&driver)
-	ts.DB.Delete(&User{}, user.ID)
-}
-
 func TestFailedLogin(t *testing.T) {
 	firstName := "New"
 	lastName := "User"
@@ -423,4 +364,200 @@ func TestDeleteAdmin(t *testing.T) {
 	require.True(t, errors.Is(result.Error, gorm.ErrRecordNotFound), "Failed to Delete Admin")
 	result = ts.DB.First(&User{}, &user)
 	require.True(t, errors.Is(result.Error, gorm.ErrRecordNotFound), "Failed to Delete User associated with Admin")
+}
+
+func TestDriverLogin(t *testing.T) {
+	firstName := "New"
+	lastName := "User"
+	email := "newuser@testing.com"
+	password := "mypassword$"
+	license := "123USP"
+	truck := "Semi-Truck"
+	org := 1
+	ttype := 0
+
+	data := CreateUserPayload{
+		FirstName:         &firstName,
+		LastName:          &lastName,
+		Email:             &email,
+		PlaintextPassword: &password,
+		LicenceNumber:     &license,
+		TruckType:         &truck,
+		OrganizationId:    &org,
+		Type:              &ttype,
+	}
+
+	jsonBody, _ := json.Marshal(data)
+	bodyReader := bytes.NewReader(jsonBody)
+
+	// Create new user
+	req, _ := http.NewRequest("POST", "/users", bodyReader)
+	response := executeRequest(req, ts)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	var user User
+	err := json.Unmarshal(response.Body.Bytes(), &user)
+	if err != nil {
+		t.Error("Failed to unmarshal response body from GET /users/{id}")
+	}
+
+	// Test login payload with the same email and password
+	// for the newly created user
+	data2 := LoginUserPayload{
+		Email:             &email,
+		PlaintextPassword: &password,
+	}
+
+	jsonBody, _ = json.Marshal(data2)
+	bodyReader = bytes.NewReader(jsonBody)
+
+	// Attempt to login the new user
+	req, _ = http.NewRequest("POST", "/login", bodyReader)
+	response = executeRequest(req, ts)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	require.Equal(t, http.StatusOK, response.Code)
+
+	// Cleanup created user from test
+	var driver Driver
+	driver.ID = user.ID
+	ts.DB.Model(&driver).Association("Organizations").Clear()
+	ts.DB.Delete(&driver)
+	ts.DB.Delete(&User{}, user.ID)
+}
+
+func TestLoginSponsor(t *testing.T) {
+	// creating test data
+	firstName := "New"
+	lastName := "Sponsor"
+	email := "newsponsor@testing.com"
+	password := "x"
+	ttype := 1
+	org := 1
+	data := CreateUserPayload{
+		FirstName:         &firstName,
+		LastName:          &lastName,
+		Email:             &email,
+		PlaintextPassword: &password,
+		Type:              &ttype,
+		OrganizationId:    &org,
+	}
+
+	// turning test data into a json body that can be used
+	jsonBody, _ := json.Marshal(data)
+	bodyReader := bytes.NewReader(jsonBody)
+
+	req, _ := http.NewRequest("POST", "/users", bodyReader)
+
+	response := executeRequest(req, ts)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	var user User
+	err := json.Unmarshal(response.Body.Bytes(), &user)
+	if err != nil {
+		t.Error("Failed to unmarshal response body from GET /users/{id}")
+	}
+
+	data2 := LoginUserPayload{
+		Email:             &email,
+		PlaintextPassword: &password,
+	}
+
+	jsonBody, _ = json.Marshal(data2)
+	bodyReader = bytes.NewReader(jsonBody)
+
+	// Attempt to login the new sponsor
+	req, _ = http.NewRequest("POST", "/login", bodyReader)
+	response = executeRequest(req, ts)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	require.Equal(t, http.StatusOK, response.Code)
+	ts.DB.Delete(&Sponsor{}, "user_id = ?", user.ID)
+	ts.DB.Delete(&User{}, user.ID)
+}
+
+func TestLoginAdmin(t *testing.T) {
+	// creating test data
+	firstName := "New"
+	lastName := "Admin"
+	email := "newadmin@testing.com"
+	password := "x"
+	ttype := 2
+	data := CreateUserPayload{
+		FirstName:         &firstName,
+		LastName:          &lastName,
+		Email:             &email,
+		PlaintextPassword: &password,
+		Type:              &ttype,
+	}
+
+	// turning test data into a json body that can be used
+	jsonBody, _ := json.Marshal(data)
+	bodyReader := bytes.NewReader(jsonBody)
+
+	req, _ := http.NewRequest("POST", "/users", bodyReader)
+
+	response := executeRequest(req, ts)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	var user User
+	err := json.Unmarshal(response.Body.Bytes(), &user)
+	if err != nil {
+		t.Error("Failed to unmarshal response body from GET /users/{id}")
+	}
+
+	data2 := LoginUserPayload{
+		Email:             &email,
+		PlaintextPassword: &password,
+	}
+
+	jsonBody, _ = json.Marshal(data2)
+	bodyReader = bytes.NewReader(jsonBody)
+
+	// Attempt to login the new sponsor
+	req, _ = http.NewRequest("POST", "/login", bodyReader)
+	response = executeRequest(req, ts)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	require.Equal(t, http.StatusOK, response.Code)
+	ts.DB.Delete(&Admin{}, "user_id = ?", user.ID)
+	ts.DB.Delete(&User{}, user.ID)
+}
+
+func TestFetchingEbayResults(t *testing.T) {
+	keywords := []string{"tools"}
+	entries := 25
+	page := 1
+	org := 1
+	crp := CatalogRequestPayload{
+		Keywords:       &keywords,
+		EntriesPerPage: &entries,
+		TargetPage:     &page,
+		OrganizationID: &org,
+	}
+
+	// turning test data into a json body that can be used
+	jsonBody, _ := json.Marshal(crp)
+	bodyReader := bytes.NewReader(jsonBody)
+
+	req, _ := http.NewRequest("POST", "/catalog", bodyReader)
+
+	response := executeRequest(req, ts)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	var data CatalogReturnPayload
+	err := json.Unmarshal(response.Body.Bytes(), &data)
+	if err != nil {
+		t.Error("Failed to unmarshal response body from POST /catalog")
+	}
+
+	count, _ := strconv.Atoi(data.Count)
+	require.NotEmpty(t, data.Items, "Returned response from ebay catalog has no items.")
+	require.LessOrEqual(t, count, entries)
+	require.NotEmpty(t, data.Items[0].ItemID, "ItemID in EbayItem is empty.")
+	require.NotEmpty(t, data.Items[0].Title, "Title in EbayItem is empty.")
+	require.NotEmpty(t, data.Items[0].Points, "Points in EbayItem is 0.")
 }
