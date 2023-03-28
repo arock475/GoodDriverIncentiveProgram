@@ -13,11 +13,8 @@ import Profile from '../pages/Profile/Profile';
 import EditProfile from '../pages/Profile/EditProfile';
 import UserSearch from '../components/Search/UserSearch';
 import Faq from '../pages/FAQ/Faq';
-// create user page imports
-import CreateDriver from './CreateUsers/CreateDriver'
+
 import CreateOrganization from './CreateUsers/CreateOrganization'
-import CreateSponsor from './CreateUsers/CreateSponsor'
-import CreateAdmin from './CreateUsers/CreateAdmin'
 import DriverDashboard from './Dashboard/DriverDashboard';
 import SponsorDashboard from './Dashboard/SponsorDashboard';
 import AdminDashboard from './Dashboard/AdminDashboard';
@@ -29,6 +26,7 @@ import ResetPassword from './Profile/ResetPassword';
 import PointManagment from './Points/PointManagment';
 import CreateCategory from './Points/CreateCategory'; import AddPoints from './Points/AddPoints';
 import ShopCatalog from './Shop/ShopCatalog'
+import CreateUser from '../components/CreateUser/CreateUser';
 import Dashboard from './Dashboard/Dashboard';
 
 const App = () => {
@@ -70,7 +68,7 @@ const App = () => {
         {/* Login Pages */}
         <Route path="login">
           <Route index element={<Login />} />
-          <Route path="create" element={<CreateAccount />} />
+          <Route path="create" element={<CreateUser />} />
         </Route>
 
         {/* Profile Links */}
@@ -92,12 +90,8 @@ const App = () => {
         </Route>
 
         {/* Create Pages*/}
-        <Route path="admin">
-          <Route path="create-driver" element={<CreateDriver />} />
-          <Route path="create-org" element={<CreateOrganization />} />
-          <Route path="create-sponsor" element={<CreateSponsor />} />
-          <Route path="create-admin" element={<CreateAdmin />} />
-        </Route>
+        <Route path="create-user" element={<CreateUser />} />
+        <Route path="create-org" element={<CreateOrganization />} />
         <Route path="points" element={<Points loggedIn={loggedIn} loginRole={loggedInRole} />} />
 
         {/* Point Pages */}

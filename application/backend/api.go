@@ -121,6 +121,12 @@ func (s *Server) MountHandlers() {
 			r.Get("/", s.ListDrivers)
 		})
 
+		r.Route("/sponsors", func(r chi.Router) {
+			r.Route("/u:{userID}", func(r chi.Router) {
+				r.Get("/", s.GetSponsorByUser)
+			})
+		})
+
 		r.Route("/points", func(r chi.Router) {
 			r.Get("/", s.ListPoints)
 			r.Post("/create", s.CreatePoint)
@@ -147,7 +153,7 @@ func init() {
 func main() {
 	s := CreateNewServer()
 	s.MountHandlers()
-	s.ConnectDatabase("dev6")
+	s.ConnectDatabase("devCreateRef")
 
 	fmt.Print("Running\n")
 
@@ -402,6 +408,7 @@ func (s *Server) GetOrg(w http.ResponseWriter, r *http.Request) {
 	returned, _ := json.Marshal(org)
 	w.Write(returned)
 }
+
 func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 	// Recieing data fomr client-side json and errochecking it
 	data := CreateOrgPayload{}
@@ -431,6 +438,7 @@ func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 	var org Organization
 	org.Name = *data.Name
 	org.Biography = *data.Bio
+	org.Phone = *data.Phone
 	org.Email = *data.Email
 	org.LogoURL = *data.LogoURL
 
@@ -443,6 +451,26 @@ func (s *Server) CreateOrganization(w http.ResponseWriter, r *http.Request) {
 	}
 
 	returned, _ := json.Marshal(org)
+	w.Write(returned)
+}
+
+/// Sponsor
+
+func (s *Server) GetSponsorByUser(w http.ResponseWriter, r *http.Request) {
+	var sponsor Sponsor
+
+	if userID := chi.URLParam(r, "userID"); userID != "" {
+		result := s.DB.First(&sponsor, "user_id = ?", userID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Sponsor Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Sponsor Not Found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	returned, _ := json.Marshal(sponsor)
 	w.Write(returned)
 }
 

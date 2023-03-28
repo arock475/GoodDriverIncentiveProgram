@@ -30,10 +30,8 @@ const Header: React.FC<HeaderProps> = ({
                             <NavDropdown.Item href="/points">Point History</NavDropdown.Item>
                         </NavDropdown>
                         <NavDropdown title="Create" id="create-navbar-dropdown">
-                            <NavDropdown.Item href="/admin/create-driver">Driver</NavDropdown.Item>
-                            <NavDropdown.Item href="/admin/create-sponsor">Sponsor</NavDropdown.Item>
-                            <NavDropdown.Item href="/admin/create-admin">Admin</NavDropdown.Item>
-                            <NavDropdown.Item href="/admin/create-org">Organization</NavDropdown.Item>
+                            <NavDropdown.Item href="/create-user">User</NavDropdown.Item>
+                            <NavDropdown.Item href="/create-org">Organization</NavDropdown.Item>
                         </NavDropdown>
                         <Nav.Link href="/driver/orders" className="nav-link">Orders</Nav.Link>
                         <Nav.Link href="/driver/organizations" className="nav-link">Organizations</Nav.Link>
