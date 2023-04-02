@@ -33,6 +33,7 @@ const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [loggedInRole, setLoggedInRole] = useState(0);
   const [cookies, setCookie, removeCookie] = useCookies();
+  const [viewAs, setViewAs] = useState();
 
   // useEffect(() => {
   //   const fetchAuth = async () => {
@@ -60,7 +61,7 @@ const App = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Layout colorTheme=""/>}>
+      <Route path="/" element={<Layout colorTheme="" viewAs={viewAs} setViewAs={setViewAs}/>}>
         {/* Home Page */}
         <Route index element={<Dashboard />} />
         <Route path="logout" element={<Logout />} />

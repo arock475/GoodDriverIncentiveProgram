@@ -36,7 +36,6 @@ enum User {
 
 const Dashboard = () =>{
     const [userClaims, setUserClaims] = useState(getUserClaims());
-    var origRole = -1;
 
     return (
         <section className='bg-light'>

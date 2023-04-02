@@ -2,12 +2,7 @@ import React from 'react';
 import {
     MDBCard,
     MDBCardBody,
-    MDBCardTitle,
-    MDBCardText,
-    MDBCardImage,
-    MDBRow,
-    MDBCol,
-    MDBCardGroup
+    MDBCardTitle
   } from 'mdb-react-ui-kit';
 import { UserClaims } from '../../utils/getUserClaims';
 
