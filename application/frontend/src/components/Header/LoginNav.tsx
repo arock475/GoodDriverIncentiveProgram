@@ -12,6 +12,14 @@ export type LoginNavProp = {
 const LoginNav: React.FC<LoginNavProp> = ({viewAs, setViewAs}) => {
     const [userClaims, setUserClaims] = useState(getUserClaims());
     setViewAs(userClaims.role);
+
+    // handle viewAsChanges
+    const viewAsChanged = async (event) => {
+        const num: number = parseInt(event.target.value, 10); 
+        console.log(num);
+        setViewAs(num);
+    }
+
     return (
         <>  
             {userClaims.authorized ?
@@ -20,7 +28,7 @@ const LoginNav: React.FC<LoginNavProp> = ({viewAs, setViewAs}) => {
                         <div>
                             <text className='pe-3'>View As</text>
                             <div className='pe-3'>
-                                <select name='selectview' defaultValue={userClaims.role} onChange={event => setViewAs(parseInt(event.target.value,10))}>
+                                <select name='selectview' defaultValue={userClaims.role} onChange={viewAsChanged}>
                                     <option value={userClaims.role}>Default</option>
                                     <option value={0}>Driver</option>
                                 </select>
@@ -31,7 +39,7 @@ const LoginNav: React.FC<LoginNavProp> = ({viewAs, setViewAs}) => {
                         <div>
                             <text className='pe-3'>View As {viewAs}</text>
                             <div className='pe-3'>
-                                <select name='selectview' defaultValue={userClaims.role} onChange={event => setViewAs(parseInt(event.target.value,10))}>
+                                <select name='selectview' defaultValue={userClaims.role} onChange={viewAsChanged}>
                                     <option value={userClaims.role}>Default</option>
                                     <option value="0">Driver</option>
                                     <option value="1">Sponsor</option>
