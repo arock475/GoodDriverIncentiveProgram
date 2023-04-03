@@ -91,7 +91,7 @@ const App = () => {
         </Route>
 
         {/* Create Pages*/}
-        <Route path="create-user" element={<CreateUser />} />
+        <Route path="create-user" element={<CreateUser viewAs={viewAs} setViewAs={setViewAs}/>} />
         <Route path="create-org" element={<CreateOrganization />} />
         <Route path="points" element={<Points loggedIn={loggedIn} loginRole={loggedInRole} />} />
 

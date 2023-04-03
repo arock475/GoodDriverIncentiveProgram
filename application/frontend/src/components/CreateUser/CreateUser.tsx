@@ -26,7 +26,13 @@ enum User {
     Admin = 2,
 }
 
-const CreateUser = ({}) => {
+export type CreateProps = {
+    colorTheme?: string,
+    viewAs?: number
+    setViewAs?: React.Dispatch<React.SetStateAction<number>>
+}
+
+const CreateUser: React.FC<CreateProps> = ({ colorTheme="dark", viewAs, setViewAs}) => {
     // claim
     const [userClaims, setUserClaims] = useState(getUserClaims());
     
@@ -148,13 +154,13 @@ const CreateUser = ({}) => {
     return (
         <Form onSubmit={handleSubmit}>
             <div>
-                { (userClaims.role == User.Admin || userClaims.role == User.Sponsor) && (    
+                { (userClaims.role === User.Admin || userClaims.role === User.Sponsor) && (viewAs === User.Admin || viewAs === User.Sponsor) && (    
                     <Form.Group>
                         <Form.Label>Select a User to Create </Form.Label>           
                         <Form.Control as='select' onChange={handleCreatingChange}>
                             <option value={User.Driver}>Driver</option>
                             <option value={User.Sponsor}>Sponsor</option>
-                            { userClaims.role == User.Admin && <option value={User.Admin}>Admin</option>}
+                            { (userClaims.role === User.Admin && viewAs === User.Admin) && <option value={User.Admin}>Admin</option>}
                         </Form.Control>
                     </Form.Group>
                 )}
@@ -207,7 +213,7 @@ const CreateUser = ({}) => {
             </div>
             <div>
                 { /* Assigning Organizations by Choice */ }
-                {((creating == User.Driver && userClaims.role != User.Sponsor) || (creating == User.Sponsor && userClaims.role == User.Admin)) &&
+                {(((creating === User.Driver && userClaims.role !== User.Sponsor) || (creating === User.Sponsor && userClaims.role === User.Admin)) && (viewAs === User.Admin)) &&
                     <div>
                         <Form.Group>
                             <Form.Label>Associated Organization</Form.Label>
@@ -224,7 +230,7 @@ const CreateUser = ({}) => {
                     </div>
                 }
                 { /* Assigning Organizations by Default */ }
-                { ((creating == User.Driver || creating == User.Sponsor) && userClaims.role == User.Sponsor) && 
+                { (creating === User.Driver || creating === User.Sponsor) && ((userClaims.role === User.Sponsor) || (viewAs === User.Sponsor)) && 
                     <div>
                         <Form.Group>
                             <Form.Label>Associated Organization</Form.Label>
