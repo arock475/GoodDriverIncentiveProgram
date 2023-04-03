@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { getUserClaims } from '../../utils/getUserClaims';
@@ -11,7 +11,10 @@ export type LoginNavProp = {
 
 const LoginNav: React.FC<LoginNavProp> = ({viewAs, setViewAs}) => {
     const [userClaims, setUserClaims] = useState(getUserClaims());
-    setViewAs(userClaims.role);
+    useEffect(() => {
+        setViewAs(userClaims.role);
+    }, [])
+   
 
     // handle viewAsChanges
     const viewAsChanged = async (event) => {
@@ -26,7 +29,7 @@ const LoginNav: React.FC<LoginNavProp> = ({viewAs, setViewAs}) => {
                 <>
                     {userClaims.role === 1 &&
                         <div>
-                            <text className='pe-3'>View As</text>
+                            <p className='pe-3'>View As</p>
                             <div className='pe-3'>
                                 <select name='selectview' defaultValue={userClaims.role} onChange={viewAsChanged}>
                                     <option value={userClaims.role}>Default</option>
@@ -37,9 +40,9 @@ const LoginNav: React.FC<LoginNavProp> = ({viewAs, setViewAs}) => {
                     }
                     {userClaims.role === 2 &&
                         <div>
-                            <text className='pe-3'>View As {viewAs}</text>
+                            <p className='pe-3'>View As</p>
                             <div className='pe-3'>
-                                <select name='selectview' defaultValue={userClaims.role} onChange={viewAsChanged}>
+                                <select name='selectview' onChange={viewAsChanged}>
                                     <option value={userClaims.role}>Default</option>
                                     <option value="0">Driver</option>
                                     <option value="1">Sponsor</option>
