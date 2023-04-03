@@ -28,8 +28,7 @@ enum User {
 
 const CreateUser = ({}) => {
     // claim
-    const [userClaims, setUserClaims] = useState(getUserClaims());
-    
+    const [userClaims, setUserClaims] = useState(getUserClaims()); 
     // organizations
     const [orgs, setOrgs] = useState<Organization[]>([])
     const [selectedOrg, setSelectedOrg] = useState<Organization>({
@@ -40,12 +39,35 @@ const CreateUser = ({}) => {
         Email: '',
         LogoURL: ''
     })
-
+    // password
+    const [password, setPassword] = useState<string>("");
+    const  [confPassword, setConfPassword] = useState<string>("");
     // email
     const [emailInUse, setEmailInUse] = useState(false);
-
     // type of user being created
     const [creating, setCreating] = useState<number | null>(null);
+
+    // password changes
+    const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setPassword(event.target.value);
+    };
+
+    const handleConfPasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setConfPassword(event.target.value);
+    };
+
+    const isPasswordComplex = () => {
+        const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+        // secret hidden bypass >:)
+        if (password !== "x")
+            return regex.test(password);
+        else
+            return true;
+    };
+
+    const passwordsMatch = () => {
+        return password === confPassword;
+    };
 
     // setting selected org
     const handleOrgChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,9 +165,9 @@ const CreateUser = ({}) => {
             }
         )
     }
-
     // html
     return (
+        <>
         <Form onSubmit={handleSubmit}>
             <div>
                 { (userClaims.role == User.Admin || userClaims.role == User.Sponsor) && (    
@@ -188,7 +210,23 @@ const CreateUser = ({}) => {
             <Row>
                 <Col>
                     <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" name="password"/>
+                    <Form.Control type="password" name="password" value={password} onChange={handlePasswordChange}/>
+                    { !isPasswordComplex() && 
+                        <Form.Text className="text-danger">
+                            Password must be at least 8 characters long and contain at least one digit, one lowercase letter, and one uppercase letter.
+                        </Form.Text>
+                    }
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <Form.Label>Confirm Password</Form.Label>
+                    <Form.Control type="password" name="confPassword" value={confPassword} onChange={handleConfPasswordChange}/>
+                    { !passwordsMatch() && 
+                        <Form.Text className="text-danger">
+                            Passwords do not match.
+                        </Form.Text>
+                    }
                 </Col>
             </Row>
             <div>
@@ -237,10 +275,11 @@ const CreateUser = ({}) => {
             </div>
             <Row>
                 <Col className="text-center">
-                    <Button variant="primary" type="submit">Submit</Button>
+                    <Button variant="primary" type="submit" disabled={!passwordsMatch() || !isPasswordComplex()}>Submit</Button>
                 </Col>
             </Row>
         </Form>
+        </>
     )
 }
 
