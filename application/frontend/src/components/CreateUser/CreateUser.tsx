@@ -213,7 +213,7 @@ const CreateUser: React.FC<CreateProps> = ({ colorTheme="dark", viewAs, setViewA
             </div>
             <div>
                 { /* Assigning Organizations by Choice */ }
-                {(((creating === User.Driver && userClaims.role !== User.Sponsor) || (creating === User.Sponsor && userClaims.role === User.Admin)) && (viewAs === User.Admin)) &&
+                {(((creating === User.Driver && userClaims.role !== User.Sponsor) || (creating === User.Sponsor && userClaims.role === User.Admin)) && (viewAs === User.Admin || viewAs === User.Driver)) &&
                     <div>
                         <Form.Group>
                             <Form.Label>Associated Organization</Form.Label>
