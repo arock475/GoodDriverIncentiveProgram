@@ -40,6 +40,9 @@ const ShopCatalog: React.FC = () => {
   const [showAffordableOnly, setShowAffordableOnly] = useState(false);
 
   const [userClaims, setUserClaims] = useState(getUserClaims());
+  const [PointsRatio, setPointsRatio] = useState({
+    PointsRatio: 1
+  })
 
   const entriesPerPage = 25;
 
@@ -49,7 +52,16 @@ const ShopCatalog: React.FC = () => {
       .then((data: DriverCatalogCtx) => {
         setDriverCtx(data);
       });
+    fetch(`http://localhost:3333/drivers/u:${userClaims.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setPointsRatio({PointsRatio: data.Organization.PointsRatio})
+      })
+      .catch((err) => {
+          console.log(err.message);
+    });
   }, []);
+  
 
   const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -139,7 +151,7 @@ const ShopCatalog: React.FC = () => {
     .slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)
     .filter((item) => {
       if (showAffordableOnly) {
-        return item.points <= driverCtx.points;
+        return item.points <= driverCtx.points * PointsRatio.PointsRatio;
       } else return true;
     });
 
@@ -165,7 +177,7 @@ const ShopCatalog: React.FC = () => {
           <Col>
             <div className="text-end">
               <h4>{driverCtx.organizationName}</h4>
-              <h4>Points: {driverCtx.points}</h4>
+              <h4>Points: {driverCtx.points * PointsRatio.PointsRatio}</h4>
             </div>
           </Col>
         </Row>

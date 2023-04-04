@@ -28,7 +28,7 @@ export default function ProfilePage() {
     email:'',
     phone:'',
     bio:'',
-    image: ''
+    image: '',
   })
   const [orgs, setOrgs] = useState<Orgs[]>([]);
 
@@ -45,7 +45,7 @@ export default function ProfilePage() {
         .catch((err) => {
            console.log(err.message);
         });
-        fetch(`http://localhost:3333/applications/driver?driverID=${userID}`, {
+    fetch(`http://localhost:3333/applications/driver?driverID=${userID}`, {
           method: 'GET',
           headers: {
               'Content-Type': 'application/json',
@@ -91,10 +91,12 @@ export default function ProfilePage() {
 
   // Navigates to the Edit profile page
   let navigate = useNavigate(); 
-  const routeChange = () =>{ 
-    let path = 'edit'; 
-    navigate(path);
+  const routeChange = (path) =>{ 
+    setTimeout(function () {
+      navigate(path);
+    }, 1000);
   }
+
 
   return (
     <section style={{ backgroundColor: '#eee' }}>
@@ -203,9 +205,9 @@ export default function ProfilePage() {
 
           </MDBCol>
           <p></p><p></p>
-          <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={routeChange}>
+          <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={function(event){ routeChange('edit')}}>
             Edit Profile
-          </MDBBtn></div>
+          </MDBBtn></div> 
         </MDBRow>
     </section>
   );

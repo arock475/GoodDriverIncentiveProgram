@@ -33,6 +33,10 @@ type CreateOrgPayload struct {
 	LogoURL *string `json:"logoURL"`
 }
 
+type CreateOrgPointPayload struct {
+	PointsRatio *float64 `json:"PointsRatio"`
+}
+
 // used to send data about points totals
 type GetPointsTotalsPayload struct {
 	Driver       Driver

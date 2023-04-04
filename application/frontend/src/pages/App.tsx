@@ -28,6 +28,7 @@ import CreateCategory from './Points/CreateCategory'; import AddPoints from './P
 import ShopCatalog from './Shop/ShopCatalog'
 import CreateUser from '../components/CreateUser/CreateUser';
 import Dashboard from './Dashboard/Dashboard';
+import ChangePointStats from './Profile/ChangePointStats';
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -99,6 +100,7 @@ const App = () => {
           <Route index element={<PointManagment />} />
           <Route path="create" element={<CreateCategory />} />
           <Route path="add" element={<AddPoints />} />
+          <Route path="stats" element={<ChangePointStats />} />
         </Route>
 
         {/* Application Links */}

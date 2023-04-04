@@ -16,6 +16,7 @@ interface Organization {
     Phone: string
     Email: string
     LogoURL: string
+    PointsRatio: number
 }
 
 interface Driver {
@@ -73,7 +74,7 @@ const PointsTable = ({ }) => {
                                     <tr key={pointsTotal.Organization.ID}>
                                         <td>{pointsTotal.Organization.ID}</td>
                                         <td>{pointsTotal.Organization.Name}</td>
-                                        <td>{pointsTotal.Total}</td>
+                                        <td>{pointsTotal.Total * pointsTotal.Organization.PointsRatio}</td>
                                     </tr>
                                 ))
                             }

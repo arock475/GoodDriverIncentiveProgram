@@ -3,9 +3,9 @@ import Button from 'react-bootstrap/Button'
 import { useNavigate } from "react-router-dom";
 import{ useState, useEffect } from 'react';
 import Select from 'react-select';
-import cellEditFactory from 'react-bootstrap-table2-editor';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import BootstrapTable from 'react-bootstrap-table-next';
+import { getUserClaims } from '../../utils/getUserClaims';
 
 export default function CreateCategory() {
     interface User {
@@ -31,6 +31,10 @@ export default function CreateCategory() {
     const [PointsArray, setPointsArray] = useState<PointCategory[]>([]);
     const [checked, setChecked] = useState(true);
     const [reason, setReason] = useState<string>('');
+    const [userClaims, setUserClaims] = useState(getUserClaims());
+    const [PointsRatio, setPointsRatio] = useState({
+      PointsRatio: 1
+    })
     const columns = [{
         dataField: 'name',
         text: 'Name'
@@ -79,15 +83,24 @@ export default function CreateCategory() {
         .catch((err) => {
             console.log(err.message);
         });
+        fetch(`http://localhost:3333/sponsors/u:${userClaims.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+            setPointsRatio({PointsRatio: data.Organization.PointsRatio})
+        })
+        .catch((err) => {
+            console.log(err.message);
+        });
     }, []);
 
     var PointArray = []
     PointsArray.map((point) => {
+        var pointsNum = parseInt(point.NumChange) * PointsRatio.PointsRatio
         PointArray.push({
           id: point.ID,
           name:point.Name,
           description:point.Description,
-          points:point.NumChange
+          points:pointsNum
         })
     }) 
     
