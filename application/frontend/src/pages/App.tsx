@@ -31,6 +31,7 @@ import Dashboard from './Dashboard/Dashboard';
 import Organization from './Organizations/Organization';
 import Organizations from './Organizations/Organizations';
 import ChangePointStats from './Profile/ChangePointStats';
+import LogsPage from './Admin/Logs';
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -117,7 +118,7 @@ const App = () => {
         <Route path="*" element={<></>} />
 
         {/* Logs Link */}
-        <Route path="logs" element={<></>} />
+        <Route path="logs" element={<LogsPage />} />
 
         {/* Reports Link */}
         <Route path="reports" element={<></>} />

@@ -34,7 +34,7 @@ func (s *Server) ConnectDatabase(schemaName string) {
 	dbuser := os.Getenv("RDS25_USER")
 	dbpass := os.Getenv("RDS25_PASS")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(team25-rds.cobd8enwsupz.us-east-1.rds.amazonaws.com:3306)/%s", dbuser, dbpass, schemaName)
+	dsn := fmt.Sprintf("%s:%s@tcp(team25-rds.cobd8enwsupz.us-east-1.rds.amazonaws.com:3306)/%s?parseTime=true", dbuser, dbpass, schemaName)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err.Error())
@@ -85,6 +85,10 @@ func (s *Server) MountHandlers() {
 
 			r.Get("/sponsor", s.GetSponsorApplications)
 			r.Post("/sponsor", s.SetApplicationDecision)
+		})
+
+		r.Route("/admin", func(r chi.Router) {
+			r.Get("/logs", s.GetLogs)
 		})
 	})
 
@@ -1153,5 +1157,19 @@ func (s *Server) GetDriverByUser(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	returned, _ := json.Marshal(driver)
+	w.Write(returned)
+}
+
+func (s *Server) GetLogs(w http.ResponseWriter, r *http.Request) {
+	var logs []Log
+
+	result := s.DB.Find(&logs)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	returned, _ := json.Marshal(logs)
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(returned)
 }

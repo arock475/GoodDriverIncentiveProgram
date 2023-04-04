@@ -169,10 +169,10 @@ type DriverApplication struct {
 // Logs
 
 type Log struct {
-	LogID       int       `gorm:"primaryKey;not null"`
-	Event       string    `gorm:"not null"`
-	Status      string    `gorm:"not null"`
-	Description string    ``
-	Email       string    ``
-	Time        time.Time `gorm:"not null"`
+	LogID       int       `gorm:"primaryKey;not null" json:"id"`
+	Event       string    `gorm:"not null" json:"event"`
+	Status      string    `gorm:"not null" json:"status"`
+	Description string    `json:"description"`
+	Email       string    `json:"email"`
+	Time        time.Time `gorm:"not null" json:"timestamp"`
 }
