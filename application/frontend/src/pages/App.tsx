@@ -14,7 +14,7 @@ import EditProfile from '../pages/Profile/EditProfile';
 import UserSearch from '../components/Search/UserSearch';
 import Faq from '../pages/FAQ/Faq';
 
-import CreateOrganization from './CreateUsers/CreateOrganization'
+import CreateOrganization from './Organizations/CreateOrganization'
 import DriverDashboard from './Dashboard/DriverDashboard';
 import SponsorDashboard from './Dashboard/SponsorDashboard';
 import AdminDashboard from './Dashboard/AdminDashboard';
@@ -28,6 +28,8 @@ import CreateCategory from './Points/CreateCategory'; import AddPoints from './P
 import ShopCatalog from './Shop/ShopCatalog'
 import CreateUser from '../components/CreateUser/CreateUser';
 import Dashboard from './Dashboard/Dashboard';
+import Organization from './Organizations/Organization';
+import Organizations from './Organizations/Organizations';
 import ChangePointStats from './Profile/ChangePointStats';
 
 const App = () => {
@@ -59,7 +61,6 @@ const App = () => {
   //     console.log("Catch: ", error)
   //   })
   // }, [])
-
   return (
     <Routes>
       <Route path="/" element={<Layout colorTheme="" viewAs={viewAs} setViewAs={setViewAs}/>}>
@@ -133,7 +134,9 @@ const App = () => {
           <Route path="sponsor" element={<></>} />
           <Route path="admin" element={<></>} />
         </Route>
-
+      
+        <Route path="orgs" element={<Organizations />} />
+        <Route path="orgs/:orgid" element={<Organization />} />
       </Route>
     </Routes>
   );
