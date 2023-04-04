@@ -26,7 +26,7 @@ const SponsorApplications: React.FC<{}> = () => {
     const renderApplications = () => {
         if (userId === -1) return;
 
-        fetch(`http://localhost:3333/applications/sponsor?sponsorID=${userId}`, {
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/applications/sponsor?sponsorID=${userId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

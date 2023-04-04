@@ -11,17 +11,17 @@ export interface Organization {
     LogoURL: string
 }
 
-const Organization = ({}) => {
+const Organization = ({ }) => {
     // org variables
-    const {orgid} = useParams<{ orgid: string }>();
+    const { orgid } = useParams<{ orgid: string }>();
     const [org, setOrg] = useState<Organization | null>(null)
-    
+
     // on load
     useEffect(() => {
         // get org
         const fetchOrg = async () => {
             try {
-                const response = await fetch(`http://localhost:3333/orgs/${orgid}`);
+                const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/${orgid}`);
                 const data = await response.json();
                 setOrg(data);
             }
@@ -35,15 +35,15 @@ const Organization = ({}) => {
     if (org) {
         return (
             <div>
-                {org.LogoURL && 
+                {org.LogoURL &&
                     <div className="jumbotron">
-                        <img src={org.LogoURL} alt="Banner Image" className="img-fluid"/>
+                        <img src={org.LogoURL} alt="Banner Image" className="img-fluid" />
                     </div>
                 }
                 <Container>
                     <h1 className="display-3">{org.Name}</h1>
                     <Accordion>
-                    <Accordion.Item eventKey="0">
+                        <Accordion.Item eventKey="0">
                             <Accordion.Header>About Us</Accordion.Header>
                             <Accordion.Body>{org.Biography}</Accordion.Body>
                         </Accordion.Item>
@@ -54,7 +54,7 @@ const Organization = ({}) => {
                         </Accordion.Item>
                     </Accordion>
                 </Container>
-            </div>        
+            </div>
         );
     }
     else {
@@ -66,7 +66,7 @@ const Organization = ({}) => {
             </Container>
         );
     }
-   
+
 }
 
 export default Organization;

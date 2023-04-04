@@ -47,7 +47,7 @@ const PointsTable = ({ }) => {
 
         // making call to api
         const fetchPoints = async () => {
-            const response = await fetch(`http://localhost:3333/points/${userClaims.id}/totals`);
+            const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/points/${userClaims.id}/totals`);
             const data = await response.json();
             setPoints(data);
         };
