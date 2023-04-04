@@ -119,6 +119,7 @@ type Organization struct {
 	Email       string  `gorm:"default:''"`
 	PointsRatio float64 `gorm:"default:1.0"`
 	LogoURL     string  `gorm:"not null"`
+	ShopRules   string  `gorm:"default:''"`
 }
 
 type PointsCategory struct {

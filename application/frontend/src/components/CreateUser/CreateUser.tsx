@@ -20,7 +20,7 @@ interface Sponsor {
     OrganizationID: number
 }
 
-enum User {
+export enum User {
     Driver = 0,
     Sponsor = 1,
     Admin = 2,

@@ -32,6 +32,7 @@ import Organization from './Organizations/Organization';
 import Organizations from './Organizations/Organizations';
 import ChangePointStats from './Profile/ChangePointStats';
 import LogsPage from './Admin/Logs';
+import ShopManage from './Shop/ShopManage';
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -39,29 +40,6 @@ const App = () => {
   const [cookies, setCookie, removeCookie] = useCookies();
   const [viewAs, setViewAs] = useState(-1);
 
-  // useEffect(() => {
-  //   const fetchAuth = async () => {
-  //     fetch("http://localhost:3333/auth/is-auth", {
-  //       method: "GET",
-  //       credentials: "include"
-  //     }).then(async response => {
-  //       // check for error response
-  //       if (!response.ok) {
-  //         setLoggedIn(false);
-  //         setLoggedInRole(null);
-  //         return Promise.reject();
-  //       }
-  //       // Login Successful
-  //       if (!loggedIn) {
-  //         setLoggedInRole(cookies.role);
-  //         setLoggedIn(true);
-  //       }
-  //     })
-  //   }
-  //   fetchAuth().catch(error => {
-  //     console.log("Catch: ", error)
-  //   })
-  // }, [])
   return (
     <Routes>
       <Route path="/" element={<Layout colorTheme="" viewAs={viewAs} setViewAs={setViewAs}/>}>
@@ -86,6 +64,7 @@ const App = () => {
         {/* Catalog Link */}
         <Route path="catalog">
           <Route index element={<ShopCatalog />} />
+          <Route path="manage" element={<ShopManage />} />
         </Route>
 
         {/* Search Links */}

@@ -1,16 +1,9 @@
 import React, { useEffect, useState } from "react";
 import ShopItem from "../../components/Shop/ShopItem";
 import ShopItemDeck from "../../components/Shop/ShopItemDeck";
-import {
-  Container,
-  Row,
-  Col,
-  Form,
-  InputGroup,
-  FormControl,
-  Button,
-} from "react-bootstrap";
-import { getUserClaims } from '../../utils/getUserClaims';
+import { Container, Row, Col, Form, InputGroup, FormControl, Button } from "react-bootstrap";
+import { getUserClaims } from "../../utils/getUserClaims";
+import { User } from "../../components/CreateUser/CreateUser";
 
 interface EbayResponse {
   items: ShopItem[];
@@ -41,8 +34,8 @@ const ShopCatalog: React.FC = () => {
 
   const [userClaims, setUserClaims] = useState(getUserClaims());
   const [PointsRatio, setPointsRatio] = useState({
-    PointsRatio: 1
-  })
+    PointsRatio: 1,
+  });
 
   const entriesPerPage = 25;
 
@@ -55,13 +48,12 @@ const ShopCatalog: React.FC = () => {
     fetch(`http://localhost:3333/drivers/u:${userClaims.id}`)
       .then((res) => res.json())
       .then((data) => {
-        setPointsRatio({PointsRatio: data.Organization.PointsRatio})
+        setPointsRatio({ PointsRatio: data.Organization.PointsRatio });
       })
       .catch((err) => {
-          console.log(err.message);
-    });
+        console.log(err.message);
+      });
   }, []);
-  
 
   const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -76,9 +68,7 @@ const ShopCatalog: React.FC = () => {
   useEffect(() => {
     items.length = 0;
 
-    const nextButton = document.getElementById(
-      "nextButton"
-    ) as HTMLInputElement;
+    const nextButton = document.getElementById("nextButton") as HTMLInputElement;
     nextButton.disabled = false;
     nextButton.classList.remove("disabled");
 
@@ -121,9 +111,7 @@ const ShopCatalog: React.FC = () => {
 
     // If we don't have enough total items to display another page, disable the button.
     if ((currentPage + 1) * entriesPerPage >= totalEntries - 1) {
-      const nextButton = document.getElementById(
-        "nextButton"
-      ) as HTMLInputElement;
+      const nextButton = document.getElementById("nextButton") as HTMLInputElement;
       nextButton.disabled = true;
       nextButton.classList.add("disabled");
     }
@@ -134,9 +122,7 @@ const ShopCatalog: React.FC = () => {
 
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
-      const nextButton = document.getElementById(
-        "nextButton"
-      ) as HTMLInputElement;
+      const nextButton = document.getElementById("nextButton") as HTMLInputElement;
       nextButton.disabled = false;
       nextButton.classList.remove("disabled");
     }
@@ -164,11 +150,7 @@ const ShopCatalog: React.FC = () => {
           </Col>
           <Col>
             <InputGroup>
-              <FormControl
-                placeholder="Search Shop"
-                aria-label="Search"
-                onKeyDown={handleSearch}
-              />
+              <FormControl placeholder="Search Shop" aria-label="Search" onKeyDown={handleSearch} />
               <InputGroup.Text>
                 <i className="bi bi-search"></i>
               </InputGroup.Text>
@@ -177,7 +159,12 @@ const ShopCatalog: React.FC = () => {
           <Col>
             <div className="text-end">
               <h4>{driverCtx.organizationName}</h4>
-              <h4>Points: {driverCtx.points * PointsRatio.PointsRatio}</h4>
+              {userClaims.role === User.Driver && (
+                <h4>Points: {driverCtx.points * PointsRatio.PointsRatio}</h4>
+              )}
+              {(userClaims.role === User.Sponsor || userClaims.role === User.Admin) && (
+                <Button href="/catalog/manage">Manage</Button>
+              )}
             </div>
           </Col>
         </Row>
@@ -197,11 +184,7 @@ const ShopCatalog: React.FC = () => {
           <Button id="previousButton" onClick={handlePreviousPage}>
             Previous
           </Button>
-          <Button
-            id="nextButton"
-            onClick={handleNextPage}
-            style={{ marginLeft: "10px" }}
-          >
+          <Button id="nextButton" onClick={handleNextPage} style={{ marginLeft: "10px" }}>
             Next
           </Button>
         </div>

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -124,6 +125,8 @@ func (s *Server) MountHandlers() {
 			r.Route("/{orgID}", func(r chi.Router) {
 				r.Get("/", s.GetOrg)
 				r.Put("/stats", s.UpdateOrg)
+				r.Get("/rules", s.GetRules)
+				r.Post("/rules", s.SetRules)
 			})
 		})
 
@@ -1172,4 +1175,51 @@ func (s *Server) GetLogs(w http.ResponseWriter, r *http.Request) {
 	returned, _ := json.Marshal(logs)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(returned)
+}
+
+func (s *Server) GetRules(w http.ResponseWriter, r *http.Request) {
+	var org Organization
+
+	if orgID := chi.URLParam(r, "orgID"); orgID != "" {
+		result := s.DB.First(&org, "id = ?", orgID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Organization Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Organization Not Found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	returned, _ := json.Marshal(org.ShopRules)
+	w.Write(returned)
+}
+
+func (s *Server) SetRules(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusBadRequest)
+		return
+	}
+
+	// Convert the byte slice to a string
+	data := string(body)
+
+	updates := make(map[string]interface{})
+
+	updates["shop_rules"] = data
+
+	if orgID := chi.URLParam(r, "orgID"); orgID != "" {
+		result := s.DB.Model(&Organization{}).Where("id = ?", orgID).Updates(updates)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Org Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Org Not Found", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(200)
 }
