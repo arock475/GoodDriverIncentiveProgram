@@ -8,13 +8,12 @@ export interface DriverApp {
     UserID: number,
     Name: string,
     Status: String,
+    Reason: String,
     ParentCallback: Function
 }
 
 const DriverApp: React.FC<DriverApp> = (props) => {
     const applicationHandler = () => {
-        console.log(props)
-
         fetch(`http://localhost:3333/applications/driver?driverID=${encodeURIComponent(props.UserID)}&organizationID=${encodeURIComponent(props.OrgID)}`, {
             method: 'POST',
             headers: {
@@ -45,7 +44,7 @@ const DriverApp: React.FC<DriverApp> = (props) => {
                         Apply
                     </Button>
                 :
-                    <></>
+                    <p>{props.Reason}</p>
             }
         </th>
         </tr>

@@ -53,6 +53,14 @@ type DriverApplicationPayload struct {
 	OrganizationID   *int    `json:"OrganizationID"`
 	OrganizationName *string `json:"OrganizationName"`
 	Status           *string `json:"Status"`
+	Reason           *string `json:"Reason"`
+}
+
+type SponsorApplicationPayload struct {
+	OrganizationID *int    `json:"OrganizationID"`
+	DriverUserID   *int    `json:"DriverUserID"`
+	DriverName     *string `json:"DriverName"`
+	Status         *string `json:"Status"`
 }
 
 // Type is a discriminator for different subtypes: driver, sponsor, admin
@@ -155,11 +163,12 @@ type DriverApplication struct {
 	DriverUserID   int `gorm:"primaryKey;not null" json:"-"`
 	OrganizationID int `gorm:"primaryKey;not null"`
 	Status         string
+	Reason         string
 }
 
 // Logs
 
-type AuthenticationLog struct {
+type Log struct {
 	LogID       int       `gorm:"primaryKey;not null"`
 	Event       string    `gorm:"not null"`
 	Status      string    `gorm:"not null"`

@@ -20,7 +20,7 @@ import SponsorDashboard from './Dashboard/SponsorDashboard';
 import AdminDashboard from './Dashboard/AdminDashboard';
 
 import Logout from '../components/Login/Logout';
-import DriverApplications from './DriverApplications/DriverApplications';
+import Applications from './DriverApplications/Applications';
 import Points from './Points/Points'
 import ResetPassword from './Profile/ResetPassword';
 import PointManagment from './Points/PointManagment';
@@ -106,8 +106,8 @@ const App = () => {
         </Route>
 
         {/* Application Links */}
-        <Route path="applications">
-          <Route index element={<DriverApplications />} />
+        <Route path="applications/*">
+          <Route index element={<Applications />} />
         </Route>
 
         {/* Footer Links */}

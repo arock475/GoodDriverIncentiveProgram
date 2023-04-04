@@ -9,7 +9,8 @@ import { getUserClaims } from '../../utils/getUserClaims';
 type Application = {
     organizationId: number,
     organizationName: number,
-    status: string
+    status: string,
+    reason: string
 }
 
 type jwtClaim = {
@@ -38,7 +39,8 @@ const DriverApplications: React.FC<{}> = () => {
                 const obj: Application = {
                     organizationId: item.OrganizationID,
                     organizationName: item.OrganizationName,
-                    status: item.Status
+                    status: item.Status,
+                    reason: item.Reason
                 }
 
                 formattedResponse.push(obj)
@@ -64,12 +66,14 @@ const DriverApplications: React.FC<{}> = () => {
             </thead>
             <tbody>
                 {orgList.map((item) => {
+                    console.log(item)
                     return <DriverApp
                         key={`${item.organizationId}-${item.status}`}
                         OrgID={item.organizationId}
                         UserID={userClaims.id}
                         Name={item.organizationName}
                         Status={item.status}
+                        Reason={item.reason}
                         ParentCallback={renderApplications}
                     />
                 }

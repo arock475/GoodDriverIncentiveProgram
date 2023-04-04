@@ -49,7 +49,7 @@ func (s *Server) ConnectDatabase(schemaName string) {
 	db.AutoMigrate(&Points{})
 	db.AutoMigrate(&DriverApplication{})
 
-	db.AutoMigrate(&AuthenticationLog{})
+	db.AutoMigrate(&Log{})
 
 	s.DB = db
 }
@@ -82,6 +82,9 @@ func (s *Server) MountHandlers() {
 		r.Route("/applications", func(r chi.Router) {
 			r.Get("/driver", s.GetDriverApplications)
 			r.Post("/driver", s.DriverApplyToOrg)
+
+			r.Get("/sponsor", s.GetSponsorApplications)
+			r.Post("/sponsor", s.SetApplicationDecision)
 		})
 	})
 
@@ -544,6 +547,7 @@ func (s *Server) GetDriverApplications(w http.ResponseWriter, r *http.Request) {
 			OrganizationID:   &orgs[i].ID,
 			OrganizationName: &orgs[i].Name,
 			Status:           &status,
+			Reason:           &app.Reason,
 		})
 	}
 
@@ -613,8 +617,125 @@ func (s *Server) DriverApplyToOrg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	description := fmt.Sprintf("driver_user_id: %d; organization_id: %d", driver.UserID, org.ID)
+
+	log := Log{
+		Event:       "Driver Application Created",
+		Email:       driver.User.Email,
+		Time:        time.Now(),
+		Description: description,
+		Status:      "Success",
+	}
+
+	s.DB.Create(&log)
+
 	w.WriteHeader(200)
 	w.Write([]byte("Application Created"))
+}
+
+// Sponor applications
+func (s *Server) GetSponsorApplications(w http.ResponseWriter, r *http.Request) {
+	var sponsor Sponsor
+
+	// Find Driver
+	sponsorID := r.URL.Query().Get("sponsorID")
+	if sponsorID != "" {
+		result := s.DB.Find(&sponsor, "user_id = ?", sponsorID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Sponsor Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Sponsor Not Found", http.StatusNotFound)
+		return
+	}
+
+	var apps []DriverApplication
+	s.DB.Find(&apps, "organization_id = ?", sponsor.OrganizationID)
+
+	var appList []SponsorApplicationPayload
+	for i, element := range apps {
+		var user User
+
+		s.DB.Find(&user, "id = ?", element.DriverUserID)
+
+		appList = append(appList, SponsorApplicationPayload{
+			OrganizationID: &apps[i].OrganizationID,
+			DriverUserID:   &user.ID,
+			DriverName:     &user.FirstName,
+			Status:         &apps[i].Status,
+		})
+	}
+
+	// ? writing the response
+	returned, _ := json.Marshal(appList)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(returned)
+}
+
+func (s *Server) SetApplicationDecision(w http.ResponseWriter, r *http.Request) {
+	var driver Driver
+	var sponsor Sponsor
+	var org Organization
+
+	// Find Driver
+	driverID := r.URL.Query().Get("driverID")
+	if driverID != "" {
+		result := s.DB.Find(&driver, "user_id = ?", driverID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Driver Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Driver Not Found", http.StatusNotFound)
+		return
+	}
+
+	// Find organzation
+	sponsorID := r.URL.Query().Get("sponsorID")
+	if sponsorID != "" {
+		result := s.DB.Find(&sponsor, "user_id = ?", sponsorID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Sponsor Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Sponsor Not Found", http.StatusNotFound)
+		return
+	}
+
+	// Find organzation
+	result := s.DB.Find(&org, "id = ?", sponsor.OrganizationID)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		http.Error(w, "Organization Not Found", http.StatusNotFound)
+		return
+	}
+
+	updates := make(map[string]interface{})
+
+	if r.URL.Query().Get("accepted") == "true" {
+		updates["status"] = "Accepted"
+	} else {
+		updates["status"] = "Denied"
+	}
+
+	updates["reason"] = r.URL.Query().Get("reason")
+
+	s.DB.Model(&DriverApplication{}).Where("driver_user_id = ? AND organization_id = ?", driver.UserID, org.ID).Updates(updates)
+
+	description := fmt.Sprintf("driver_user_id: %d; organization_id: %d; sponsor_id: %d; reason: %s", driver.ID, org.ID, sponsor.ID, r.URL.Query().Get("reason"))
+
+	log := Log{
+		Event:       "Driver Application Response",
+		Email:       sponsor.User.Email,
+		Time:        time.Now(),
+		Description: description,
+		Status:      "Success",
+	}
+
+	s.DB.Create(&log)
+
+	w.WriteHeader(200)
 }
 
 // / Points
@@ -712,7 +833,7 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&data)
 
-	log := AuthenticationLog{
+	log := Log{
 		Event: "Login",
 		Email: "",
 		Time:  time.Now(),
