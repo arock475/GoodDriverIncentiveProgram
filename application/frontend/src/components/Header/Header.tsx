@@ -6,13 +6,18 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import LoginNav from './LoginNav';
 import logo from '../../assets/truck-logo.jpg';
 import "../../styles/components/Header.css";
-
+import { DropdownButton } from 'react-bootstrap';
+import Select from 'react-select/dist/declarations/src/Select';
+import Option from 'react-select/dist/declarations/src/components/Option';
 export type HeaderProps = {
     colorTheme?: string,
+    viewAs?: number
+    setViewAs?: React.Dispatch<React.SetStateAction<number>>
 }
 
+
 const Header: React.FC<HeaderProps> = ({
-    colorTheme="dark",
+    colorTheme="dark", viewAs, setViewAs
 }) => {
     return (
         <Navbar bg={colorTheme} expand="sm" className="header navbar-header mb-3" id="header-navbar">
@@ -38,8 +43,7 @@ const Header: React.FC<HeaderProps> = ({
                         <Nav.Link href="/driver/notifications" className="nav-link">Notifications</Nav.Link>
                         <Nav.Link href="/search" className="nav-link">Search</Nav.Link>
                     </Nav>
-
-                    <LoginNav />
+                    <LoginNav viewAs={viewAs} setViewAs={setViewAs}/>
                 </Navbar.Collapse>
             </Container>
         </Navbar>
