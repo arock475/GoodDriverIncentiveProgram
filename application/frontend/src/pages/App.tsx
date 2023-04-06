@@ -33,6 +33,7 @@ import Organizations from './Organizations/Organizations';
 import ChangePointStats from './Profile/ChangePointStats';
 import LogsPage from './Admin/Logs';
 import ShopManage from './Shop/ShopManage';
+import PointsReport from './Reports/PointsReport';
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -100,7 +101,9 @@ const App = () => {
         <Route path="logs" element={<LogsPage />} />
 
         {/* Reports Link */}
-        <Route path="reports" element={<></>} />
+        <Route path="reports" >
+          <Route path="points" element={<PointsReport />} />
+        </Route>
 
         {/* Notifications Link */}
         <Route path="notifications" element={<></>} />
