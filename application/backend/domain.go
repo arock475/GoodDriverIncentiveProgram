@@ -181,3 +181,22 @@ type Log struct {
 	Email       string    `json:"email"`
 	Time        time.Time `gorm:"not null" json:"timestamp"`
 }
+
+// This stores all catalog purchases/transactions.
+// Items added to a user's cart will be included in this table but have the InCart field be true.
+// Once purchased/checkedout, InCart will be false and CheckedOut will be true.
+// If both are false, that means user added an item to their cart but then decided not to get it.
+type Purchase struct {
+	ID             int
+	DriverID       int `gorm:"not null"`
+	Driver         Driver
+	OrganizationID int `gorm:"not null"`
+	Organization   Organization
+	ItemID         string `gorm:"not null"`
+	ItemTitle      string
+	ImageURL       string
+	Points         int
+	InCart         bool `gorm:"not null;default:0"`
+	CheckedOut     bool `gorm:"not null;default:0"`
+	UpdatedAt      time.Time
+}

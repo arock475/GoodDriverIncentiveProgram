@@ -31,6 +31,11 @@ type CatalogReturnPayload struct {
 	TotalEntries string     `json:"totalEntries"`
 }
 
+type GetCartItemsReturnPayload struct {
+	CartItems   []EbayItem `json:"items"`
+	TotalPoints int        `json:"pointTotal"`
+}
+
 // All the necessary information about a driver for the shop catalog page
 // User information, points, and organization.
 type DriverCatalogCtxReturnPayload struct {
@@ -259,7 +264,7 @@ func (s *Server) GetUserCatalogCtx(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var points int64
+	var points *int64
 	// Get all organization specific points given to the driver.
 	result := s.DB.Model(&Points{}).
 		Preload("PointsCategory").
@@ -273,13 +278,204 @@ func (s *Server) GetUserCatalogCtx(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if points == nil {
+		tmp := int64(0)
+		points = &tmp
+	}
+
 	returnCtx := DriverCatalogCtxReturnPayload{
 		UserID:           driver.UserID,
 		OrganizationID:   driver.OrganizationID,
 		OrganizationName: driver.Organization.Name,
-		Points:           points,
+		Points:           *points,
 	}
 
 	returned, _ := json.Marshal(returnCtx)
 	w.Write(returned)
+}
+
+func (s *Server) AddItemToCart(w http.ResponseWriter, r *http.Request) {
+	var driver Driver
+
+	if userID := chi.URLParam(r, "userID"); userID != "" {
+		result := s.DB.First(&driver, "user_id = ?", userID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "User Not Found", http.StatusNotFound)
+		return
+	}
+
+	data := EbayItem{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	purchase := Purchase{
+		DriverID:       driver.ID,
+		OrganizationID: driver.OrganizationID,
+		ItemID:         data.ItemID,
+		ItemTitle:      data.Title,
+		ImageURL:       data.ImageURL,
+		Points:         data.Points,
+		InCart:         true,
+		CheckedOut:     false,
+	}
+
+	result := s.DB.Create(&purchase)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(200)
+}
+
+func (s *Server) RemoveItemFromCart(w http.ResponseWriter, r *http.Request) {
+	var driver Driver
+
+	if userID := chi.URLParam(r, "userID"); userID != "" {
+		result := s.DB.First(&driver, "user_id = ?", userID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "User Not Found", http.StatusNotFound)
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusBadRequest)
+		return
+	}
+
+	// Convert the byte slice to a string
+	itemId := string(body)
+
+	result := s.DB.Delete(&Purchase{}, "item_id = ?", itemId)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(200)
+}
+
+func (s *Server) GetCartItems(w http.ResponseWriter, r *http.Request) {
+	var driver Driver
+
+	if userID := chi.URLParam(r, "userID"); userID != "" {
+		result := s.DB.First(&driver, "user_id = ?", userID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "User Not Found", http.StatusNotFound)
+		return
+	}
+
+	var cart []Purchase
+
+	result := s.DB.Where("driver_id = ? AND in_cart = 1", driver.ID).Find(&cart)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var cartItems []EbayItem
+	totalPointCost := 0
+	for _, purchase := range cart {
+		cartItems = append(cartItems, EbayItem{
+			ItemID:   purchase.ItemID,
+			Title:    purchase.ItemTitle,
+			ImageURL: purchase.ImageURL,
+			Points:   purchase.Points,
+		})
+		totalPointCost += purchase.Points
+	}
+
+	payload := GetCartItemsReturnPayload{
+		CartItems:   cartItems,
+		TotalPoints: totalPointCost,
+	}
+
+	returned, _ := json.Marshal(payload)
+	w.Write(returned)
+}
+
+func (s *Server) CheckoutItems(w http.ResponseWriter, r *http.Request) {
+	var driver Driver
+
+	if userID := chi.URLParam(r, "userID"); userID != "" {
+		result := s.DB.First(&driver, "user_id = ?", userID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "User Not Found", http.StatusNotFound)
+		return
+	}
+
+	var cart []Purchase
+
+	fmt.Println(driver)
+	result := s.DB.Where("driver_id = ? AND organization_id = ? AND in_cart = ?", driver.ID, driver.OrganizationID, true).Find(&cart)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+	fmt.Println(cart)
+
+	totalPointCost := 0
+
+	for i := range cart {
+		cart[i].InCart = false
+		cart[i].CheckedOut = true
+
+		totalPointCost += cart[i].Points
+	}
+
+	fmt.Println(cart)
+
+	var points *int64
+	// Get all organization specific points given to the driver.
+	result = s.DB.Model(&Points{}).
+		Preload("PointsCategory").
+		Joins("JOIN points_categories pc ON pc.id = points.points_category_id").
+		Select("sum(pc.num_change)").
+		Where("driver_id = ? and organization_id = ?", driver.ID, driver.OrganizationID).
+		Scan(&points)
+
+	if result.Error != nil {
+		http.Error(w, "Error calculating driver's points.", http.StatusInternalServerError)
+		return
+	}
+
+	if points == nil {
+		tmp := int64(0)
+		points = &tmp
+	}
+
+	if int64(totalPointCost) > *points {
+		http.Error(w, "Not enough points for cart checkout.", http.StatusBadRequest)
+		return
+	}
+
+	// Deduct points
+
+	result = s.DB.Save(&cart)
+	if result.Error != nil {
+		http.Error(w, "Couldn't update cart items.", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(200)
 }

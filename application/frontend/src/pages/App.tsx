@@ -34,6 +34,7 @@ import ChangePointStats from './Profile/ChangePointStats';
 import LogsPage from './Admin/Logs';
 import ShopManage from './Shop/ShopManage';
 import PointsReport from './Reports/PointsReport';
+import ShopCheckout from './Shop/ShopCheckout';
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -66,6 +67,7 @@ const App = () => {
         <Route path="catalog">
           <Route index element={<ShopCatalog />} />
           <Route path="manage" element={<ShopManage />} />
+          <Route path="checkout" element={<ShopCheckout />} />
         </Route>
 
         {/* Search Links */}

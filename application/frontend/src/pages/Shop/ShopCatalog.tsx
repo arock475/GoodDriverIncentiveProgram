@@ -18,6 +18,11 @@ interface DriverCatalogCtx {
   points: number;
 }
 
+interface CartResponse {
+  items: ShopItem[];
+  pointTotal: number;
+}
+
 const ShopCatalog: React.FC = () => {
   const [driverCtx, setDriverCtx] = useState<DriverCatalogCtx>({
     userId: 0,
@@ -25,7 +30,7 @@ const ShopCatalog: React.FC = () => {
     organizationId: 1,
     points: 0,
   });
-  const [searchTerm, setSearchTerm] = useState<string>("toys");
+  const [searchTerm, setSearchTerm] = useState<string>("tools");
   const [items, setItems] = useState<ShopItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [fetchedPages, setFetchedPages] = useState(0);
@@ -33,9 +38,6 @@ const ShopCatalog: React.FC = () => {
   const [showAffordableOnly, setShowAffordableOnly] = useState(false);
 
   const [userClaims, setUserClaims] = useState(getUserClaims());
-  const [PointsRatio, setPointsRatio] = useState({
-    PointsRatio: 1,
-  });
 
   const entriesPerPage = 25;
 
@@ -44,14 +46,6 @@ const ShopCatalog: React.FC = () => {
       .then((response) => response.json())
       .then((data: DriverCatalogCtx) => {
         setDriverCtx(data);
-      });
-    fetch(`http://localhost:3333/drivers/u:${userClaims.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPointsRatio({ PointsRatio: data.Organization.PointsRatio });
-      })
-      .catch((err) => {
-        console.log(err.message);
       });
   }, []);
   
@@ -94,7 +88,20 @@ const ShopCatalog: React.FC = () => {
       .then((response) => response.json())
       .then((data: EbayResponse) => {
         setTotalEntries(+data.totalEntries);
-        setItems(items.concat(data.items));
+
+        // Fetch existing cart items from backend
+        fetch(`http://localhost:3333/users/${userClaims.id}/cart`)
+          .then((response) => response.json())
+          .then((cart: CartResponse) => {
+            const itemIds: string[] = cart.items ? cart.items.map((item) => item.itemId) : [];
+            setItems(
+              data.items.map((item) => {
+                const inCart = itemIds.includes(item.itemId);
+                item.inCart = inCart;
+                return item;
+              })
+            );
+          });
       });
   };
 
@@ -138,12 +145,12 @@ const ShopCatalog: React.FC = () => {
     .slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)
     .filter((item) => {
       if (showAffordableOnly) {
-        return item.points <= driverCtx.points * PointsRatio.PointsRatio;
+        return item.points <= driverCtx.points; 
       } else return true;
     });
 
   return (
-    <div style={{ paddingLeft: "10em", paddingRight: "10em" }}>
+    <div>
       <Container fluid className="bg-light py-2">
         <Row className="align-items-center">
           <Col>
@@ -161,7 +168,10 @@ const ShopCatalog: React.FC = () => {
             <div className="text-end">
               <h4>{driverCtx.organizationName}</h4>
               {userClaims.role === User.Driver && (
-                <h4>Points: {driverCtx.points * PointsRatio.PointsRatio}</h4>
+                <div>
+                  <h4>Points: {driverCtx.points}</h4>
+                  <Button href="/catalog/checkout">Checkout</Button>
+                </div>
               )}
               {(userClaims.role === User.Sponsor || userClaims.role === User.Admin) && (
                 <Button href="/catalog/manage">Manage</Button>

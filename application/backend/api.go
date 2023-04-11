@@ -49,6 +49,7 @@ func (s *Server) ConnectDatabase(schemaName string) {
 	db.AutoMigrate(&Organization{})
 	db.AutoMigrate(&Points{})
 	db.AutoMigrate(&DriverApplication{})
+	db.AutoMigrate(&Purchase{})
 
 	db.AutoMigrate(&Log{})
 
@@ -111,6 +112,10 @@ func (s *Server) MountHandlers() {
 				r.Get("/", s.GetUser)
 				r.Get("/catalog", s.GetUserCatalogCtx)
 				r.Put("/profile", s.UpdateProfile)
+				r.Get("/cart", s.GetCartItems)
+				r.Put("/cart", s.AddItemToCart)
+				r.Delete("/cart", s.RemoveItemFromCart)
+				r.Put("/checkout", s.CheckoutItems)
 				r.Put("/reset", s.UpdatePassword)
 			})
 		})
