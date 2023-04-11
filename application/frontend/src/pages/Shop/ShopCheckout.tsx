@@ -15,7 +15,7 @@ const ShopCheckout: React.FC = () => {
 
   const fetchCartItems = () => {
     // Fetch cart shop items from backend
-    fetch(`http://localhost:3333/users/${userClaims.id}/cart`)
+    fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/${userClaims.id}/cart`)
       .then((response) => response.json())
       .then((data: CartResponse) => {
         if (data.items) {
@@ -33,7 +33,7 @@ const ShopCheckout: React.FC = () => {
   }, []);
 
   const handleCheckout = async () => {
-    await fetch(`http://localhost:3333/users/${userClaims.id}/checkout`, {
+    await fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/${userClaims.id}/checkout`, {
       method: "PUT",
     })
       .then(() => {
@@ -45,7 +45,7 @@ const ShopCheckout: React.FC = () => {
   };
 
   const handleRemoveItem = async (itemId: string) => {
-    await fetch(`http://localhost:3333/users/${userClaims.id}/cart`, {
+    await fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/${userClaims.id}/cart`, {
       method: "DELETE",
       body: itemId,
     })

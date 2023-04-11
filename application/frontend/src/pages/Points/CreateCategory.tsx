@@ -20,7 +20,7 @@ export default function CreateCategory() {
         Name: Points.Name,
       })
     };
-    fetch('http://localhost:3333/points/category/create', requestOptions)
+    fetch('http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/points/category/create', requestOptions)
       .then(response => response.json())
       .catch((err) => {
         console.log(err.message);

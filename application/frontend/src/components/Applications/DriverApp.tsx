@@ -14,39 +14,39 @@ export interface DriverApp {
 
 const DriverApp: React.FC<DriverApp> = (props) => {
     const applicationHandler = () => {
-        fetch(`http://localhost:3333/applications/driver?driverID=${encodeURIComponent(props.UserID)}&organizationID=${encodeURIComponent(props.OrgID)}`, {
+        fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/applications/driver?driverID=${encodeURIComponent(props.UserID)}&organizationID=${encodeURIComponent(props.OrgID)}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: "include",
         })
-        .then((response) => {
-            if (!response.ok){
-                throw new Error("Error submitting application")
-            }
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Error submitting application")
+                }
 
-            props.ParentCallback()
-        })
-        .catch((err) => {
-           console.log(err.message);
-        });
+                props.ParentCallback()
+            })
+            .catch((err) => {
+                console.log(err.message);
+            });
     }
 
     return (
         <tr>
-          <th>{props.Name}</th>
-          <th>{props.Status}</th>
-          <th>
-            {
-                props.Status==="Apply Now" ? // Status indicates driver has no existing application
-                    <Button onClick={applicationHandler}>
-                        Apply
-                    </Button>
-                :
-                    <p>{props.Reason}</p>
-            }
-        </th>
+            <th>{props.Name}</th>
+            <th>{props.Status}</th>
+            <th>
+                {
+                    props.Status === "Apply Now" ? // Status indicates driver has no existing application
+                        <Button onClick={applicationHandler}>
+                            Apply
+                        </Button>
+                        :
+                        <p>{props.Reason}</p>
+                }
+            </th>
         </tr>
     )
 }

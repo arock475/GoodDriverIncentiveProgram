@@ -8,9 +8,9 @@ import { User } from '../../components/CreateUser/CreateUser';
 
 
 
-const CreateOrganization = ({}) => {
+const CreateOrganization = ({ }) => {
     // claim
-    const [userClaims, setUserClaims] = useState(getUserClaims()); 
+    const [userClaims, setUserClaims] = useState(getUserClaims());
 
     const handleSubmit = async (event: React.SyntheticEvent) => {
         event.preventDefault();
@@ -26,7 +26,7 @@ const CreateOrganization = ({}) => {
         const phone = target.phone.value;
         const email = target.email.value;
         const logoURL = target.logoURL.value;
-        const response = await fetch('http://localhost:3333/orgs', {
+        const response = await fetch('http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs', {
             method: 'POST',
             body: JSON.stringify({
                 name: name,
@@ -36,18 +36,18 @@ const CreateOrganization = ({}) => {
                 logoURL: logoURL
             })
         })
-        .then(response => {
-            if (response.status >= 200 && response.status < 300) {
-                const resubmit = (userClaims.role == User.Sponsor || userClaims.role == User.Admin) ? window.confirm('Do you want to create another organization?') : false;   
-                if (resubmit) {
-                    window.location.href = '/create-org';
+            .then(response => {
+                if (response.status >= 200 && response.status < 300) {
+                    const resubmit = (userClaims.role == User.Sponsor || userClaims.role == User.Admin) ? window.confirm('Do you want to create another organization?') : false;
+                    if (resubmit) {
+                        window.location.href = '/create-org';
+                    }
+                    else {
+                        window.location.href = '/'
+                    }
                 }
-                else {
-                    window.location.href = '/'
-                }
-            }
-        })
-        .catch(error => console.log(error));
+            })
+            .catch(error => console.log(error));
         console.log(response)
     }
     if (userClaims.role == User.Admin) {
@@ -94,10 +94,10 @@ const CreateOrganization = ({}) => {
         );
     } else {
         return (
-          <div>ERROR! Improper role for accessing this page!</div>  
+            <div>ERROR! Improper role for accessing this page!</div>
         );
     }
-    
+
 }
 
 

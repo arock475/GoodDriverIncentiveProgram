@@ -42,13 +42,13 @@ const ShopCatalog: React.FC = () => {
   const entriesPerPage = 25;
 
   useEffect(() => {
-    fetch(`http://localhost:3333/users/${userClaims.id}/catalog`)
+    fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/${userClaims.id}/catalog`)
       .then((response) => response.json())
       .then((data: DriverCatalogCtx) => {
         setDriverCtx(data);
       });
   }, []);
-  
+
 
   const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -84,13 +84,13 @@ const ShopCatalog: React.FC = () => {
       }),
     };
 
-    fetch("http://localhost:3333/catalog", requestOptions)
+    fetch("http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/catalog", requestOptions)
       .then((response) => response.json())
       .then((data: EbayResponse) => {
         setTotalEntries(+data.totalEntries);
 
         // Fetch existing cart items from backend
-        fetch(`http://localhost:3333/users/${userClaims.id}/cart`)
+        fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/${userClaims.id}/cart`)
           .then((response) => response.json())
           .then((cart: CartResponse) => {
             const itemIds: string[] = cart.items ? cart.items.map((item) => item.itemId) : [];
@@ -145,7 +145,7 @@ const ShopCatalog: React.FC = () => {
     .slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)
     .filter((item) => {
       if (showAffordableOnly) {
-        return item.points <= driverCtx.points; 
+        return item.points <= driverCtx.points;
       } else return true;
     });
 
