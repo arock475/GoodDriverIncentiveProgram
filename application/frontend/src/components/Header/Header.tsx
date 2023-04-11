@@ -42,6 +42,9 @@ const Header: React.FC<HeaderProps> = ({
                         <Nav.Link href="/orgs" className="nav-link">Organizations</Nav.Link>
                         <Nav.Link href="/driver/notifications" className="nav-link">Notifications</Nav.Link>
                         <Nav.Link href="/search" className="nav-link">Search</Nav.Link>
+                        <NavDropdown title="Reports" id="create-navbar-dropdown">
+                            <NavDropdown.Item href="/reports/points">Driver Reports</NavDropdown.Item>
+                        </NavDropdown>
                     </Nav>
                     <LoginNav viewAs={viewAs} setViewAs={setViewAs}/>
                 </Navbar.Collapse>

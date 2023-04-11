@@ -92,6 +92,10 @@ func (s *Server) MountHandlers() {
 		r.Route("/admin", func(r chi.Router) {
 			r.Get("/logs", s.GetLogs)
 		})
+
+		r.Route("/reports", func(r chi.Router) {
+			r.Get("/individual/{driverID}", s.IndividualDriverReportData)
+		})
 	})
 
 	// Public routes
@@ -1267,4 +1271,61 @@ func (s *Server) SetRules(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(200)
+}
+
+// Generate reports
+func (s *Server) IndividualDriverReportData(w http.ResponseWriter, r *http.Request) {
+	var driver Driver
+	// Generate reports for indiviual driver
+	if driverID := chi.URLParam(r, "driverID"); driverID != "" {
+		result := s.DB.First(&driver, "id = ?", driverID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Driver Not Found", http.StatusNotFound)
+			return
+		}
+
+		// Get information about the driver
+
+		var report IndividualReportPayload
+		var user User
+		var org Organization
+
+		s.DB.First(&user, "id = ?", driver.UserID)
+		s.DB.First(&org, "id = ?", driver.OrganizationID)
+
+		report.DriverID = &driver.ID
+		report.DriverFName = &user.FirstName
+		report.DriverLName = &user.LastName
+		report.DriverEmail = &user.Email
+		report.OrganizationID = &driver.OrganizationID
+		report.OrganizationName = &org.Name
+
+		// Get point history
+		var points []Points
+
+		result = s.DB.Find(&points, "driver_id = ?", driver.ID)
+		if result.Error != nil {
+			http.Error(w, result.Error.Error(), http.StatusBadRequest)
+			return
+		}
+
+		var pointhistory []IndividualPointsPayload
+
+		for i := 0; i < len(points); i++ {
+			pointhistory = append(pointhistory, IndividualPointsPayload{
+				PointsCategory: &points[i].PointsCategory,
+				Reason:         &points[i].Reason,
+				CreatedAt:      &points[i].CreatedAt,
+			})
+		}
+
+		report.PointHistory = pointhistory
+
+		returned, _ := json.Marshal(report)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(200)
+		w.Write(returned)
+	}
+
+	w.WriteHeader(400)
 }

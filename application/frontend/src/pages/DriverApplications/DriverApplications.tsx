@@ -66,7 +66,6 @@ const DriverApplications: React.FC<{}> = () => {
             </thead>
             <tbody>
                 {orgList.map((item) => {
-                    console.log(item)
                     return <DriverApp
                         key={`${item.organizationId}-${item.status}`}
                         OrgID={item.organizationId}

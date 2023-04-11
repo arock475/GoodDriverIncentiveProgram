@@ -67,6 +67,22 @@ type SponsorApplicationPayload struct {
 	Status         *string `json:"Status"`
 }
 
+type IndividualPointsPayload struct {
+	PointsCategory *PointsCategory `json:"PointsCategory"`
+	Reason         *string         `json:"Reason"`
+	CreatedAt      *time.Time      `json:"CreatedAt"`
+}
+
+type IndividualReportPayload struct {
+	DriverID         *int                      `json:"DriverID"`
+	DriverFName      *string                   `json:"DriverFName"`
+	DriverLName      *string                   `json:"DriverLName"`
+	DriverEmail      *string                   `json:"DriverEmail"`
+	OrganizationID   *int                      `json:"OrganizationID"`
+	OrganizationName *string                   `json:"OrganizationName"`
+	PointHistory     []IndividualPointsPayload `json:"PointsHistory"`
+}
+
 // Type is a discriminator for different subtypes: driver, sponsor, admin
 // 0 -> Driver, 1 -> Sponsor, 2 -> Admin
 // User has a custom Marshaler which omits the password hash.
@@ -172,7 +188,6 @@ type DriverApplication struct {
 }
 
 // Logs
-
 type Log struct {
 	LogID       int       `gorm:"primaryKey;not null" json:"id"`
 	Event       string    `gorm:"not null" json:"event"`
