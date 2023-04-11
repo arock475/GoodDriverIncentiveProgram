@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Table from "react-bootstrap/Table";
+import { CSVLink, CSVDownload } from "react-csv";
 
 export interface LogEntry {
   id: string;
@@ -39,7 +40,8 @@ const LogTable: React.FC<LogTableProps> = ({ entries }) => {
     }
   });
 
-  return (
+  return ( 
+    <>
     <Table striped bordered hover style={{ borderCollapse: "collapse" }}>
       <thead>
         <tr>
@@ -72,7 +74,9 @@ const LogTable: React.FC<LogTableProps> = ({ entries }) => {
         ))}
       </tbody>
     </Table>
-  );
+    <CSVLink data={sortedLogEntries} filename={"TruckDriving_Logs.csv"}>Download As CSV File</CSVLink>
+    </>
+  )
 };
 
 export default LogTable;

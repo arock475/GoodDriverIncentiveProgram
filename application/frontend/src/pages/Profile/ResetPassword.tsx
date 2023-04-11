@@ -1,9 +1,10 @@
 import {
     MDBBtn,
   } from 'mdb-react-ui-kit';
-  import {useParams} from "react-router-dom";
+  import {useNavigate, useParams} from "react-router-dom";
   import{ useState, useEffect} from 'react';
   import emailjs from 'emailjs-com';
+import { Button } from 'react-bootstrap';
 
   export default function PasswordReset() {
     const { userID } = useParams();
@@ -12,6 +13,10 @@ import {
       lastName:'',
       email:'',
     })
+    const [Password,setPassword]=useState({
+      password: ''
+    })
+    const [emailSent, setEmailSent] = useState(false);
     const password_token = Math.floor(Math.random()*90000) + 10000
 
     const email = {      
@@ -40,6 +45,32 @@ import {
          });
      }
 
+     const sendRequest = () => {
+          const requestOptions = {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              password: Password.password
+            })
+          };
+          fetch('http://localhost:3333/users/' + userID + '/reset', requestOptions)
+            .then(response => response.json())
+            .catch((err) => {
+              console.log(err.message);
+           });
+    };
+
+    const handleChange = (event) => {
+      setPassword({password: event.target.value})
+    }
+
+    let navigate = useNavigate(); 
+    const routeChange = (path) =>{ 
+      setTimeout(function () {
+        navigate(path);
+      }, 1000);
+    }
+
 
      return (
         <><p> Get a token from the email associated with this account and paste it below to reset your password: </p>
@@ -49,9 +80,17 @@ import {
          <input type="text" onChange={(e) => {
             var value = '' + email.token;
             if(e.target.value == value) {
-                console.log('Success!'); 
+              console.log(true)
+              setEmailSent(true);
             }
         }}/>
-         </>       
+        {emailSent && <p></p>}
+        {emailSent && <label> Type new password here: </label>}
+        {emailSent && <p></p>}
+        {emailSent && <input type="text" onChange={handleChange}/> }
+        {emailSent && <br></br>}
+        {emailSent && <Button onClick={function(event){ sendRequest(); routeChange('../')}}>Submit</Button>}
+
+      </>       
      )
 }

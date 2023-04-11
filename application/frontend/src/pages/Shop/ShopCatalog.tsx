@@ -54,6 +54,7 @@ const ShopCatalog: React.FC = () => {
         console.log(err.message);
       });
   }, []);
+  
 
   const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {

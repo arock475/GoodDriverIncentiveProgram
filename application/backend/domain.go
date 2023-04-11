@@ -37,6 +37,10 @@ type CreateOrgPointPayload struct {
 	PointsRatio *float64 `json:"PointsRatio"`
 }
 
+type CreatePasswordPayload struct {
+	PlaintextPassword *string `json:"password"`
+}
+
 // used to send data about points totals
 type GetPointsTotalsPayload struct {
 	Driver       Driver

@@ -111,6 +111,7 @@ func (s *Server) MountHandlers() {
 				r.Get("/", s.GetUser)
 				r.Get("/catalog", s.GetUserCatalogCtx)
 				r.Put("/profile", s.UpdateProfile)
+				r.Put("/reset", s.UpdatePassword)
 			})
 		})
 
@@ -386,6 +387,41 @@ func (s *Server) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	returned, _ := json.Marshal(user)
 	w.Write(returned)
+}
+
+func (s *Server) UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	data := CreatePasswordPayload{}
+
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(*data.PlaintextPassword), bcrypt.MinCost)
+	if err != nil {
+		http.Error(w, "Internal server error: Failed to hash password, could not reset password.", http.StatusInternalServerError)
+		return
+	}
+
+	updates := make(map[string]interface{})
+
+	if hashedBytes != nil {
+		updates["password_hash"] = hashedBytes
+	}
+
+	if userID := chi.URLParam(r, "userID"); userID != "" {
+		result := s.DB.Model(&User{}).Where("id = ?", userID).Updates(updates)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "User Not Found", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(200)
 }
 
 /// Organization
