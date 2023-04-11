@@ -96,9 +96,9 @@ const CreateUser: React.FC<CreateProps> = ({ colorTheme = "dark", viewAs, setVie
     useEffect(() => {
         // load sponsor's org
         const fetchSponsorOrg = async () => {
-            const s_response = await fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaims.id}`);
+            const s_response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaims.id}`);
             const sponsor: Sponsor = await s_response.json();
-            const o_response = await fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/${sponsor.OrganizationID}`);
+            const o_response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/${sponsor.OrganizationID}`);
             const org: Organization = await o_response.json();
             setSelectedOrg(org);
         }
@@ -110,7 +110,7 @@ const CreateUser: React.FC<CreateProps> = ({ colorTheme = "dark", viewAs, setVie
     useEffect(() => {
         // load orgs
         const fetchOrgs = async () => {
-            const response = await fetch('http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs');
+            const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs');
             const data = await response.json();
             setOrgs(data);
         };
@@ -142,7 +142,7 @@ const CreateUser: React.FC<CreateProps> = ({ colorTheme = "dark", viewAs, setVie
             ...((creating == User.Driver) ? { truckType: target.truckType.value, } : {}),
             ...((creating == User.Driver) ? { licenceNumber: target.licenceNumber.value, } : {})
         }
-        const response = await fetch('http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users', {
+        const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users', {
             method: 'POST',
             body: JSON.stringify(formData)
         }).then(async response => {

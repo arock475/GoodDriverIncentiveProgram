@@ -19,7 +19,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      fetch("http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/login", {
+      fetch("http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/login", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

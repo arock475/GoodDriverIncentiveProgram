@@ -34,7 +34,7 @@ export default function ProfilePage() {
 
   // Gets user info from database
   useEffect(() => {
-    fetch('http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID)
+    fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID)
       .then((res) => res.json())
       .then((data) => {
         if (data.image == '') {
@@ -45,7 +45,7 @@ export default function ProfilePage() {
       .catch((err) => {
         console.log(err.message);
       });
-    fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/applications/driver?driverID=${userID}`, {
+    fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/applications/driver?driverID=${userID}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

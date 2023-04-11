@@ -24,7 +24,7 @@ const CreateAccount = () => {
         const email = target.email.value;
         const password = target.password.value;
 
-        const response = await fetch('http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users', {
+        const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users', {
             method: 'POST',
             body: JSON.stringify({
                 firstName: firstName,

@@ -13,7 +13,7 @@ export default function CreateCategory() {
     })
 
     useEffect(() => {
-        fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaims.id}`)
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaims.id}`)
             .then((res) => res.json())
             .then((data) => {
                 setSponsorData({ ID: data.ID, OrgID: data.OrganizationID, PointsRatio: data.Organization.PointsRatio });
@@ -39,7 +39,7 @@ export default function CreateCategory() {
                 PointsRatio: parseFloat(sponsor.PointsRatio)
             })
         };
-        fetch('http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/' + sponsor.OrgID + '/stats', requestOptions)
+        fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/' + sponsor.OrgID + '/stats', requestOptions)
     };
 
     // Navigates to the  profile page

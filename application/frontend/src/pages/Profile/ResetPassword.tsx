@@ -26,7 +26,7 @@ export default function PasswordReset() {
   }
   // Gets user info from database
   useEffect(() => {
-    fetch('http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID)
+    fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID)
       .then((res) => res.json())
       .then((data) => {
         setData({ email: data.email, firstName: data.firstName, lastName: data.lastName })
@@ -53,7 +53,7 @@ export default function PasswordReset() {
         password: Password.password
       })
     };
-    fetch('http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID + '/reset', requestOptions)
+    fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID + '/reset', requestOptions)
       .then(response => response.json())
       .catch((err) => {
         console.log(err.message);

@@ -14,7 +14,7 @@ export interface DriverApp {
 
 const DriverApp: React.FC<DriverApp> = (props) => {
     const applicationHandler = () => {
-        fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/applications/driver?driverID=${encodeURIComponent(props.UserID)}&organizationID=${encodeURIComponent(props.OrgID)}`, {
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/applications/driver?driverID=${encodeURIComponent(props.UserID)}&organizationID=${encodeURIComponent(props.OrgID)}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

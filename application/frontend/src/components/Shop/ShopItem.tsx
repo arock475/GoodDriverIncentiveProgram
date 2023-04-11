@@ -21,7 +21,7 @@ const ShopItem: React.FC<ShopItemProps> = ({ item }) => {
   const handleAddToCart = async () => {
     const claims = getUserClaims();
 
-    await fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/${claims.id}/cart`, {
+    await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/${claims.id}/cart`, {
       method: "PUT",
       body: JSON.stringify(currentItem),
     })

@@ -24,7 +24,7 @@ const DriverApplications: React.FC<{}> = () => {
     const [orgList, setOrgList] = useState([]);
 
     const renderApplications = () => {
-        fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/applications/driver?driverID=${userClaims.id}`, {
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/applications/driver?driverID=${userClaims.id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

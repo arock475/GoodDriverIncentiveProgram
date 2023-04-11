@@ -48,10 +48,10 @@ export default function CreateCategory() {
 
     useEffect(() => {
         const fetchUsers = async () => {
-            const resp = await fetch("http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users");
+            const resp = await fetch("http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users");
             const data = await resp.json();
 
-            const response = await fetch("http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/drivers");
+            const response = await fetch("http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/drivers");
             const drivers = await response.json();
 
             const users = data.map((user: any) => ({
@@ -75,7 +75,7 @@ export default function CreateCategory() {
         };
 
         fetchUsers();
-        fetch('http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/points/category')
+        fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/points/category')
             .then((res) => res.json())
             .then((data) => {
                 setPointsArray(data);
@@ -83,7 +83,7 @@ export default function CreateCategory() {
             .catch((err) => {
                 console.log(err.message);
             });
-        fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaims.id}`)
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaims.id}`)
             .then((res) => res.json())
             .then((data) => {
                 setPointsRatio({ PointsRatio: data.Organization.PointsRatio })
@@ -115,7 +115,7 @@ export default function CreateCategory() {
                 Reason: reason
             })
         };
-        fetch('http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/points/create', requestOptions)
+        fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/points/create', requestOptions)
             .then(response => response.json())
             .catch((err) => {
                 console.log(err.message);

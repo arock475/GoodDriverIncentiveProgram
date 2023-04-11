@@ -12,7 +12,7 @@ const IndividualDriverReport: React.FC<{}> = () => {
     const [table, setTable] = useState([])
 
     useEffect(() => {
-        fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/drivers`, {
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/drivers`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ const IndividualDriverReport: React.FC<{}> = () => {
     useEffect(() => {
         const fetchReports = async () => {
             const promises = await Promise.all(selectedIDs.map(ID => 
-                fetch(`http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/individual/${ID}`, {
+                fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/individual/${ID}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

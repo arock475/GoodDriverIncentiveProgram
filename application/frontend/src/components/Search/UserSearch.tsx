@@ -19,7 +19,7 @@ const UserSearch: React.FC = () => {
   // Load all relevant users upon rendering component for responsive searching.
   useEffect(() => {
     const fetchUsers = async () => {
-      const resp = await fetch("http://http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users");
+      const resp = await fetch("http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users");
       const data = await resp.json();
 
       const users = data.map((user: any) => ({
