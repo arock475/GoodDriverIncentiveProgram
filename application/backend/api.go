@@ -284,8 +284,9 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		// default for now
 		// TODO: Remove this? make 1 default? make org foreign key nullable (this will break things)?
 		// TODO: we need a way to actually get accepted to an org from an app before removing this.
-		driver.OrganizationID = organization.ID
-		driver.Organizations = []*Organization{&organization}
+		// preload organizations for driver and append the newly accepted one
+		driver.OrganizationID = -1
+		//driver.Organizations = []*Organization{&organization}
 
 		// creating the sponsor in the database
 		createResult := s.DB.Create(&driver)
@@ -688,7 +689,7 @@ func (s *Server) SetApplicationDecision(w http.ResponseWriter, r *http.Request) 
 	// Find Driver
 	driverID := r.URL.Query().Get("driverID")
 	if driverID != "" {
-		result := s.DB.Find(&driver, "user_id = ?", driverID)
+		result := s.DB.Preload("Organizations").Find(&driver, "user_id = ?", driverID)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			http.Error(w, "Driver Not Found", http.StatusNotFound)
 			return
@@ -729,7 +730,10 @@ func (s *Server) SetApplicationDecision(w http.ResponseWriter, r *http.Request) 
 	updates["reason"] = r.URL.Query().Get("reason")
 
 	s.DB.Model(&DriverApplication{}).Where("driver_user_id = ? AND organization_id = ?", driver.UserID, org.ID).Updates(updates)
-
+	//added call to update organizations with newly accepted org
+	driver.Organizations = append(driver.Organizations, &org)
+	driver.OrganizationID = org.ID
+	s.DB.Save(driver)
 	description := fmt.Sprintf("driver_user_id: %d; organization_id: %d; sponsor_id: %d; reason: %s", driver.ID, org.ID, sponsor.ID, r.URL.Query().Get("reason"))
 
 	log := Log{
