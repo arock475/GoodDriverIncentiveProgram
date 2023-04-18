@@ -14,8 +14,8 @@ enum SortBy {
     Totals
 }
 
-const AllDriver = ({}) => {
-    const [userClaims, setUserClaims] = useState(getUserClaims()); 
+const AllDriver = ({ }) => {
+    const [userClaims, setUserClaims] = useState(getUserClaims());
     const [cols, setCols] = useState<TotalsPayload[]>([]);
     const [sponsorCols, setSponsorCols] = useState<TotalsPayload[]>([]);
     const [sponsorOrg, setSponsorOrg] = useState<Organization>({
@@ -33,29 +33,29 @@ const AllDriver = ({}) => {
             setSortBy(SortBy.ID);
         } else if (event.target.value == 'totalPoints') {
             setSortBy(SortBy.Totals);
-        }  
+        }
     }
 
     // load selected org
     useEffect(() => {
         const fetchSponsorOrg = () => {
-            fetch(`http://localhost:3333/sponsors/u:${userClaims.id}`)
-            .then((result) => result.json())
-            .then((sponsor: Sponsor) => {
-                fetch(`http://localhost:3333/orgs/${sponsor.OrganizationID}`)
+            fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaims.id}`)
                 .then((result) => result.json())
-                .then((org: Organization) => setSponsorOrg(org));
-            });
+                .then((sponsor: Sponsor) => {
+                    fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/${sponsor.OrganizationID}`)
+                        .then((result) => result.json())
+                        .then((org: Organization) => setSponsorOrg(org));
+                });
         }
         if (userClaims.role == User.Sponsor) {
-            fetchSponsorOrg(); 
+            fetchSponsorOrg();
         }
-        
+
     }, []);
 
     useEffect(() => {
-        const fetchCols = async () => {      
-            const response = await fetch(`http://localhost:3333/points/totals`);
+        const fetchCols = async () => {
+            const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/points/totals`);
             const data: TotalsPayload[] = await response.json();
             if (data) {
                 switch (sortBy) {
@@ -88,34 +88,34 @@ const AllDriver = ({}) => {
             </Row>
             <Table striped bordered hover>
                 <thead>
-                <tr>
-                    <th>Driver ID</th>
-                    <th>Name</th>
-                    <th>Organization</th>
-                    <th>Points Total</th>
-                </tr>
+                    <tr>
+                        <th>Driver ID</th>
+                        <th>Name</th>
+                        <th>Organization</th>
+                        <th>Points Total</th>
+                    </tr>
                 </thead>
                 <tbody>
-                {userClaims.role === User.Admin &&
-                    cols.map((col) => (
-                        <tr  key={col.Organization.Name + " " + col.Driver.User.firstName+ " "+ col.Driver.User.lastName}>
-                        <td>{col.Driver.ID}</td>
-                        <td>{col.Driver.User.firstName + " " + col.Driver.User.lastName}</td>
-                        <td>{col.Organization.Name}</td>
-                        <td>{col.Total}</td>
-                        </tr>
-                    ))
-                }
-                {userClaims.role === User.Sponsor &&
-                    sponsorCols.map((col) => (
-                        <tr  key={col.Organization.Name + " " + col.Driver.User.firstName+ " "+ col.Driver.User.lastName}>
-                        <td>{col.Driver.ID}</td>
-                        <td>{col.Driver.User.firstName + " " + col.Driver.User.lastName}</td>
-                        <td>{col.Organization.Name}</td>
-                        <td>{col.Total}</td>
-                        </tr>
-                    ))
-                }
+                    {userClaims.role === User.Admin &&
+                        cols.map((col) => (
+                            <tr key={col.Organization.Name + " " + col.Driver.User.firstName + " " + col.Driver.User.lastName}>
+                                <td>{col.Driver.ID}</td>
+                                <td>{col.Driver.User.firstName + " " + col.Driver.User.lastName}</td>
+                                <td>{col.Organization.Name}</td>
+                                <td>{col.Total}</td>
+                            </tr>
+                        ))
+                    }
+                    {userClaims.role === User.Sponsor &&
+                        sponsorCols.map((col) => (
+                            <tr key={col.Organization.Name + " " + col.Driver.User.firstName + " " + col.Driver.User.lastName}>
+                                <td>{col.Driver.ID}</td>
+                                <td>{col.Driver.User.firstName + " " + col.Driver.User.lastName}</td>
+                                <td>{col.Organization.Name}</td>
+                                <td>{col.Total}</td>
+                            </tr>
+                        ))
+                    }
                 </tbody>
             </Table>
         </div>

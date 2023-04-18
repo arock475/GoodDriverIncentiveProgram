@@ -4,10 +4,10 @@ import { useCookies } from 'react-cookie';
 
 const LogsPage = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
-    const [cookies, setCookie, removeCookie] = useCookies();
+  const [cookies, setCookie, removeCookie] = useCookies();
 
   useEffect(() => {
-    fetch("http://localhost:3333/admin/logs", {
+    fetch("http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/admin/logs", {
       headers: {
         Authorization: `Bearer ${cookies.jwt}`,
       },

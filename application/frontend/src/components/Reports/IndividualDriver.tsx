@@ -5,8 +5,8 @@ import Form from 'react-bootstrap/Form';
 import { CSVLink, CSVDownload } from "react-csv";
 
 const getRange = (start, stop) => {
-    return Array.from({length: stop - start},
-        (value, idx) => start + idx    
+    return Array.from({ length: stop - start },
+        (value, idx) => start + idx
     )
 }
 
@@ -19,7 +19,7 @@ const IndividualDriverReport: React.FC<{}> = () => {
     const [yearRange, setYearRange] = useState([])
     const [monthRange, setMonthRange] = useState([])
     const [dayRange, setDayRange] = useState([])
-    
+
     const [fromYear, setFromYear] = useState(2020)
     const [fromMonth, setFromMonth] = useState(1)
     const [fromDay, setFromDay] = useState(1)
@@ -28,7 +28,7 @@ const IndividualDriverReport: React.FC<{}> = () => {
     const [toDay, setToDay] = useState(31)
 
     useEffect(() => {
-        fetch(`http://localhost:3333/drivers`, {
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/drivers`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -51,8 +51,8 @@ const IndividualDriverReport: React.FC<{}> = () => {
 
     useEffect(() => {
         const fetchReports = async () => {
-            const promises = await Promise.all(selectedIDs.map(ID => 
-                fetch(`http://localhost:3333/reports/individual/${ID}`, {
+            const promises = await Promise.all(selectedIDs.map(ID =>
+                fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/individual/${ID}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ const IndividualDriverReport: React.FC<{}> = () => {
     }, [selectedIDs])
 
     useEffect(() => {
-        if(fromYear > toYear || (fromYear === toYear && fromMonth > toMonth) || (fromYear === toYear && fromMonth === toMonth && fromDay > toDay)){
+        if (fromYear > toYear || (fromYear === toYear && fromMonth > toMonth) || (fromYear === toYear && fromMonth === toMonth && fromDay > toDay)) {
             setTable([])
             return
         }
@@ -81,20 +81,20 @@ const IndividualDriverReport: React.FC<{}> = () => {
         const phCopy = structuredClone(pointHistoryList)
 
         const list = phCopy.map((val, idx) => {
-            if(val.PointsHistory === null) return val
+            if (val.PointsHistory === null) return val
 
             val.PointsHistory = val.PointsHistory.filter(ph => {
                 const year = Number(ph["CreatedAt"].slice(0, 4))
                 const month = Number(ph["CreatedAt"].slice(5, 7))
                 const day = Number(ph["CreatedAt"].slice(8, 10))
-    
-                return year >= fromYear && year <= toYear && month >= fromMonth && month <= toMonth && day >= fromDay && day <= toDay 
+
+                return year >= fromYear && year <= toYear && month >= fromMonth && month <= toMonth && day >= fromDay && day <= toDay
             })
 
             return val
         })
-        
-        for(let i = 0; i < list.length; i++){
+
+        for (let i = 0; i < list.length; i++) {
 
             if (list[i].PointsHistory === undefined || list[i].PointsHistory === null) {
                 const row = []
@@ -103,18 +103,18 @@ const IndividualDriverReport: React.FC<{}> = () => {
 
                 t.push(row)
             }
-            else{
+            else {
                 const segment = []
                 const pointHistoryLength = list[i].PointsHistory.length
-                for(let j = 0; j < pointHistoryLength; j++){
+                for (let j = 0; j < pointHistoryLength; j++) {
 
                     const row = []
 
-                    if(j === pointHistoryLength - 1){
+                    if (j === pointHistoryLength - 1) {
                         row.push(...[list[i].DriverID, list[i].DriverFName + " " + list[i].DriverLName, list[i].DriverEmail, list[i].OrganizationName])
                     }
-                    else{
-                        row.push(...["","","",""])
+                    else {
+                        row.push(...["", "", "", ""])
                     }
 
                     row.push(list[i].PointsHistory[j]["Points Category"])
@@ -134,14 +134,14 @@ const IndividualDriverReport: React.FC<{}> = () => {
     var drivers = []
     pointHistoryList.map((d) => {
         drivers.push({
-          driverID:d.DriverID,
-          driverFName: d.DriverFName,
-          driverLName:d.DriverLName,
-          driverEmail:d.DriverEmail,
-          organizationID:d.OrganizationID,
-          organizationName:d.OrganizationName
+            driverID: d.DriverID,
+            driverFName: d.DriverFName,
+            driverLName: d.DriverLName,
+            driverEmail: d.DriverEmail,
+            organizationID: d.OrganizationID,
+            organizationName: d.OrganizationName
         })
-    }) 
+    })
 
     return (
         <div>
@@ -149,17 +149,17 @@ const IndividualDriverReport: React.FC<{}> = () => {
                 Select Driver ID
             </Form.Label>
             <Form.Select onChange={(e) => {
-                    const val = e.target.value
+                const val = e.target.value
 
-                    if (val === "all") {
-                        setSelectedIDs(driverIDList)
-                    }
-                    else{
-                        setSelectedIDs([val])
-                    }
-                }}>
+                if (val === "all") {
+                    setSelectedIDs(driverIDList)
+                }
+                else {
+                    setSelectedIDs([val])
+                }
+            }}>
                 <option value={"all"}>All Drivers</option>
-                {   
+                {
                     driverIDList.map((ID, i) => {
                         return (
                             <option value={ID} key={ID}>
@@ -175,11 +175,11 @@ const IndividualDriverReport: React.FC<{}> = () => {
                         From Year
                     </Form.Label>
                     <Form.Select onChange={(e) => {
-                            setFromYear(Number(e.target.value))
-                        }}>
-                        {   
+                        setFromYear(Number(e.target.value))
+                    }}>
+                        {
                             getRange(2020, 2024).reverse().map((val, idx) => {
-                                if(val === fromYear) return(
+                                if (val === fromYear) return (
                                     <option value={val} key={val} selected>
                                         {val}
                                     </option>
@@ -199,11 +199,11 @@ const IndividualDriverReport: React.FC<{}> = () => {
                         From Month
                     </Form.Label>
                     <Form.Select onChange={(e) => {
-                            setFromMonth(Number(e.target.value))
-                        }}>
-                        {   
+                        setFromMonth(Number(e.target.value))
+                    }}>
+                        {
                             getRange(1, 13).map((val, idx) => {
-                                if(val === fromMonth) return(
+                                if (val === fromMonth) return (
                                     <option value={val} key={val} selected>
                                         {val}
                                     </option>
@@ -223,11 +223,11 @@ const IndividualDriverReport: React.FC<{}> = () => {
                         From Day
                     </Form.Label>
                     <Form.Select onChange={(e) => {
-                            setFromDay(Number(e.target.value))
-                        }}>
-                        {   
+                        setFromDay(Number(e.target.value))
+                    }}>
+                        {
                             getRange(1, 32).map((val, idx) => {
-                                if(val === fromDay) return(
+                                if (val === fromDay) return (
                                     <option value={val} key={val} selected>
                                         {val}
                                     </option>
@@ -250,11 +250,11 @@ const IndividualDriverReport: React.FC<{}> = () => {
                         To Year
                     </Form.Label>
                     <Form.Select onChange={(e) => {
-                            setToYear(Number(e.target.value))
-                        }}>
-                        {   
+                        setToYear(Number(e.target.value))
+                    }}>
+                        {
                             getRange(2020, 2024).reverse().map((val, idx) => {
-                                if(val === toYear) return(
+                                if (val === toYear) return (
                                     <option value={val} key={val} selected>
                                         {val}
                                     </option>
@@ -274,11 +274,11 @@ const IndividualDriverReport: React.FC<{}> = () => {
                         To Month
                     </Form.Label>
                     <Form.Select onChange={(e) => {
-                            setToMonth(Number(e.target.value))
-                        }}>
-                        {   
+                        setToMonth(Number(e.target.value))
+                    }}>
+                        {
                             getRange(1, 13).map((val, idx) => {
-                                if(val === toMonth) return(
+                                if (val === toMonth) return (
                                     <option value={val} key={val} selected>
                                         {val}
                                     </option>
@@ -298,11 +298,11 @@ const IndividualDriverReport: React.FC<{}> = () => {
                         To Day
                     </Form.Label>
                     <Form.Select onChange={(e) => {
-                            setToDay(Number(e.target.value))
-                        }}>
-                        {   
+                        setToDay(Number(e.target.value))
+                    }}>
+                        {
                             getRange(1, 32).map((val, idx) => {
-                                if(val === toDay) return(
+                                if (val === toDay) return (
                                     <option value={val} key={val} selected>
                                         {val}
                                     </option>
@@ -318,7 +318,7 @@ const IndividualDriverReport: React.FC<{}> = () => {
                     </Form.Select>
                 </div>
             </div>
-            
+
 
             <Table>
                 <thead>
@@ -333,10 +333,10 @@ const IndividualDriverReport: React.FC<{}> = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    { table.map((row, i) => {
+                    {table.map((row, i) => {
                         return (
                             <tr key={i}>
-                                { row.map((item, j) => {
+                                {row.map((item, j) => {
                                     return (
                                         <th key={String(i) + " " + String(j)}>
                                             {item}
@@ -350,7 +350,7 @@ const IndividualDriverReport: React.FC<{}> = () => {
                     }
                 </tbody>
             </Table>
-        <CSVLink data={drivers} filename={"DriverReport.csv"}>Download As CSV File</CSVLink>
+            <CSVLink data={drivers} filename={"DriverReport.csv"}>Download As CSV File</CSVLink>
         </div>
     )
 }

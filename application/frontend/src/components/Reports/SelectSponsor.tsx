@@ -9,18 +9,18 @@ interface Sponsor {
 }
 interface Purchases {
     ID: string
-	DriverID:string
-	OrganizationID:string
-	ItemID:string
-	ItemTitle:string
-	ImageURL:string
-	Points:string
-	InCart:string
-	CheckedOut:string
-	UpdatedAt:string
+    DriverID: string
+    OrganizationID: string
+    ItemID: string
+    ItemTitle: string
+    ImageURL: string
+    Points: string
+    InCart: string
+    CheckedOut: string
+    UpdatedAt: string
 }
 
-export default function IndividualSponsor () {
+export default function IndividualSponsor() {
     const [sponsor, setSponsor] = useState<Sponsor>()
     const [purchaseHistory, setPurchaseHistory] = useState<Purchases[]>([])
     const [userClaim, setUserClaim] = useState(getUserClaims());
@@ -28,7 +28,7 @@ export default function IndividualSponsor () {
     const [selectedIDs, setSelectedIDs] = useState([])
 
     useEffect(() => {
-        fetch(`http://localhost:3333/sponsors`, {
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -49,12 +49,12 @@ export default function IndividualSponsor () {
         }).catch()
     }, [])
 
-    
+
 
     useEffect(() => {
         const fetchReports = async () => {
-            const promises = await Promise.all(selectedIDs.map(ID => 
-                fetch(`http://localhost:3333/reports/sponsor/sales/${ID}`, {
+            const promises = await Promise.all(selectedIDs.map(ID =>
+                fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/sponsor/sales/${ID}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -73,12 +73,12 @@ export default function IndividualSponsor () {
     }, [selectedIDs])
 
 
-    const DisplayData=purchaseHistory.map(
-        (info)=>{
+    const DisplayData = purchaseHistory.map(
+        (info) => {
             var data = []
-            if(info != null) {
-                for(let i = 0; i < Object.keys(info).length; i++) {
-                     data.push(
+            if (info != null) {
+                for (let i = 0; i < Object.keys(info).length; i++) {
+                    data.push(
                         <tr key={info[i].ID}>
                             <td>{info[i].DriverID}</td>
                             <td>{info[i].OrganizationID}</td>
@@ -90,22 +90,22 @@ export default function IndividualSponsor () {
                     )
                 }
                 return data;
-           }
+            }
         }
     )
 
     var Purchases = []
     purchaseHistory.map((p) => {
         Purchases.push({
-          id: p.ID,
-          driverID:p.DriverID,
-          organizationID: p.OrganizationID,
-          itemID:p.ItemID,
-          itemName:p.ItemTitle,
-          pointsTotal:p.Points,
-          time:p.UpdatedAt
+            id: p.ID,
+            driverID: p.DriverID,
+            organizationID: p.OrganizationID,
+            itemID: p.ItemID,
+            itemName: p.ItemTitle,
+            pointsTotal: p.Points,
+            time: p.UpdatedAt
         })
-    }) 
+    })
 
     return (
         <div>
@@ -113,17 +113,17 @@ export default function IndividualSponsor () {
                 Select Sponsor ID
             </Form.Label>
             <Form.Select onChange={(e) => {
-                    const val = e.target.value
+                const val = e.target.value
 
-                    if (val === "all") {
-                        setSelectedIDs(sponsorIDList)
-                    }
-                    else{
-                        setSelectedIDs([val])
-                    }
-                }}>
+                if (val === "all") {
+                    setSelectedIDs(sponsorIDList)
+                }
+                else {
+                    setSelectedIDs([val])
+                }
+            }}>
                 <option value={"all"}>All Sponsors</option>
-                {   
+                {
                     sponsorIDList.map((ID, i) => {
                         return (
                             <option value={ID} key={ID}>
@@ -150,6 +150,6 @@ export default function IndividualSponsor () {
             </Table>
             <CSVLink data={Purchases} filename={"SponsorSalesReport.csv"}>Download As CSV File</CSVLink>
         </div>
-        
+
     )
 }

@@ -19,9 +19,9 @@ export interface Organization {
     LogoURL: string
 }
 
-const Organization = ({}) => {
+const Organization = ({ }) => {
     // org variables
-    const {orgid} = useParams<{ orgid: string }>();
+    const { orgid } = useParams<{ orgid: string }>();
     const [org, setOrg] = useState<Organization | null>(null)
     const [basicModal, setBasicModal] = useState(false);
     const toggleShow = () => setBasicModal(!basicModal);
@@ -31,7 +31,7 @@ const Organization = ({}) => {
         // get org
         const fetchOrg = async () => {
             try {
-                const response = await fetch(`http://localhost:3333/orgs/${orgid}`);
+                const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/${orgid}`);
                 const data = await response.json();
                 setOrg(data);
             }
@@ -51,22 +51,22 @@ const Organization = ({}) => {
                 orgId: org.ID
             })
         };
-        fetch('http://localhost:3333/orgs/' + org.ID + '/addToOrg', requestOptions)
-          .then(response => response.json())
-      };
+        fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/' + org.ID + '/addToOrg', requestOptions)
+            .then(response => response.json())
+    };
 
     if (org) {
         return (
             <div>
-                {org.LogoURL && 
+                {org.LogoURL &&
                     <div className="jumbotron">
-                        <img src={org.LogoURL} alt="Banner Image" className="img-fluid"/>
+                        <img src={org.LogoURL} alt="Banner Image" className="img-fluid" />
                     </div>
                 }
                 <Container>
                     <h1 className="display-3">{org.Name}</h1>
                     <Accordion>
-                    <Accordion.Item eventKey="0">
+                        <Accordion.Item eventKey="0">
                             <Accordion.Header>About Us</Accordion.Header>
                             <Accordion.Body>{org.Biography}</Accordion.Body>
                         </Accordion.Item>
@@ -83,13 +83,13 @@ const Organization = ({}) => {
                                 <MDBModalHeader>
                                     <MDBModalTitle>Search for the user you wish to add</MDBModalTitle>
                                 </MDBModalHeader>
-                                <SearchSelect UserID = {userID} setUserID = {setUserID}/>
+                                <SearchSelect UserID={userID} setUserID={setUserID} />
                                 <Button onClick={sendRequest}>Add Selected User</Button>
                             </MDBModalContent>
                         </MDBModalDialog>
                     </MDBModal>
                 </Container>
-            </div>        
+            </div>
         );
     }
     else {
@@ -101,7 +101,7 @@ const Organization = ({}) => {
             </Container>
         );
     }
-   
+
 }
 
 export default Organization;

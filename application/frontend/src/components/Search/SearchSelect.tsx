@@ -12,13 +12,13 @@ interface UserItem {
 }
 
 export type SearchSelectProps = {
-    colorTheme?: string,
-    UserID?: number
-    setUserID?: React.Dispatch<React.SetStateAction<number>>
+  colorTheme?: string,
+  UserID?: number
+  setUserID?: React.Dispatch<React.SetStateAction<number>>
 }
 
 const UserSearch: React.FC<SearchSelectProps> = ({
-    colorTheme='Dark', UserID, setUserID
+  colorTheme = 'Dark', UserID, setUserID
 }) => {
   const [items, setItems] = useState<UserItem[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -27,7 +27,7 @@ const UserSearch: React.FC<SearchSelectProps> = ({
   // Load all relevant users upon rendering component for responsive searching.
   useEffect(() => {
     const fetchUsers = async () => {
-      const resp = await fetch("http://localhost:3333/users");
+      const resp = await fetch("http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users");
       const data = await resp.json();
 
       const users = data.map((user: any) => ({
@@ -86,17 +86,17 @@ const UserSearch: React.FC<SearchSelectProps> = ({
         <ul className="list-group mt-3">
           {searchResults.map((user) => (
             <li key={user.id} className="list-group-item">
-                
-                <div className="d-flex justify-content-between align-items-center">
-                  <MDBRadio name='flexCheck' value={user.id} id='flexCheckDefault' onChange={handleChange}/>
-                  <div>
-                    <h6>{user.full}</h6>
-                    <small className="text-muted">{user.email}</small>
-                  </div>
-                  <div>
-                    <small>ID: {user.id}</small>
-                  </div>
+
+              <div className="d-flex justify-content-between align-items-center">
+                <MDBRadio name='flexCheck' value={user.id} id='flexCheckDefault' onChange={handleChange} />
+                <div>
+                  <h6>{user.full}</h6>
+                  <small className="text-muted">{user.email}</small>
                 </div>
+                <div>
+                  <small>ID: {user.id}</small>
+                </div>
+              </div>
             </li>
           ))}
         </ul>

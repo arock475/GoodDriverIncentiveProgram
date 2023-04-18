@@ -24,7 +24,7 @@ interface Total {
     Total: number
 }
 
-const SalesByDriverReport = ({}) => {
+const SalesByDriverReport = ({ }) => {
     // claim: depreciated replace with viewAs later
     const [userClaim, setUserClaim] = useState(getUserClaims());
 
@@ -45,16 +45,16 @@ const SalesByDriverReport = ({}) => {
         setSelectedOrgID(event.target.value);
     }
 
-    useEffect(() => {     
+    useEffect(() => {
         // filter totals (all drivers)
         if (selectedDriverID === 'all') {
             // filter by organization
-            if (selectedOrgID  === 'all') {
+            if (selectedOrgID === 'all') {
                 setOrgTotals(totals);
-            } 
+            }
             else {
                 const fetchOrgTotals = async () => {
-                    const response = await fetch(`http://localhost:3333/reports/salesbydriver/o:${selectedOrgID}`, {
+                    const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/salesbydriver/o:${selectedOrgID}`, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -65,15 +65,15 @@ const SalesByDriverReport = ({}) => {
                     setOrgTotals(data);
                 }
                 fetchOrgTotals();
-            }  
+            }
         }
         // filter purchases (individual driver)
         else {
             let filteredPurchases: Purchase[]
             // filter by organization
-            if (selectedOrgID  === 'all') {
+            if (selectedOrgID === 'all') {
                 filteredPurchases = purchases
-            } 
+            }
             else {
                 filteredPurchases = purchases.filter(purchase => `${purchase.Organization.ID}` === selectedOrgID);
             }
@@ -84,16 +84,16 @@ const SalesByDriverReport = ({}) => {
 
     useEffect(() => {
         const fetchSponsorOrgID = async () => {
-            const response = await fetch(`http://localhost:3333/sponsors/u:${userClaim.id}`);
+            const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaim.id}`);
             const sponsor: Sponsor = await response.json();
             setSelectedOrgID(`${sponsor.OrganizationID}`);
         }
         if (userClaim.role == User.Sponsor) {
-            fetchSponsorOrgID(); 
+            fetchSponsorOrgID();
         }
 
         const fetchOrgs = async () => {
-            const response = await fetch('http://localhost:3333/orgs');
+            const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs');
             const data = await response.json();
             setOrgs(data);
         }
@@ -102,7 +102,7 @@ const SalesByDriverReport = ({}) => {
         }
 
         const fetchTotals = async () => {
-            const response = await fetch('http://localhost:3333/reports/salesbydriver', {
+            const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/salesbydriver', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ const SalesByDriverReport = ({}) => {
         fetchTotals();
 
         const fetchPurchases = async () => {
-            const response = await fetch('http://localhost:3333/reports/purchases', {
+            const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/purchases', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ const SalesByDriverReport = ({}) => {
     const getTotalsSum = (totals: Total[]) => {
         return totals.reduce((total, t) => total + t.Total, 0);
     };
-    
+
     const getPurchasesSum = (purchases: Purchase[]) => {
         return purchases.reduce((total, p) => total + p.Points, 0);
     }
@@ -149,53 +149,53 @@ const SalesByDriverReport = ({}) => {
         return (
             <Form>
                 <Row>
-                {(userClaim.role == User.Admin || userClaim.role == User.Sponsor) &&
-                    <Col>
-                        <Form.Label>Select By Driver</Form.Label>           
-                        <Form.Control as='select' onChange={handleDriverViewChange}>
-                            <option value={'all'}>All Drivers</option>
-                            {
-                                totals.map((total) => (
-                                    <option key={total.Driver.ID} value={total.Driver.ID}>{total.Driver.User.firstName + " " + total.Driver.User.lastName}</option>
-                                ))
-                            }
-                        </Form.Control>
-                    </Col>
-                }
-                {(userClaim.role == User.Admin) &&
-                    <Col>
-                        <Form.Label>Select By Organization</Form.Label>           
-                        <Form.Control as='select' onChange={handleOrgChange}>
-                            <option value={'all'}>All Organizations</option>
-                            {
-                                orgs.map((org) => (
-                                    <option key={org.ID} value={org.ID}>{org.Name}</option>
-                                ))
-                            }
-                        </Form.Control>
-                    </Col>
-                }
+                    {(userClaim.role == User.Admin || userClaim.role == User.Sponsor) &&
+                        <Col>
+                            <Form.Label>Select By Driver</Form.Label>
+                            <Form.Control as='select' onChange={handleDriverViewChange}>
+                                <option value={'all'}>All Drivers</option>
+                                {
+                                    totals.map((total) => (
+                                        <option key={total.Driver.ID} value={total.Driver.ID}>{total.Driver.User.firstName + " " + total.Driver.User.lastName}</option>
+                                    ))
+                                }
+                            </Form.Control>
+                        </Col>
+                    }
+                    {(userClaim.role == User.Admin) &&
+                        <Col>
+                            <Form.Label>Select By Organization</Form.Label>
+                            <Form.Control as='select' onChange={handleOrgChange}>
+                                <option value={'all'}>All Organizations</option>
+                                {
+                                    orgs.map((org) => (
+                                        <option key={org.ID} value={org.ID}>{org.Name}</option>
+                                    ))
+                                }
+                            </Form.Control>
+                        </Col>
+                    }
                 </Row>
-                {(selectedDriverID === 'all' ) && 
+                {(selectedDriverID === 'all') &&
                     <Row>
                         <Table striped bordered hover>
                             <thead>
-                            <tr>
-                                <th>Driver ID</th>
-                                <th>Name</th>
-                                <th>Total Purchases</th>
-                            </tr>
+                                <tr>
+                                    <th>Driver ID</th>
+                                    <th>Name</th>
+                                    <th>Total Purchases</th>
+                                </tr>
                             </thead>
                             <tbody>
-                            {
-                                orgTotals.map((total) => (
-                                    <tr>
-                                        <td>{total.Driver.ID}</td>
-                                        <td>{total.Driver.User.firstName + " " + total.Driver.User.lastName}</td>
-                                        <td>{total.Total}</td>
-                                    </tr>
-                                ))
-                            }
+                                {
+                                    orgTotals.map((total) => (
+                                        <tr>
+                                            <td>{total.Driver.ID}</td>
+                                            <td>{total.Driver.User.firstName + " " + total.Driver.User.lastName}</td>
+                                            <td>{total.Total}</td>
+                                        </tr>
+                                    ))
+                                }
                             </tbody>
                             <tfoot>
                                 <tr>
@@ -210,22 +210,22 @@ const SalesByDriverReport = ({}) => {
                     <Row>
                         <Table striped bordered hover>
                             <thead>
-                            <tr>
-                                <th>Item ID</th>
-                                <th>Item Title</th>
-                                <th>Points</th>
-                            </tr>
+                                <tr>
+                                    <th>Item ID</th>
+                                    <th>Item Title</th>
+                                    <th>Points</th>
+                                </tr>
                             </thead>
                             <tbody>
-                            {
-                                driverPurchases.map((purchase) => (
-                                    <tr>
-                                        <td>{purchase.ItemID}</td>
-                                        <td>{purchase.ItemTitle}</td>
-                                        <td>{purchase.Points}</td>
-                                    </tr>
-                                ))
-                            }
+                                {
+                                    driverPurchases.map((purchase) => (
+                                        <tr>
+                                            <td>{purchase.ItemID}</td>
+                                            <td>{purchase.ItemTitle}</td>
+                                            <td>{purchase.Points}</td>
+                                        </tr>
+                                    ))
+                                }
                             </tbody>
                             <tfoot>
                                 <tr>

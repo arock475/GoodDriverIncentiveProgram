@@ -7,22 +7,22 @@ interface Sponsor {
 }
 interface Purchases {
     ID: string
-	DriverID:string
-	OrganizationID:string
-	ItemID:string
-	ItemTitle:string
-	ImageURL:string
-	Points:string
-	InCart:string
-	CheckedOut:string
-	UpdatedAt:string
+    DriverID: string
+    OrganizationID: string
+    ItemID: string
+    ItemTitle: string
+    ImageURL: string
+    Points: string
+    InCart: string
+    CheckedOut: string
+    UpdatedAt: string
 }
 
-export default function IndividualSponsor () {
+export default function IndividualSponsor() {
     const [purchaseHistory, setPurchaseHistory] = useState<Purchases[]>([])
 
     useEffect(() => {
-        fetch(`http://localhost:3333/reports/sponsor/sales/`, {
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/sponsor/sales/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -32,11 +32,11 @@ export default function IndividualSponsor () {
             const data = await response.json()
             setPurchaseHistory(data)
         }).catch()
-    }, []) 
+    }, [])
 
-    const DisplayData=purchaseHistory.map(
-        (info)=>{
-            return(
+    const DisplayData = purchaseHistory.map(
+        (info) => {
+            return (
                 <tr key={info.ID}>
                     <td>{info.DriverID}</td>
                     <td>{info.OrganizationID}</td>
@@ -52,15 +52,15 @@ export default function IndividualSponsor () {
     var Purchases = []
     purchaseHistory.map((p) => {
         Purchases.push({
-          id: p.ID,
-          driverID:p.DriverID,
-          organizationID: p.OrganizationID,
-          itemID:p.ItemID,
-          itemName:p.ItemTitle,
-          pointsTotal:p.Points,
-          time:p.UpdatedAt
+            id: p.ID,
+            driverID: p.DriverID,
+            organizationID: p.OrganizationID,
+            itemID: p.ItemID,
+            itemName: p.ItemTitle,
+            pointsTotal: p.Points,
+            time: p.UpdatedAt
         })
-    }) 
+    })
 
     return (
         <div>
@@ -81,6 +81,6 @@ export default function IndividualSponsor () {
             </Table>
             <CSVLink data={Purchases} filename={"SponsorSalesReport.csv"}>Download As CSV File</CSVLink>
         </div>
-        
+
     )
 }

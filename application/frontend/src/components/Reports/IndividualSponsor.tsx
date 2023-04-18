@@ -8,24 +8,24 @@ interface Sponsor {
 }
 interface Purchases {
     ID: string
-	DriverID:string
-	OrganizationID:string
-	ItemID:string
-	ItemTitle:string
-	ImageURL:string
-	Points:string
-	InCart:string
-	CheckedOut:string
-	UpdatedAt:string
+    DriverID: string
+    OrganizationID: string
+    ItemID: string
+    ItemTitle: string
+    ImageURL: string
+    Points: string
+    InCart: string
+    CheckedOut: string
+    UpdatedAt: string
 }
 
-export default function IndividualSponsor () {
+export default function IndividualSponsor() {
     const [sponsor, setSponsor] = useState<Sponsor>()
     const [purchaseHistory, setPurchaseHistory] = useState<Purchases[]>([])
     const [userClaim, setUserClaim] = useState(getUserClaims());
 
     useEffect(() => {
-        fetch(`http://localhost:3333/sponsors/u:` + userClaim.id, {
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:` + userClaim.id, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -36,11 +36,11 @@ export default function IndividualSponsor () {
             setSponsor(data);
         }).catch()
     }, [])
-    
+
 
     useEffect(() => {
         const fetchReports = async () => {
-            fetch(`http://localhost:3333/reports/sponsor/sales/` + sponsor.OrganizationID, {
+            fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/sponsor/sales/` + sponsor.OrganizationID, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -54,11 +54,11 @@ export default function IndividualSponsor () {
         }
         fetchReports()
 
-    }, [sponsor]) 
+    }, [sponsor])
 
-    const DisplayData=purchaseHistory.map(
-        (info)=>{
-            return(
+    const DisplayData = purchaseHistory.map(
+        (info) => {
+            return (
                 <tr key={info.ID}>
                     <td>{info.DriverID}</td>
                     <td>{info.OrganizationID}</td>
@@ -74,15 +74,15 @@ export default function IndividualSponsor () {
     var Purchases = []
     purchaseHistory.map((p) => {
         Purchases.push({
-          id: p.ID,
-          driverID:p.DriverID,
-          organizationID: p.OrganizationID,
-          itemID:p.ItemID,
-          itemName:p.ItemTitle,
-          pointsTotal:p.Points,
-          time:p.UpdatedAt
+            id: p.ID,
+            driverID: p.DriverID,
+            organizationID: p.OrganizationID,
+            itemID: p.ItemID,
+            itemName: p.ItemTitle,
+            pointsTotal: p.Points,
+            time: p.UpdatedAt
         })
-    }) 
+    })
 
     return (
         <div>
@@ -103,6 +103,6 @@ export default function IndividualSponsor () {
             </Table>
             <CSVLink data={Purchases} filename={"SponsorSalesReport.csv"}>Download As CSV File</CSVLink>
         </div>
-        
+
     )
 }
