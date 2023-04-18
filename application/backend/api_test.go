@@ -35,12 +35,12 @@ func TestMain(m *testing.M) {
 	ts.ConnectDatabase("TestingStable")
 
 	// Delete data from previous tests
+	ts.DB.Where("1=1").Delete(&Points{})
+	ts.DB.Where("1=1").Delete(&PointsCategory{})
 	ts.DB.Where("1=1").Delete(&Driver{})
 	ts.DB.Where("1=1").Delete(&Sponsor{})
 	ts.DB.Where("1=1").Delete(&Admin{})
 	ts.DB.Where("1=1").Delete(&Organization{})
-	ts.DB.Where("1=1").Delete(&Points{})
-	ts.DB.Where("1=1").Delete(&PointsCategory{})
 	ts.DB.Where("1=1").Delete(&DriverApplication{})
 	ts.DB.Where("1=1").Delete(&Purchase{})
 	ts.DB.Where("1=1").Delete(&Log{})
