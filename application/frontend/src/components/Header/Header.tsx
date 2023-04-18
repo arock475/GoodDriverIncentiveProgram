@@ -21,7 +21,7 @@ enum User {
 }
 
 const Header: React.FC<HeaderProps> = ({
-    colorTheme="dark", viewAs, setViewAs
+    colorTheme = "dark", viewAs, setViewAs
 }) => {
     const [userClaims, setUserClaims] = useState(getUserClaims());
 
@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({
                         </NavDropdown>
                         <NavDropdown title="Create" id="create-navbar-dropdown">
                             <NavDropdown.Item href="/create-user">User</NavDropdown.Item>
-                            {((userClaims.role === User.Sponsor || userClaims.role === User.Admin) && (viewAs === User.Sponsor || viewAs === User.Admin)) && 
+                            {((userClaims.role === User.Sponsor || userClaims.role === User.Admin) && (viewAs === User.Sponsor || viewAs === User.Admin)) &&
                                 <NavDropdown.Item href="/create-org">Organization</NavDropdown.Item>
                             }
                         </NavDropdown>
@@ -53,11 +53,11 @@ const Header: React.FC<HeaderProps> = ({
                         {((userClaims.role === User.Sponsor || userClaims.role === User.Admin) && (viewAs === User.Sponsor || viewAs === User.Admin)) &&
                             <NavDropdown title="Reports" id="create-navbar-dropdown">
                                 <NavDropdown.Item href="/reports/points">Driver Reports</NavDropdown.Item>
+                                <NavDropdown.Item href="/reports/sponsor/sales">Sponsor Sales Reports</NavDropdown.Item>
                             </NavDropdown>
                         }
-                        
                     </Nav>
-                    <LoginNav viewAs={viewAs} setViewAs={setViewAs}/>
+                    <LoginNav viewAs={viewAs} setViewAs={setViewAs} />
                 </Navbar.Collapse>
             </Container>
         </Navbar>

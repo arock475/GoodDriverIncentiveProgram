@@ -2,6 +2,7 @@ import { rmSync } from 'fs';
 import React, { useEffect, useState } from 'react'
 import Table from 'react-bootstrap/Table';
 import Form from 'react-bootstrap/Form';
+import { CSVLink, CSVDownload } from "react-csv";
 
 
 
@@ -94,6 +95,18 @@ const IndividualDriverReport: React.FC<{}> = () => {
         setTable(t)
     }, [pointHistoryList])
 
+    var drivers = []
+    pointHistoryList.map((d) => {
+        drivers.push({
+          driverID:d.DriverID,
+          driverFName: d.DriverFName,
+          driverLName:d.DriverLName,
+          driverEmail:d.DriverEmail,
+          organizationID:d.OrganizationID,
+          organizationName:d.OrganizationName
+        })
+    }) 
+
     return (
         <div>
             <Form.Label>
@@ -151,6 +164,7 @@ const IndividualDriverReport: React.FC<{}> = () => {
                     }
                 </tbody>
             </Table>
+        <CSVLink data={drivers} filename={"DriverReport.csv"}>Download As CSV File</CSVLink>
         </div>
     )
 }

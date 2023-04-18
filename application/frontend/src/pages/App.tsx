@@ -34,6 +34,7 @@ import ChangePointStats from './Profile/ChangePointStats';
 import LogsPage from './Admin/Logs';
 import ShopManage from './Shop/ShopManage';
 import PointsReport from './Reports/PointsReport';
+import SponsorSales from './Reports/SponsorSales';
 import ShopCheckout from './Shop/ShopCheckout';
 
 const App = () => {
@@ -105,6 +106,7 @@ const App = () => {
         {/* Reports Link */}
         <Route path="reports" >
           <Route path="points" element={<PointsReport />} />
+          <Route path="sponsor/sales" element={<SponsorSales />} />
         </Route>
 
         {/* Notifications Link */}

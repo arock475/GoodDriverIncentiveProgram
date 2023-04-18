@@ -95,6 +95,8 @@ func (s *Server) MountHandlers() {
 
 		r.Route("/reports", func(r chi.Router) {
 			r.Get("/individual/{driverID}", s.IndividualDriverReportData)
+			r.Get("/sponsor/sales/{orgID}", s.GetPurchasesForSponsor)
+			r.Get("/sponsor/sales/", s.ListPurchases)
 		})
 	})
 
@@ -148,6 +150,7 @@ func (s *Server) MountHandlers() {
 		})
 
 		r.Route("/sponsors", func(r chi.Router) {
+			r.Get("/", s.ListSponsors)
 			r.Route("/u:{userID}", func(r chi.Router) {
 				r.Get("/", s.GetSponsorByUser)
 			})
@@ -546,6 +549,22 @@ func (s *Server) UpdateOrg(w http.ResponseWriter, r *http.Request) {
 }
 
 /// Sponsor
+
+func (s *Server) ListSponsors(w http.ResponseWriter, r *http.Request) {
+	// assigning variable
+	var all_sponsors []Sponsor
+	// grabbing all orgs from database
+	result := s.DB.Find(&all_sponsors)
+	// error checking
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+	// writing the response
+	returned, _ := json.Marshal(all_sponsors)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(returned)
+}
 
 func (s *Server) GetSponsorByUser(w http.ResponseWriter, r *http.Request) {
 	var sponsor Sponsor
@@ -1367,4 +1386,37 @@ func (s *Server) IndividualDriverReportData(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.WriteHeader(400)
+}
+
+// Gets all purchases
+func (s *Server) ListPurchases(w http.ResponseWriter, r *http.Request) {
+	var purchases []Purchase
+
+	result := s.DB.Find(&purchases)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	returned, _ := json.Marshal(purchases)
+	w.Write(returned)
+}
+
+// Gets all purchases for a sponsor
+func (s *Server) GetPurchasesForSponsor(w http.ResponseWriter, r *http.Request) {
+	var purchases []Purchase
+
+	if orgID := chi.URLParam(r, "orgID"); orgID != "" {
+		result := s.DB.Find(&purchases, "organization_id = ?", orgID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Org Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Org Not Found", http.StatusNotFound)
+		return
+	}
+
+	returned, _ := json.Marshal(purchases)
+	w.Write(returned)
 }

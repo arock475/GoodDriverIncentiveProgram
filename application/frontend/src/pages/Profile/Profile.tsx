@@ -13,6 +13,8 @@ import {
 } from 'mdb-react-ui-kit';
 import { useNavigate, useParams } from "react-router-dom";
 import{ useState, useEffect } from 'react';
+import { getUserClaims } from '../../utils/getUserClaims';
+import { User } from '../../components/CreateUser/CreateUser';
 
 interface Orgs {
   OrganizationID: number,
@@ -22,6 +24,7 @@ interface Orgs {
 
 export default function ProfilePage() {
   const { userID } = useParams();
+  const [userClaim, setUserClaim] = useState(getUserClaims());
   const [Data,setData]=useState({
     firstName:'',
     lastName:'',
@@ -205,9 +208,9 @@ export default function ProfilePage() {
 
           </MDBCol>
           <p></p><p></p>
-          <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={function(event){ routeChange('edit')}}>
+          {(userClaim.role == User.Sponsor || userClaim.role == User.Admin || userClaim.id == parseInt(userID)) && <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={function(event){ routeChange('edit')}}>
             Edit Profile
-          </MDBBtn></div> 
+          </MDBBtn></div> }
         </MDBRow>
     </section>
   );
