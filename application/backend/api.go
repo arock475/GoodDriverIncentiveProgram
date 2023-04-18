@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -91,6 +92,7 @@ func (s *Server) MountHandlers() {
 
 		r.Route("/admin", func(r chi.Router) {
 			r.Get("/logs", s.GetLogs)
+
 		})
 
 		r.Route("/reports", func(r chi.Router) {
@@ -133,13 +135,14 @@ func (s *Server) MountHandlers() {
 		r.Route("/orgs", func(r chi.Router) {
 			r.Get("/", s.ListOrgs)
 			r.Post("/", s.CreateOrganization)
-
 			r.Route("/{orgID}", func(r chi.Router) {
 				r.Get("/", s.GetOrg)
 				r.Put("/stats", s.UpdateOrg)
 				r.Get("/rules", s.GetRules)
 				r.Post("/rules", s.SetRules)
+				r.Put("/addToOrg", s.AddDriverToOrg)
 			})
+
 		})
 
 		r.Route("/drivers", func(r chi.Router) {
@@ -548,6 +551,42 @@ func (s *Server) UpdateOrg(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
+func (s *Server) AddDriverToOrg(w http.ResponseWriter, r *http.Request) {
+	var driver Driver
+	var org Organization
+	data := AddToOrgPayload{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Find Driver
+	if data.DriverID != 0 {
+		result := s.DB.Preload("Organizations").Find(&driver, "user_id = ?", data.DriverID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Driver Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, strconv.Itoa(data.DriverID)+"Driver Not Found", http.StatusNotFound)
+		return
+	}
+
+	// Find organzation
+	result := s.DB.Find(&org, "id = ?", data.OrgId)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		http.Error(w, "Organization Not Found", http.StatusNotFound)
+		return
+	}
+
+	driver.Organizations = append(driver.Organizations, &org)
+	driver.OrganizationID = data.OrgId
+	s.DB.Save(driver)
+
+	w.WriteHeader(200)
+}
+
 /// Sponsor
 
 func (s *Server) ListSponsors(w http.ResponseWriter, r *http.Request) {
@@ -764,7 +803,7 @@ func (s *Server) SetApplicationDecision(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Find organzation
+	// Find sponsor
 	sponsorID := r.URL.Query().Get("sponsorID")
 	if sponsorID != "" {
 		result := s.DB.Find(&sponsor, "user_id = ?", sponsorID)
@@ -900,16 +939,25 @@ func (s *Server) ListPointsTotals(w http.ResponseWriter, r *http.Request) {
 			pointsTotal.Organization = *organization
 			pointsTotal.Driver = driver
 
+			var points *int64
 			result := s.DB.Model(&Points{}).
 				Preload("PointsCategory").
 				Joins("JOIN points_categories pc ON pc.id = points.points_category_id").
 				Select("sum(pc.num_change)").
 				Where("driver_id = ? and organization_id = ?", driver.ID, organization.ID).
-				Scan(&pointsTotal.Total)
+				Scan(&points)
 
 			if result.Error != nil {
-				pointsTotal.Total = 0
+				http.Error(w, "Error calculating driver's points.", http.StatusInternalServerError)
+				return
 			}
+
+			if points == nil {
+				tmp := int64(0)
+				points = &tmp
+			}
+
+			pointsTotal.Total = int(*points)
 
 			pointsTotals = append(pointsTotals, pointsTotal)
 		}

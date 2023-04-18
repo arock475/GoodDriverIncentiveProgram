@@ -83,6 +83,11 @@ type IndividualReportPayload struct {
 	PointHistory     []IndividualPointsPayload `json:"PointsHistory"`
 }
 
+type AddToOrgPayload struct {
+	DriverID int `json:"DriverID"`
+	OrgId    int `json:"OrgId"`
+}
+
 // Type is a discriminator for different subtypes: driver, sponsor, admin
 // 0 -> Driver, 1 -> Sponsor, 2 -> Admin
 // User has a custom Marshaler which omits the password hash.

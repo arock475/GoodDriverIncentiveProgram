@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { Accordion, Button, Card, Col, Container, Row } from "react-bootstrap";
 import { useParams } from 'react-router-dom';
-
+import {
+    MDBModal,
+    MDBModalDialog,
+    MDBModalContent,
+    MDBModalHeader,
+    MDBModalTitle,
+    MDBModalBody,
+} from 'mdb-react-ui-kit';
+import SearchSelect from "../../components/Search/SearchSelect";
 export interface Organization {
     ID: number
     Name: string
@@ -15,7 +23,9 @@ const Organization = ({}) => {
     // org variables
     const {orgid} = useParams<{ orgid: string }>();
     const [org, setOrg] = useState<Organization | null>(null)
-    
+    const [basicModal, setBasicModal] = useState(false);
+    const toggleShow = () => setBasicModal(!basicModal);
+    const [userID, setUserID] = useState(-1);
     // on load
     useEffect(() => {
         // get org
@@ -31,6 +41,19 @@ const Organization = ({}) => {
         }
         fetchOrg();
     }, []);
+
+    const sendRequest = () => {
+        const requestOptions = {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                driverID: userID,
+                orgId: org.ID
+            })
+        };
+        fetch('http://localhost:3333/orgs/' + org.ID + '/addToOrg', requestOptions)
+          .then(response => response.json())
+      };
 
     if (org) {
         return (
@@ -53,6 +76,18 @@ const Organization = ({}) => {
                             {(org.Phone && org.Phone != '') && <Accordion.Body>{`phone:\t${org.Phone}`}</Accordion.Body>}
                         </Accordion.Item>
                     </Accordion>
+                    <div className="d-grid gap-2 d-md-flex justify-content-md-center"><Button onClick={toggleShow}>Add User to Organization</Button></div>
+                    <MDBModal class="modal fade" show={basicModal} setShow={setBasicModal} tabIndex="-1">
+                        <MDBModalDialog>
+                            <MDBModalContent>
+                                <MDBModalHeader>
+                                    <MDBModalTitle>Search for the user you wish to add</MDBModalTitle>
+                                </MDBModalHeader>
+                                <SearchSelect UserID = {userID} setUserID = {setUserID}/>
+                                <Button onClick={sendRequest}>Add Selected User</Button>
+                            </MDBModalContent>
+                        </MDBModalDialog>
+                    </MDBModal>
                 </Container>
             </div>        
         );

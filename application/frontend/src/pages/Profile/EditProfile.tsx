@@ -189,7 +189,7 @@ export default function EditProfilePage() {
                   org.OrganizationName
                 ))}</p>
               </MDBCardBody>
-              <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={toggleShow}>Update Profile Picture</MDBBtn></div>
+              <div className="d-grid gap-2 d-md-flex justify-content-md-center"><MDBBtn onClick={toggleShow}>Update Profile Picture</MDBBtn></div>
               <MDBModal show={basicModal} setShow={setBasicModal} tabIndex="-1">
                 <MDBModalDialog>
                   <MDBModalContent>

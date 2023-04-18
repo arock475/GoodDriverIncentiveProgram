@@ -1,19 +1,6 @@
 import React, {useEffect, useState } from 'react'
-import Container from 'react-bootstrap/Container';
-import Link from 'react-router-dom';
-import Button from 'react-bootstrap/Button';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import { useCookies } from 'react-cookie'
-import jwt_decode from 'jwt-decode'
 import {
-    MDBCard,
-    MDBCardBody,
-    MDBCardTitle,
-    MDBCardText,
-    MDBCardImage,
     MDBRow,
-    MDBCol,
     MDBCardGroup
   } from 'mdb-react-ui-kit';
 import ApplicationsCard from '../../components/DashboardCards/ApplicationsCard';
@@ -25,7 +12,6 @@ import PointsHistoryCard from '../../components/DashboardCards/PointsHistoryCard
 import ProfileCard from '../../components/DashboardCards/ProfileCard';
 import ReportsCard from '../../components/DashboardCards/ReportsCard';
 import LogsCard from '../../components/DashboardCards/LogsCard';
-import Points from '../Points/Points';
 import { getUserClaims } from '../../utils/getUserClaims';
 
 enum User {
