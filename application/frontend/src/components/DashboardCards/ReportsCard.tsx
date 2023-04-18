@@ -13,7 +13,7 @@ import { UserClaims } from '../../utils/getUserClaims';
 
 const ReportsCard: React.FC<UserClaims> = ({}) => {
     return (
-        <a href="/reports" className='p-3 w-25' style={{ color: 'inherit', textDecoration: 'inherit'}}> 
+        <a href="/reports/points" className='p-3 w-25' style={{ color: 'inherit', textDecoration: 'inherit'}}> 
         <MDBCard className='h-100' alignment='center'>
             <MDBCardBody className='d-flex align-items-center justify-content-center'>
                     <MDBCardTitle>Reports</MDBCardTitle>
