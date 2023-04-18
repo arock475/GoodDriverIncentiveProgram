@@ -125,6 +125,7 @@ func (s *Server) MountHandlers() {
 				r.Delete("/cart", s.RemoveItemFromCart)
 				r.Put("/checkout", s.CheckoutItems)
 				r.Put("/reset", s.UpdatePassword)
+				r.Get("/orders", s.GetOrderHistory)
 			})
 		})
 

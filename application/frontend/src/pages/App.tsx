@@ -36,6 +36,7 @@ import ShopManage from './Shop/ShopManage';
 import PointsReport from './Reports/PointsReport';
 import SponsorSales from './Reports/SponsorSales';
 import ShopCheckout from './Shop/ShopCheckout';
+import OrderHistory from './Shop/OrderHistory';
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -45,9 +46,9 @@ const App = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Layout colorTheme="" viewAs={viewAs} setViewAs={setViewAs}/>}>
+      <Route path="/" element={<Layout colorTheme="" viewAs={viewAs} setViewAs={setViewAs} />}>
         {/* Home Page */}
-        <Route index element={<Dashboard viewAs={viewAs} setViewAs={setViewAs}/>} />
+        <Route index element={<Dashboard viewAs={viewAs} setViewAs={setViewAs} />} />
         <Route path="logout" element={<Logout />} />
 
         {/* Login Pages */}
@@ -77,7 +78,7 @@ const App = () => {
         </Route>
 
         {/* Create Pages*/}
-        <Route path="create-user" element={<CreateUser viewAs={viewAs} setViewAs={setViewAs}/>} />
+        <Route path="create-user" element={<CreateUser viewAs={viewAs} setViewAs={setViewAs} />} />
         <Route path="create-org" element={<CreateOrganization />} />
         <Route path="points" element={<Points loggedIn={loggedIn} loginRole={loggedInRole} />} />
 
@@ -113,7 +114,7 @@ const App = () => {
         <Route path="notifications" element={<></>} />
 
         {/* Orders Link */}
-        <Route path="orders" element={<></>} />
+        <Route path="orders" element={<OrderHistory />} />
 
         {/* Applications Links */}
         <Route path="applications">
@@ -121,7 +122,7 @@ const App = () => {
           <Route path="sponsor" element={<></>} />
           <Route path="admin" element={<></>} />
         </Route>
-      
+
         <Route path="orgs" element={<Organizations />} />
         <Route path="orgs/:orgid" element={<Organization />} />
       </Route>

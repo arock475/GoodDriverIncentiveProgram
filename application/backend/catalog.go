@@ -10,6 +10,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
@@ -34,6 +35,10 @@ type CatalogReturnPayload struct {
 type GetCartItemsReturnPayload struct {
 	CartItems   []EbayItem `json:"items"`
 	TotalPoints int        `json:"pointTotal"`
+}
+
+type GetOrderHistoryReturnPayload struct {
+	Items []EbayItem `json:"items"`
 }
 
 // All the necessary information about a driver for the shop catalog page
@@ -298,7 +303,7 @@ func (s *Server) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 	var driver Driver
 
 	if userID := chi.URLParam(r, "userID"); userID != "" {
-		result := s.DB.First(&driver, "user_id = ?", userID)
+		result := s.DB.Preload("User").First(&driver, "user_id = ?", userID)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			http.Error(w, "User Not Found", http.StatusNotFound)
 			return
@@ -332,6 +337,16 @@ func (s *Server) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log := Log{
+		Event:       "Driver Cart Activity",
+		Email:       driver.User.Email,
+		Time:        time.Now(),
+		Description: "Driver added item " + data.Title + " to cart.",
+		Status:      "Success",
+	}
+
+	s.DB.Create(&log)
+
 	w.WriteHeader(200)
 }
 
@@ -339,7 +354,7 @@ func (s *Server) RemoveItemFromCart(w http.ResponseWriter, r *http.Request) {
 	var driver Driver
 
 	if userID := chi.URLParam(r, "userID"); userID != "" {
-		result := s.DB.First(&driver, "user_id = ?", userID)
+		result := s.DB.Preload("User").First(&driver, "user_id = ?", userID)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			http.Error(w, "User Not Found", http.StatusNotFound)
 			return
@@ -363,6 +378,16 @@ func (s *Server) RemoveItemFromCart(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, result.Error.Error(), http.StatusBadRequest)
 		return
 	}
+
+	log := Log{
+		Event:       "Driver Cart Activity",
+		Email:       driver.User.Email,
+		Time:        time.Now(),
+		Description: "Driver removed item with id " + itemId + " from cart.",
+		Status:      "Success",
+	}
+
+	s.DB.Create(&log)
 
 	w.WriteHeader(200)
 }
@@ -410,11 +435,53 @@ func (s *Server) GetCartItems(w http.ResponseWriter, r *http.Request) {
 	w.Write(returned)
 }
 
-func (s *Server) CheckoutItems(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetOrderHistory(w http.ResponseWriter, r *http.Request) {
 	var driver Driver
 
 	if userID := chi.URLParam(r, "userID"); userID != "" {
 		result := s.DB.First(&driver, "user_id = ?", userID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "User Not Found", http.StatusNotFound)
+		return
+	}
+
+	var orders []Purchase
+
+	result := s.DB.Where("driver_id = ? AND checked_out = 1", driver.ID).Find(&orders)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var items []EbayItem
+	totalPointCost := 0
+	for _, purchase := range orders {
+		items = append(items, EbayItem{
+			ItemID:   purchase.ItemID,
+			Title:    purchase.ItemTitle,
+			ImageURL: purchase.ImageURL,
+			Points:   purchase.Points,
+		})
+		totalPointCost += purchase.Points
+	}
+
+	payload := GetOrderHistoryReturnPayload{
+		Items: items,
+	}
+
+	returned, _ := json.Marshal(payload)
+	w.Write(returned)
+}
+
+func (s *Server) CheckoutItems(w http.ResponseWriter, r *http.Request) {
+	var driver Driver
+
+	if userID := chi.URLParam(r, "userID"); userID != "" {
+		result := s.DB.Preload("User").First(&driver, "user_id = ?", userID)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			http.Error(w, "User Not Found", http.StatusNotFound)
 			return
@@ -476,6 +543,18 @@ func (s *Server) CheckoutItems(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Couldn't update cart items.", http.StatusInternalServerError)
 		return
 	}
+
+	description := fmt.Sprintf("Driver checked out cart with %d items worth %d points", len(cart), totalPointCost)
+
+	log := Log{
+		Event:       "Driver Cart Activity",
+		Email:       driver.User.Email,
+		Time:        time.Now(),
+		Description: description,
+		Status:      "Success",
+	}
+
+	s.DB.Create(&log)
 
 	w.WriteHeader(200)
 }
