@@ -97,6 +97,11 @@ func (s *Server) MountHandlers() {
 
 		r.Route("/reports", func(r chi.Router) {
 			r.Get("/individual/{driverID}", s.IndividualDriverReportData)
+			r.Route("/salesbydriver", func(r chi.Router) {
+				r.Get("/", s.ListTotalSalesByDriver)
+				r.Get("/o:{orgID}", s.GetTotalSalesByDriverByOrg)
+			})
+			r.Get("/purchases", s.ListSales)
 			r.Get("/sponsor/sales/{orgID}", s.GetPurchasesForSponsor)
 			r.Get("/sponsor/sales/", s.ListPurchases)
 		})
@@ -1290,7 +1295,7 @@ func (s *Server) UpdatePointsCategory(w http.ResponseWriter, r *http.Request) {
 func (s *Server) ListDrivers(w http.ResponseWriter, r *http.Request) {
 	var drivers []Driver
 
-	result := s.DB.Find(&drivers)
+	result := s.DB.Preload("User").Find(&drivers)
 	if result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusBadRequest)
 		return
@@ -1437,6 +1442,19 @@ func (s *Server) IndividualDriverReportData(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(400)
 }
 
+func (s *Server) ListSales(w http.ResponseWriter, r *http.Request) {
+	var purchases []Purchase
+	result := s.DB.Preload("Driver.User").Preload("Organization").Where("checked_out = 1").Find(&purchases)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+	returned, _ := json.Marshal(purchases)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(returned)
+}
+
 // Gets all purchases
 func (s *Server) ListPurchases(w http.ResponseWriter, r *http.Request) {
 	var purchases []Purchase
@@ -1446,8 +1464,66 @@ func (s *Server) ListPurchases(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, result.Error.Error(), http.StatusBadRequest)
 		return
 	}
-
 	returned, _ := json.Marshal(purchases)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(returned)
+}
+
+func (s *Server) ListTotalSalesByDriver(w http.ResponseWriter, r *http.Request) {
+	var sales []SalesByDriverPayload
+	var drivers []Driver
+	result := s.DB.Preload("User").Preload("Organizations").Find(&drivers)
+	if result.Error != nil {
+		http.Error(w, "Internal Server Error. Failed to find Drivers.", http.StatusBadRequest)
+		return
+	}
+	for _, driver := range drivers {
+		var total int
+		result = s.DB.Model(&Purchase{}).Select("sum(points)").Where("driver_id = ?", driver.ID).Scan(&total)
+		if result.Error != nil {
+			total = 0
+		}
+		var sale SalesByDriverPayload
+		sale.Total = total
+		sale.Driver = driver
+		sales = append(sales, sale)
+	}
+	returned, _ := json.Marshal(sales)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(returned)
+}
+
+func (s *Server) GetTotalSalesByDriverByOrg(w http.ResponseWriter, r *http.Request) {
+	// get org from urlparam
+	var org Organization
+	if orgID := chi.URLParam(r, "orgID"); orgID != "" {
+		result := s.DB.Preload("Drivers.User").First(&org, "id = ?", orgID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Organization Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Organization Not Found", http.StatusNotFound)
+		return
+	}
+
+	var sales []SalesByDriverPayload
+	for _, driver := range org.Drivers {
+		var total int
+		result := s.DB.Model(&Purchase{}).Select("sum(points)").Where("driver_id = ? AND organization_id = ?", driver.ID, org.ID).Scan(&total)
+		if result.Error != nil {
+			total = 0
+		}
+		var sale SalesByDriverPayload
+		sale.Total = total
+		sale.Driver = driver
+		sales = append(sales, sale)
+	}
+	returned, _ := json.Marshal(sales)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
 	w.Write(returned)
 }
 

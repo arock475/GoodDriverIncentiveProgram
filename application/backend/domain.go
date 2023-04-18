@@ -83,6 +83,11 @@ type IndividualReportPayload struct {
 	PointHistory     []IndividualPointsPayload `json:"PointsHistory"`
 }
 
+type SalesByDriverPayload struct {
+	Driver Driver
+	Total  int
+}
+
 type AddToOrgPayload struct {
 	DriverID int `json:"DriverID"`
 	OrgId    int `json:"OrgId"`
@@ -138,13 +143,14 @@ type Admin struct {
 // but it can have more than that.
 type Organization struct {
 	ID          int
-	Name        string  `gorm:"not null"`
-	Biography   string  `gorm:"default:''"`
-	Phone       string  `gorm:"default:''"`
-	Email       string  `gorm:"default:''"`
-	PointsRatio float64 `gorm:"default:1.0"`
-	LogoURL     string  `gorm:"not null"`
-	ShopRules   string  `gorm:"default:''"`
+	Name        string   `gorm:"not null"`
+	Biography   string   `gorm:"default:''"`
+	Phone       string   `gorm:"default:''"`
+	Email       string   `gorm:"default:''"`
+	PointsRatio float64  `gorm:"default:1.0"`
+	LogoURL     string   `gorm:"not null"`
+	ShopRules   string   `gorm:"default:''"`
+	Drivers     []Driver `gorm:"many2many:driver_organizations;"`
 }
 
 type PointsCategory struct {
