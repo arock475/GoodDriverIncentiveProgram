@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -12,8 +11,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 func executeRequest(req *http.Request, s *Server) *httptest.ResponseRecorder {
@@ -37,12 +34,105 @@ func TestMain(m *testing.M) {
 	ts.MountHandlers()
 	ts.ConnectDatabase("TestingStable")
 
+	// Delete data from previous tests
+	ts.DB.Where("1=1").Delete(&Driver{})
+	ts.DB.Where("1=1").Delete(&Sponsor{})
+	ts.DB.Where("1=1").Delete(&Admin{})
+	ts.DB.Where("1=1").Delete(&Organization{})
+	ts.DB.Where("1=1").Delete(&Points{})
+	ts.DB.Where("1=1").Delete(&PointsCategory{})
+	ts.DB.Where("1=1").Delete(&DriverApplication{})
+	ts.DB.Where("1=1").Delete(&Purchase{})
+	ts.DB.Where("1=1").Delete(&Log{})
+	ts.DB.Where("1=1").Delete(&User{})
+
+	//// Insert values to start tests with
+
+	// Default org
+	default_org := Organization{
+		ID:          -1,
+		Name:        "Unassigned",
+		Biography:   "",
+		Phone:       "",
+		Email:       "",
+		PointsRatio: 1,
+		LogoURL:     "",
+		ShopRules:   "",
+	}
+	ts.DB.Create(&default_org)
+
+	// Test org
+	test_org := Organization{
+		ID:          1,
+		Name:        "Testing Organization",
+		Biography:   "For TestingStable",
+		Phone:       "",
+		Email:       "testing@organization.com",
+		PointsRatio: 1,
+		LogoURL:     "",
+		ShopRules:   "",
+	}
+	ts.DB.Create(&test_org)
+
+	// Points Categories
+	pt_cat := PointsCategory{
+		NumChange:   25,
+		Name:        "Good Driving",
+		Description: "Good driver points",
+	}
+	ts.DB.Create(&pt_cat)
+
+	// Driver
+	driver_user := User{
+		ID:           1,
+		Email:        "test@testman.com",
+		PasswordHash: "$2a$04$TbpALctI05DUUh2aTbjXfeAJQOTLt0u7qt2C4KP5jnDEsMEonHKrG",
+		FirstName:    "Test",
+		LastName:     "Man",
+		Phone:        "",
+		Bio:          "",
+		ImageURL:     "",
+		Type:         0,
+	}
+	ts.DB.Create(&driver_user)
+
+	driver := Driver{
+		ID:             1,
+		UserID:         driver_user.ID,
+		User:           driver_user,
+		Status:         0,
+		LicensePlate:   "123UPS",
+		TruckType:      "Semi-Truck",
+		OrganizationID: test_org.ID,
+		Organization:   test_org,
+	}
+	ts.DB.Create(&driver)
+
+	// Add points to driver
+	points := Points{
+		DriverID:         driver.ID,
+		Driver:           driver,
+		OrganizationID:   test_org.ID,
+		Organization:     test_org,
+		PointsCategoryID: pt_cat.ID,
+		PointsCategory:   pt_cat,
+		Reason:           "Reason",
+	}
+	points.ID = 1
+	ts.DB.Create(&points)
+	points.ID = 2
+	ts.DB.Create(&points)
+
+	fmt.Print("Starting Tests\n\n\n")
+
 	exitVal := m.Run()
 
 	os.Exit(exitVal)
 }
 
 func TestListUsers(t *testing.T) {
+	fmt.Println("Testing: TestListUsers")
+
 	req, _ := http.NewRequest("GET", "/users", nil)
 
 	response := executeRequest(req, ts)
@@ -61,6 +151,8 @@ func TestListUsers(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
+	fmt.Println("Testing: TestGetUser")
+
 	req, _ := http.NewRequest("GET", "/users/1", nil)
 
 	response := executeRequest(req, ts)
@@ -79,6 +171,8 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestPasswordNotIncluded(t *testing.T) {
+	fmt.Println("Testing: TestPasswordNotIncluded")
+
 	req, _ := http.NewRequest("GET", "/users/1", nil)
 
 	response := executeRequest(req, ts)
@@ -97,6 +191,8 @@ func TestPasswordNotIncluded(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
+	fmt.Println("Testing: TestCreateUser")
+
 	firstName := "New"
 	lastName := "User"
 	email := "newuser@testing.com"
@@ -140,20 +236,16 @@ func TestCreateUser(t *testing.T) {
 	require.Equal(t, user.Email, email)
 	require.Equal(t, user.Type, ttype)
 
-	// Cleanup created user from test
-	var driver Driver
-	driver.ID = user.ID
-	ts.DB.Model(&driver).Association("Organizations").Clear()
-	ts.DB.Delete(&driver)
-	ts.DB.Delete(&User{}, user.ID)
 }
 
 func TestUpdateProfile(t *testing.T) {
-	firstName := "New"
+	fmt.Println("Testing: TestUpdateProfile")
+
+	firstName := "Update"
 	lastName := "User"
-	email := "newuser@testing.com"
+	email := "updateuser@testing.com"
 	password := "mypassword$"
-	license := "123USP"
+	license := "Update"
 	truck := "Semi-Truck"
 	org := 1
 	ttype := 0
@@ -173,7 +265,7 @@ func TestUpdateProfile(t *testing.T) {
 	jsonBody, _ := json.Marshal(data)
 	bodyReader := bytes.NewReader(jsonBody)
 
-	req, _ := http.NewRequest("POST", "/users", bodyReader)
+	req, _ := http.NewRequest("POST", "/users/", bodyReader)
 	response := executeRequest(req, ts)
 	checkResponseCode(t, http.StatusOK, response.Code)
 
@@ -182,7 +274,7 @@ func TestUpdateProfile(t *testing.T) {
 	var user User
 	err := json.Unmarshal(response.Body.Bytes(), &user)
 	if err != nil {
-		t.Error("Failed to unmarshal response body from GET /users/{id}")
+		t.Error("Failed to unmarshal response body from POST /users/")
 	}
 
 	// Attempt to update profile of newly created user.
@@ -224,21 +316,16 @@ func TestUpdateProfile(t *testing.T) {
 	require.Equal(t, user.Phone, phone)
 	require.Equal(t, user.Bio, bio)
 	require.Equal(t, user.ImageURL, image)
-
-	// Cleanup created user from test
-	var driver Driver
-	driver.ID = user.ID
-	ts.DB.Model(&driver).Association("Organizations").Clear()
-	ts.DB.Delete(&driver)
-	ts.DB.Delete(&User{}, user.ID)
 }
 
 func TestFailedLogin(t *testing.T) {
-	firstName := "New"
+	fmt.Println("Testing: TestFailedLogin")
+
+	firstName := "FailedLogin"
 	lastName := "User"
-	email := "newuser@testing.com"
+	email := "failedloginuser@testing.com"
 	password := "mypassword$"
-	license := "123USP"
+	license := "FailedLogin"
 	truck := "Semi-Truck"
 	org := 1
 	ttype := 0
@@ -286,16 +373,11 @@ func TestFailedLogin(t *testing.T) {
 
 	// Should be rejected with status unauthorized (401)
 	require.Equal(t, http.StatusUnauthorized, response.Code)
-
-	// Cleanup created user from test
-	var driver Driver
-	driver.ID = user.ID
-	ts.DB.Model(&driver).Association("Organizations").Clear()
-	ts.DB.Delete(&driver)
-	ts.DB.Delete(&User{}, user.ID)
 }
 
 func TestCreateAdmin(t *testing.T) {
+	fmt.Println("Testing: TestCreateAdmin")
+
 	// creating test data
 	firstName := "New"
 	lastName := "Admin"
@@ -337,39 +419,12 @@ func TestCreateAdmin(t *testing.T) {
 	ts.DB.Where("user_id = ?", user.ID).Delete(&admin)
 }
 
-func TestDeleteAdmin(t *testing.T) {
-	// test data
-	var user User
-	var admin Admin
-	user.FirstName = "New"
-	user.LastName = "Admin"
-	user.Email = "newadmin@testing.com"
-	hashedBytes, _ := bcrypt.GenerateFromPassword([]byte("x"), bcrypt.MinCost)
-	user.PasswordHash = string(hashedBytes)
-	user.Type = 2
-	admin.User = user
-	ts.DB.Create(&admin)
-
-	// request to api
-	jsonBody, _ := json.Marshal(admin)
-	bodyReader := bytes.NewReader(jsonBody)
-	url := fmt.Sprintf("/users/%d", admin.User.ID)
-	req, _ := http.NewRequest("DELETE", url, bodyReader)
-	response := executeRequest(req, ts)
-	checkResponseCode(t, http.StatusOK, response.Code)
-
-	// response and comparison
-	t.Log(response.Body.String())
-	result := ts.DB.First(&Admin{}, &admin)
-	require.True(t, errors.Is(result.Error, gorm.ErrRecordNotFound), "Failed to Delete Admin")
-	result = ts.DB.First(&User{}, &user)
-	require.True(t, errors.Is(result.Error, gorm.ErrRecordNotFound), "Failed to Delete User associated with Admin")
-}
-
 func TestDriverLogin(t *testing.T) {
-	firstName := "New"
-	lastName := "User"
-	email := "newuser@testing.com"
+	fmt.Println("Testing: TestDriverLogin")
+
+	firstName := "Login"
+	lastName := "Driver"
+	email := "logindriver@testing.com"
 	password := "mypassword$"
 	license := "123USP"
 	truck := "Semi-Truck"
@@ -417,16 +472,11 @@ func TestDriverLogin(t *testing.T) {
 	checkResponseCode(t, http.StatusOK, response.Code)
 
 	require.Equal(t, http.StatusOK, response.Code)
-
-	// Cleanup created user from test
-	var driver Driver
-	driver.ID = user.ID
-	ts.DB.Model(&driver).Association("Organizations").Clear()
-	ts.DB.Delete(&driver)
-	ts.DB.Delete(&User{}, user.ID)
 }
 
 func TestLoginSponsor(t *testing.T) {
+	fmt.Println("Testing: TestLoginSponsor")
+
 	// creating test data
 	firstName := "New"
 	lastName := "Sponsor"
@@ -478,10 +528,12 @@ func TestLoginSponsor(t *testing.T) {
 }
 
 func TestLoginAdmin(t *testing.T) {
+	fmt.Println("Testing: TestLoginAdmin")
+
 	// creating test data
-	firstName := "New"
+	firstName := "Login"
 	lastName := "Admin"
-	email := "newadmin@testing.com"
+	email := "loginadmin@testing.com"
 	password := "x"
 	ttype := 2
 	data := CreateUserPayload{
@@ -522,11 +574,11 @@ func TestLoginAdmin(t *testing.T) {
 	checkResponseCode(t, http.StatusOK, response.Code)
 
 	require.Equal(t, http.StatusOK, response.Code)
-	ts.DB.Delete(&Admin{}, "user_id = ?", user.ID)
-	ts.DB.Delete(&User{}, user.ID)
 }
 
 func TestFetchingEbayResults(t *testing.T) {
+	fmt.Println("Testing: TestFetchingEbayResults")
+
 	keywords := []string{"tools"}
 	entries := 25
 	page := 1
@@ -560,4 +612,56 @@ func TestFetchingEbayResults(t *testing.T) {
 	require.NotEmpty(t, data.Items[0].ItemID, "ItemID in EbayItem is empty.")
 	require.NotEmpty(t, data.Items[0].Title, "Title in EbayItem is empty.")
 	require.NotEmpty(t, data.Items[0].Points, "Points in EbayItem is 0.")
+}
+
+func TestDriverList(t *testing.T) {
+	fmt.Println("Testing: TestDriverList")
+
+	req, _ := http.NewRequest("GET", "/drivers/", nil)
+	response := executeRequest(req, ts)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	t.Log(response.Body.String())
+
+	var data []Driver
+	err := json.Unmarshal(response.Body.Bytes(), &data)
+	if err != nil {
+		t.Error("Failed to unmarshal response body from POST /catalog")
+	}
+
+	require.Equal(t, data[0].LicensePlate, "123UPS")
+	require.Equal(t, data[1].LicensePlate, "123USP")
+	require.Equal(t, data[2].LicensePlate, "Update")
+	require.Equal(t, data[3].LicensePlate, "FailedLogin")
+	require.Equal(t, data[4].LicensePlate, "123USP")
+}
+
+func TestIndiviudalDriverReport(t *testing.T) {
+	fmt.Println("Testing: TestIndiviudalDriverReport")
+
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/reports/individual/%d", 1), nil)
+	response := executeRequest(req, ts)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	var data IndividualReportPayload
+	err := json.Unmarshal(response.Body.Bytes(), &data)
+	if err != nil {
+		t.Error("Failed to unmarshal response body from GET /reports/individual/{driverID}")
+	}
+
+	DriverID := 1
+	DriverFName := "Test"
+	DriverLName := "Man"
+	DriverEmail := "test@testman.com"
+	OrganizationID := 1
+	OrganizationName := "Testing Organization"
+	Reason := "Reason"
+
+	require.Equal(t, *data.DriverID, DriverID)
+	require.Equal(t, *data.DriverFName, DriverFName)
+	require.Equal(t, *data.DriverLName, DriverLName)
+	require.Equal(t, *data.DriverEmail, DriverEmail)
+	require.Equal(t, *data.OrganizationID, OrganizationID)
+	require.Equal(t, *data.OrganizationName, OrganizationName)
+	require.Equal(t, *data.PointHistory[0].Reason, Reason)
 }

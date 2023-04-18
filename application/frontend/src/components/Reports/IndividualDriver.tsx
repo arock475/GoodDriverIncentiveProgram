@@ -4,13 +4,28 @@ import Table from 'react-bootstrap/Table';
 import Form from 'react-bootstrap/Form';
 import { CSVLink, CSVDownload } from "react-csv";
 
-
+const getRange = (start, stop) => {
+    return Array.from({length: stop - start},
+        (value, idx) => start + idx    
+    )
+}
 
 const IndividualDriverReport: React.FC<{}> = () => {
     const [driverIDList, setDriverIDList] = useState([])
     const [selectedIDs, setSelectedIDs] = useState([])
     const [pointHistoryList, setPointHistoryList] = useState([])
     const [table, setTable] = useState([])
+
+    const [yearRange, setYearRange] = useState([])
+    const [monthRange, setMonthRange] = useState([])
+    const [dayRange, setDayRange] = useState([])
+    
+    const [fromYear, setFromYear] = useState(2020)
+    const [fromMonth, setFromMonth] = useState(1)
+    const [fromDay, setFromDay] = useState(1)
+    const [toYear, setToYear] = useState(2023)
+    const [toMonth, setToMonth] = useState(12)
+    const [toDay, setToDay] = useState(31)
 
     useEffect(() => {
         fetch(`http://localhost:3333/drivers`, {
@@ -56,10 +71,29 @@ const IndividualDriverReport: React.FC<{}> = () => {
     }, [selectedIDs])
 
     useEffect(() => {
+        if(fromYear > toYear || (fromYear === toYear && fromMonth > toMonth) || (fromYear === toYear && fromMonth === toMonth && fromDay > toDay)){
+            setTable([])
+            return
+        }
+
         const t = []
 
-        const list = pointHistoryList
+        const phCopy = structuredClone(pointHistoryList)
 
+        const list = phCopy.map((val, idx) => {
+            if(val.PointsHistory === null) return val
+
+            val.PointsHistory = val.PointsHistory.filter(ph => {
+                const year = Number(ph["CreatedAt"].slice(0, 4))
+                const month = Number(ph["CreatedAt"].slice(5, 7))
+                const day = Number(ph["CreatedAt"].slice(8, 10))
+    
+                return year >= fromYear && year <= toYear && month >= fromMonth && month <= toMonth && day >= fromDay && day <= toDay 
+            })
+
+            return val
+        })
+        
         for(let i = 0; i < list.length; i++){
 
             if (list[i].PointsHistory === undefined || list[i].PointsHistory === null) {
@@ -71,10 +105,12 @@ const IndividualDriverReport: React.FC<{}> = () => {
             }
             else{
                 const segment = []
-                for(let j = 0; j < list[i].PointsHistory.length; j++){
+                const pointHistoryLength = list[i].PointsHistory.length
+                for(let j = 0; j < pointHistoryLength; j++){
+
                     const row = []
 
-                    if(j !== 0){
+                    if(j === pointHistoryLength - 1){
                         row.push(...[list[i].DriverID, list[i].DriverFName + " " + list[i].DriverLName, list[i].DriverEmail, list[i].OrganizationName])
                     }
                     else{
@@ -93,7 +129,7 @@ const IndividualDriverReport: React.FC<{}> = () => {
         }
 
         setTable(t)
-    }, [pointHistoryList])
+    }, [pointHistoryList, fromYear, fromMonth, fromDay, toYear, toMonth, toDay])
 
     var drivers = []
     pointHistoryList.map((d) => {
@@ -133,6 +169,156 @@ const IndividualDriverReport: React.FC<{}> = () => {
                     })
                 }
             </Form.Select>
+            <div className="row">
+                <div className="col-md-2">
+                    <Form.Label>
+                        From Year
+                    </Form.Label>
+                    <Form.Select onChange={(e) => {
+                            setFromYear(Number(e.target.value))
+                        }}>
+                        {   
+                            getRange(2020, 2024).reverse().map((val, idx) => {
+                                if(val === fromYear) return(
+                                    <option value={val} key={val} selected>
+                                        {val}
+                                    </option>
+                                )
+
+                                return (
+                                    <option value={val} key={val}>
+                                        {val}
+                                    </option>
+                                )
+                            })
+                        }
+                    </Form.Select>
+                </div>
+                <div className="col-md-2">
+                    <Form.Label>
+                        From Month
+                    </Form.Label>
+                    <Form.Select onChange={(e) => {
+                            setFromMonth(Number(e.target.value))
+                        }}>
+                        {   
+                            getRange(1, 13).map((val, idx) => {
+                                if(val === fromMonth) return(
+                                    <option value={val} key={val} selected>
+                                        {val}
+                                    </option>
+                                )
+
+                                return (
+                                    <option value={val} key={val}>
+                                        {val}
+                                    </option>
+                                )
+                            })
+                        }
+                    </Form.Select>
+                </div>
+                <div className="col-md-2">
+                    <Form.Label>
+                        From Day
+                    </Form.Label>
+                    <Form.Select onChange={(e) => {
+                            setFromDay(Number(e.target.value))
+                        }}>
+                        {   
+                            getRange(1, 32).map((val, idx) => {
+                                if(val === fromDay) return(
+                                    <option value={val} key={val} selected>
+                                        {val}
+                                    </option>
+                                )
+
+                                return (
+                                    <option value={val} key={val}>
+                                        {val}
+                                    </option>
+                                )
+                            })
+                        }
+                    </Form.Select>
+                </div>
+            </div>
+
+            <div className="row">
+                <div className="col-md-2">
+                    <Form.Label>
+                        To Year
+                    </Form.Label>
+                    <Form.Select onChange={(e) => {
+                            setToYear(Number(e.target.value))
+                        }}>
+                        {   
+                            getRange(2020, 2024).reverse().map((val, idx) => {
+                                if(val === toYear) return(
+                                    <option value={val} key={val} selected>
+                                        {val}
+                                    </option>
+                                )
+
+                                return (
+                                    <option value={val} key={val}>
+                                        {val}
+                                    </option>
+                                )
+                            })
+                        }
+                    </Form.Select>
+                </div>
+                <div className="col-md-2">
+                    <Form.Label>
+                        To Month
+                    </Form.Label>
+                    <Form.Select onChange={(e) => {
+                            setToMonth(Number(e.target.value))
+                        }}>
+                        {   
+                            getRange(1, 13).map((val, idx) => {
+                                if(val === toMonth) return(
+                                    <option value={val} key={val} selected>
+                                        {val}
+                                    </option>
+                                )
+
+                                return (
+                                    <option value={val} key={val}>
+                                        {val}
+                                    </option>
+                                )
+                            })
+                        }
+                    </Form.Select>
+                </div>
+                <div className="col-md-2">
+                    <Form.Label>
+                        To Day
+                    </Form.Label>
+                    <Form.Select onChange={(e) => {
+                            setToDay(Number(e.target.value))
+                        }}>
+                        {   
+                            getRange(1, 32).map((val, idx) => {
+                                if(val === toDay) return(
+                                    <option value={val} key={val} selected>
+                                        {val}
+                                    </option>
+                                )
+
+                                return (
+                                    <option value={val} key={val}>
+                                        {val}
+                                    </option>
+                                )
+                            })
+                        }
+                    </Form.Select>
+                </div>
+            </div>
+            
 
             <Table>
                 <thead>

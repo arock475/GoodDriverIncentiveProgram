@@ -108,23 +108,23 @@ type User struct {
 // They can have one primary organization at a time; in OrganizationID
 type Driver struct {
 	ID             int
-	UserID         int `gorm:"uniqueIndex;not null"`
-	User           User
-	Status         int `gorm:"not null;default:0"`
+	UserID         int  `gorm:"uniqueIndex;not null"`
+	User           User `gorm:"constraint:OnDelete:CASCADE;"`
+	Status         int  `gorm:"not null;default:0"`
 	LicensePlate   string
 	TruckType      string
 	OrganizationID int
-	Organization   Organization
-	Organizations  []*Organization `gorm:"many2many:driver_organizations;"`
+	Organization   Organization    `gorm:"constraint:OnDelete:CASCADE;"`
+	Organizations  []*Organization `gorm:"many2many:driver_organizations;constraint:OnDelete:CASCADE;"`
 }
 
 // Belongs to an organization
 type Sponsor struct {
 	ID             int
-	UserID         int `gorm:"uniqueIndex; not null"`
-	User           User
-	OrganizationID int `gorm:"not null"`
-	Organization   Organization
+	UserID         int          `gorm:"uniqueIndex; not null"`
+	User           User         `gorm:"constraint:OnDelete:CASCADE;"`
+	OrganizationID int          `gorm:"not null"`
+	Organization   Organization `gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 type Admin struct {
@@ -166,12 +166,12 @@ type CreatePointCategoryPayload struct {
 // Organization is the organization who assigned those points.
 type Points struct {
 	ID               int
-	DriverID         int `gorm:"not null"`
-	Driver           Driver
-	OrganizationID   int `gorm:"not null"`
-	Organization     Organization
-	PointsCategoryID int `gorm:"not null"`
-	PointsCategory   PointsCategory
+	DriverID         int            `gorm:"not null"`
+	Driver           Driver         `gorm:"constraint:OnDelete:CASCADE;"`
+	OrganizationID   int            `gorm:"not null"`
+	Organization     Organization   `gorm:"constraint:OnDelete:CASCADE;"`
+	PointsCategoryID int            `gorm:"not null"`
+	PointsCategory   PointsCategory `gorm:"constraint:OnDelete:CASCADE;"`
 	Reason           string
 	CreatedAt        time.Time
 }
@@ -208,11 +208,11 @@ type Log struct {
 // If both are false, that means user added an item to their cart but then decided not to get it.
 type Purchase struct {
 	ID             int
-	DriverID       int `gorm:"not null"`
-	Driver         Driver
-	OrganizationID int `gorm:"not null"`
-	Organization   Organization
-	ItemID         string `gorm:"not null"`
+	DriverID       int          `gorm:"not null"`
+	Driver         Driver       `gorm:"constraint:OnDelete:CASCADE;"`
+	OrganizationID int          `gorm:"not null"`
+	Organization   Organization `gorm:"constraint:OnDelete:CASCADE;"`
+	ItemID         string       `gorm:"not null"`
 	ItemTitle      string
 	ImageURL       string
 	Points         int
