@@ -4,6 +4,7 @@ import { getUserClaims } from "../../utils/getUserClaims";
 import { User } from "../../components/CreateUser/CreateUser";
 import { Col, Form, Row } from "react-bootstrap";
 import IndividualDriverReport from "../../components/Reports/IndividualDriver";
+import AllDriver from "../../components/Reports/AllDriver";
 
 const PointsReport = ({}) => {
     // claim: depreciated replace with viewAs later
@@ -37,7 +38,7 @@ const PointsReport = ({}) => {
                     <Row>
                         { showAllDrivers && 
                             <div>
-                                { /* All Driver Component Here */}
+                                <AllDriver/>
                             </div>
                         }
                         { !showAllDrivers &&

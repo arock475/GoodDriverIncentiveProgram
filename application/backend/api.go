@@ -162,6 +162,7 @@ func (s *Server) MountHandlers() {
 				r.Put("/", s.UpdatePointsCategory)
 			})
 
+			r.Get("/totals", s.ListPointsTotals)
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Get("/totals", s.GetPointsTotal)
 			})
@@ -861,6 +862,44 @@ func (s *Server) GetPointsTotal(w http.ResponseWriter, r *http.Request) {
 	default:
 		fmt.Print("Error! Attempting to get point info for a user with no role!\n")
 	}
+}
+
+func (s *Server) ListPointsTotals(w http.ResponseWriter, r *http.Request) {
+	// getting all the points based on the drivers orgs
+	var drivers []Driver
+	result := s.DB.Preload("User").Preload("Organizations").Find(&drivers)
+	if result.Error != nil {
+		fmt.Printf("Failed to find drivers\n")
+		return
+	}
+
+	var pointsTotals []GetPointsTotalsPayload
+	for _, driver := range drivers {
+		for _, organization := range driver.Organizations {
+			// getting points totals
+			var pointsTotal GetPointsTotalsPayload
+			pointsTotal.Organization = *organization
+			pointsTotal.Driver = driver
+
+			result := s.DB.Model(&Points{}).
+				Preload("PointsCategory").
+				Joins("JOIN points_categories pc ON pc.id = points.points_category_id").
+				Select("sum(pc.num_change)").
+				Where("driver_id = ? and organization_id = ?", driver.ID, organization.ID).
+				Scan(&pointsTotal.Total)
+
+			if result.Error != nil {
+				pointsTotal.Total = 0
+			}
+
+			pointsTotals = append(pointsTotals, pointsTotal)
+		}
+	}
+
+	// writing return
+	w.Header().Set("Content-Type", "application/json")
+	returned, _ := json.Marshal(pointsTotals)
+	w.Write(returned)
 }
 
 ///  Authentication

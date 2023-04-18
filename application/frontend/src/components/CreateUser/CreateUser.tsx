@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form'
 import { Button } from 'react-bootstrap'
 import { getUserClaims } from '../../utils/getUserClaims';
 
-interface Organization {
+export interface Organization {
     ID: number
     Name: string
     Bio: string
@@ -14,10 +14,33 @@ interface Organization {
     LogoURL: string
 }
 
-interface Sponsor {
+export interface Sponsor {
     ID: number,
     UserID: number, 
     OrganizationID: number
+}
+
+export interface Driver {
+    ID: number,
+    UserID: number,
+    User: UserInfo,
+    LicenensePlate: string,
+    TruckType: string,
+    OrganizationID: number,
+    Organization: Organization,
+    Organizations: Organization[]
+}
+
+// note: lowercase to work with api calls ¯\_ (ツ)_/¯
+export interface UserInfo {
+    id: number,
+    email: string,
+    firstName: string,
+    lastName: string,
+    phone: string,
+    bio: string,
+    imageURL: string,
+    type: User
 }
 
 export enum User {
