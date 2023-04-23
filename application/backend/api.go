@@ -538,7 +538,7 @@ func (s *Server) DeleteOrg(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Org Not Found", http.StatusNotFound)
 		return
 	}
-	// Getting the IDs of the users associated with the deleted sponsors
+	// Getting the IDs of the sponsors-users associated with the deleted sponsors
 	var userIds []int64
 	resultUserIds := s.DB.Model(&Sponsor{}).Where("organization_id = ?", org.ID).Pluck("user_id", &userIds)
 	if resultUserIds.Error != nil {
@@ -583,10 +583,12 @@ func (s *Server) DeleteOrg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
+	returned, _ := json.Marshal(org)
 	w.Write(returned)
 }
 
 func (s *Server) UpdateOrg(w http.ResponseWriter, r *http.Request) {
+	var org Organization
 	data := CreateOrgPointPayload{}
 
 	err := json.NewDecoder(r.Body).Decode(&data)
@@ -612,36 +614,8 @@ func (s *Server) UpdateOrg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
+	returned, _ := json.Marshal(org)
 	w.Write(returned)
-}
-
-func (s *Server) UpdateOrg(w http.ResponseWriter, r *http.Request) {
-	data := CreateOrgPointPayload{}
-
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	updates := make(map[string]interface{})
-
-	if data.PointsRatio != nil {
-		updates["points_ratio"] = *data.PointsRatio
-	}
-
-	if orgID := chi.URLParam(r, "orgID"); orgID != "" {
-		result := s.DB.Model(&Organization{}).Where("id = ?", orgID).Updates(updates)
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			http.Error(w, "Org Not Found", http.StatusNotFound)
-			return
-		}
-	} else {
-		http.Error(w, "Org Not Found", http.StatusNotFound)
-		return
-	}
-
-	w.WriteHeader(200)
 }
 
 func (s *Server) AddDriverToOrg(w http.ResponseWriter, r *http.Request) {

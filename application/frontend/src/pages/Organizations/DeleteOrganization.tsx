@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { Button, Col, Form, ListGroup, Row, Table } from 'react-bootstrap';
 
@@ -16,7 +17,7 @@ const DeleteOrg = ({}) => {
 
     // creating an org data constant to receive the data from fetch
     const [orgs, setOrgs] = useState<Organization[]>([])
-    const [selectedOrg, setSelectedOrg] = useState<Organization>({
+    const [selectedOrg, setSelectedOrg] = useState<Organization | null>({
         ID: 0,
         Name: '',
         Bio: '',
@@ -59,9 +60,9 @@ const DeleteOrg = ({}) => {
                         <Form.Control as='select' onChange={handleOrgChange}>
                             <option value="">Select an Organization</option>
                             {
-                                orgs.map((org) => (
+                                orgs.filter((org) => org.ID != -1).map((org) => (
                                     <option key={org.ID} value={org.ID}>
-                                        {`ID: ${org.ID} Name: "${org.Name}`}
+                                        {`ID: ${org.ID} Name: ${org.Name}`}
                                     </option>
                                 ))
                             }
