@@ -13,36 +13,93 @@ import {
 } from 'mdb-react-ui-kit';
 import { useNavigate, useParams } from "react-router-dom";
 import{ useState, useEffect } from 'react';
+import { getUserClaims } from '../../utils/getUserClaims';
+import { User } from '../../components/CreateUser/CreateUser';
+
+interface Orgs {
+  OrganizationID: number,
+  OrganizationName: string,
+  Status: string
+}
 
 export default function ProfilePage() {
   const { userID } = useParams();
+  const [userClaim, setUserClaim] = useState(getUserClaims());
   const [Data,setData]=useState({
     firstName:'',
     lastName:'',
     email:'',
     phone:'',
     bio:'',
-    image: ''
+    image: '',
   })
+  const [orgs, setOrgs] = useState<Orgs[]>([]);
 
   // Gets user info from database
   useEffect(() => {
      fetch('http://localhost:3333/users/' + userID)
         .then((res) => res.json())
         .then((data) => {
+          if(data.image == '') {
+            data.image = 'https://team25-s3bucket.s3.amazonaws.com/Default-PFP.jpg'
+          }
            setData({firstName:data.firstName, lastName:data.lastName, email:data.email, phone:data.phone, bio:data.bio, image:data.image})
+        })
+        .catch((err) => {
+           console.log(err.message);
+        });
+    fetch(`http://localhost:3333/applications/driver?driverID=${userID}`, {
+          method: 'GET',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          credentials: "include",
+      })
+        .then((res) => res.json())
+        .then((data) => {
+           setOrgs(data);
         })
         .catch((err) => {
            console.log(err.message);
         });
   }, []);
 
+  var OrgsArray = [], PendingArray = [];
+  orgs.map((org) => {
+    if(org.Status === 'Employed') {
+      OrgsArray.push({
+        OrganizationID: org.OrganizationID,
+        OrganizationName:org.OrganizationName,
+        Status:org.Status
+      })
+    }
+    else if(org.Status === 'Pending') {
+      PendingArray.push({
+        OrganizationID: org.OrganizationID,
+        OrganizationName:org.OrganizationName,
+        Status:org.Status
+      })
+    }
+  }) 
+
+  var index = 0;
+  OrgsArray.map((org) => {
+      if(index != OrgsArray.length - 1) {
+        org.OrganizationName = org.OrganizationName + ', ';
+      }
+      index++;
+  })
+
+
+
   // Navigates to the Edit profile page
   let navigate = useNavigate(); 
-  const routeChange = () =>{ 
-    let path = 'edit'; 
-    navigate(path);
+  const routeChange = (path) =>{ 
+    setTimeout(function () {
+      navigate(path);
+    }, 1000);
   }
+
 
   return (
     <section style={{ backgroundColor: '#eee' }}>
@@ -57,8 +114,10 @@ export default function ProfilePage() {
                   style={{ width: '150px' }}
                   fluid />
                 <p className="text-muted mb-1">{Data.email}</p>
-                <p className="text-muted mb-1">Company Name</p>
-                <p className="text-muted mb-4">Organization Name</p>
+                <p className="text-muted mb-1">Affiliated Organizations:</p>
+                <p className="text-muted mb-4"> {OrgsArray.map((org) => (
+                  org.OrganizationName
+                ))}</p>
               </MDBCardBody>
             </MDBCard>
 
@@ -130,9 +189,10 @@ export default function ProfilePage() {
 
             <MDBRow>
               <MDBCol md="6">
-                <MDBCard className="mb-4 mb-md-0">
-                  <MDBCardBody>
-                    <MDBCardText className="mb-4"><span className="text-primary font-italic me-1">Driver</span> Application Status</MDBCardText>
+              {PendingArray.map((org) => (
+                <MDBCard className="mb-4 mb-md-0" key={org.OrganizationID}>
+                    <MDBCardBody>
+                    <MDBCardText className="mb-4"><span className="text-primary font-italic me-1">{org.OrganizationName}</span>Application Status</MDBCardText>
                     <MDBCardText className="mb-1" style={{ fontSize: '.77rem' }}>Completion Progress</MDBCardText>
                     <MDBProgress className="rounded">
                       <MDBProgressBar width={80} valuemin={0} valuemax={100} />
@@ -142,14 +202,15 @@ export default function ProfilePage() {
                     </MDBCol>
                   </MDBCardBody>
                 </MDBCard>
+              ))}
               </MDBCol>
             </MDBRow>
 
           </MDBCol>
           <p></p><p></p>
-          <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={routeChange}>
+          {(userClaim.role == User.Sponsor || userClaim.role == User.Admin || userClaim.id == parseInt(userID)) && <div className="d-grid gap-2 d-md-flex justify-content-md-start"><MDBBtn onClick={function(event){ routeChange('edit')}}>
             Edit Profile
-          </MDBBtn></div>
+          </MDBBtn></div> }
         </MDBRow>
     </section>
   );

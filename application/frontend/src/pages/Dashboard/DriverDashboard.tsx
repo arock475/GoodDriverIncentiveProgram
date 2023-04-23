@@ -1,4 +1,9 @@
 import React from 'react'
+import Container from 'react-bootstrap/Container';
+import Link from 'react-router-dom';
+import Button from 'react-bootstrap/Button';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import {
     MDBCard,
     MDBCardBody,
@@ -22,9 +27,7 @@ const DriverDashboard = () =>{
                             </MDBCardBody>
                             <MDBRow>
                                 <MDBCol>
-                                    <a href="/catalog"> 
                                     <MDBCardImage src='https://www.shutterstock.com/image-photo/beautiful-landscape-ocean-summer-sunset-260nw-1513858394.jpg' fluid alt='...'/>
-                                    </a>
                                 </MDBCol>
                             </MDBRow>
                         </MDBCard>
@@ -33,21 +36,21 @@ const DriverDashboard = () =>{
                         <MDBCard className='h-100' alignment='center'>
                                 <MDBCardBody className='vstack gap-5'>
                                     <MDBCardTitle >Points History</MDBCardTitle>
-                                    <a href="/PC1" style={{ color: 'inherit', textDecoration: 'inherit', }}>
+                                    <div style={{ color: 'inherit', textDecoration: 'inherit', }}>
                                         <MDBCardText>
                                             Points Change 1
                                         </MDBCardText>
-                                    </a>
-                                    <a href="/PC2" style={{ color: 'inherit', textDecoration: 'inherit'}}>
-                                        <MDBCardText >
+                                    </div>
+                                    <div style={{ color: 'inherit', textDecoration: 'inherit'}}>
+                                        <MDBCardText>
                                             Points Change 2
                                         </MDBCardText>
-                                    </a>
-                                    <a href="/PC3" style={{ color: 'inherit', textDecoration: 'inherit'}}>
-                                        <MDBCardText >
+                                    </div>
+                                    <div style={{ color: 'inherit', textDecoration: 'inherit'}}>
+                                        <MDBCardText>
                                             Points Change 3
                                         </MDBCardText>
-                                    </a>
+                                    </div>
                                 </MDBCardBody>
                         </MDBCard>   
                     </a>
@@ -55,21 +58,21 @@ const DriverDashboard = () =>{
                         <MDBCard className='h-100' alignment='center'>
                             <MDBCardBody className='vstack gap-5'>
                                 <MDBCardTitle >Notifications</MDBCardTitle>
-                                <a href="/noti1" style={{ color: 'inherit', textDecoration: 'inherit', }}>
+                                <div style={{ color: 'inherit', textDecoration: 'inherit', }}>
                                     <MDBCardText >
                                         Notification 1
                                     </MDBCardText>
-                                </a>
-                                <a href="/noti2" style={{ color: 'inherit', textDecoration: 'inherit', }}>
+                                </div>
+                                <div style={{ color: 'inherit', textDecoration: 'inherit', }}>
                                     <MDBCardText >
                                         Notification 2
                                     </MDBCardText>
-                                </a>
-                                <a href="/noti3" style={{ color: 'inherit', textDecoration: 'inherit', }}>
+                                </div>
+                                <div style={{ color: 'inherit', textDecoration: 'inherit', }}>
                                     <MDBCardText >
                                         Notification 3
                                     </MDBCardText>
-                                </a>
+                                </div>
                             </MDBCardBody>
                         </MDBCard>
                     </a>
@@ -80,9 +83,7 @@ const DriverDashboard = () =>{
                             </MDBCardBody>
                             <MDBRow>
                                 <MDBCol>
-                                    <a href="/order1"> 
-                                        <MDBCardImage src='https://www.shutterstock.com/image-photo/beautiful-landscape-ocean-summer-sunset-260nw-1513858394.jpg' fluid alt='...'/>
-                                    </a>
+                                    <MDBCardImage src='https://www.shutterstock.com/image-photo/beautiful-landscape-ocean-summer-sunset-260nw-1513858394.jpg' fluid alt='...'/>
                                 </MDBCol>
                             </MDBRow>
                         </MDBCard>
@@ -91,7 +92,7 @@ const DriverDashboard = () =>{
             </MDBRow>
             <MDBRow className='h-100'>
                 <MDBCardGroup className='d-flex justify-content-center'>
-                    <a href="/driver-applications" className='p-3 w-25' style={{ color: 'inherit', textDecoration: 'inherit'}}>
+                    <a href="/applications/driver" className='p-3 w-25' style={{ color: 'inherit', textDecoration: 'inherit'}}>
                         <MDBCard className='h-100' alignment='center'>
                             <MDBCardBody className='d-flex align-items-center justify-content-center'>
                                 <MDBCardTitle >Applications</MDBCardTitle>
