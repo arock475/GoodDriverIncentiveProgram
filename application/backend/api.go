@@ -1,15 +1,24 @@
 package main
 
 import (
+	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/smtp"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -125,11 +134,13 @@ func (s *Server) MountHandlers() {
 				r.Get("/", s.GetUser)
 				r.Get("/catalog", s.GetUserCatalogCtx)
 				r.Put("/profile", s.UpdateProfile)
+				r.Post("/profile/S3", s.UploadToS3)
 				r.Get("/cart", s.GetCartItems)
 				r.Put("/cart", s.AddItemToCart)
 				r.Delete("/cart", s.RemoveItemFromCart)
 				r.Put("/checkout", s.CheckoutItems)
 				r.Put("/reset", s.UpdatePassword)
+				r.Post("/email", s.SendEmail)
 				r.Get("/orders", s.GetOrderHistory)
 			})
 		})
@@ -1100,6 +1111,70 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 func Authenticate(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 	w.Write([]byte("Authentication Successful"))
+}
+
+func (s *Server) UploadToS3(w http.ResponseWriter, r *http.Request) {
+	data := CreateS3BucketPayload{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	s3Config := &aws.Config{
+		Region:      aws.String("us-east-1"),
+		Credentials: credentials.NewStaticCredentials(os.Getenv("S3_KEY"), os.Getenv("S3_SECRET_KEY"), ""),
+	}
+	s3Session := session.New(s3Config)
+	uploader := s3manager.NewUploader(s3Session)
+
+	i := strings.Index(*data.File, ",")
+	if i < 0 {
+		log.Fatal("no comma")
+	}
+	// pass reader to NewDecoder
+	dec := base64.NewDecoder(base64.StdEncoding, strings.NewReader((*data.File)[i+1:]))
+	if err != nil {
+		log.Fatal(err)
+	}
+	input := &s3manager.UploadInput{
+		Bucket:      aws.String("team25-s3bucket"), // bucket's name
+		Key:         aws.String(*data.Filename),    // files destination location
+		Body:        dec,                           // content of the file
+		ContentType: aws.String("image/png"),       // content type
+	}
+	res, err := uploader.UploadWithContext(context.Background(), input)
+	log.Printf("res %+v\n", res)
+}
+
+func (s *Server) SendEmail(w http.ResponseWriter, r *http.Request) {
+	data := CreateEmailPayload{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	from := "team25driverapp@gmail.com"
+	password := os.Getenv("EMAIL_PASSWORD")
+
+	toEmailAddress := *data.Email
+	to := []string{toEmailAddress}
+
+	host := "smtp.gmail.com"
+	port := "587"
+	address := host + ":" + port
+
+	subject := "Subject: Password Change Request\n"
+	body := "Hello " + *data.Name + ",\nYou have submitted a password change request.\nIf this was not you, please disregard this email and make sure you can still log in to your account. If it was you, then your reset password token is: " + *data.Token + "\nThank you!"
+	message := []byte(subject + body)
+
+	auth := smtp.PlainAuth("", from, password, host)
+
+	error := smtp.SendMail(address, auth, from, to, message)
+	if error != nil {
+		panic(error)
+	}
 }
 
 func (s *Server) UpdateProfile(w http.ResponseWriter, r *http.Request) {

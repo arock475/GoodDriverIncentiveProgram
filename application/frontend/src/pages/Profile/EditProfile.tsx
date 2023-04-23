@@ -20,23 +20,12 @@ import {
 } from 'mdb-react-ui-kit';
 import { useNavigate, useParams } from "react-router-dom";
 import{ useState, useEffect } from 'react';
-import AWS from 'aws-sdk'
 
 interface Orgs {
   OrganizationID: number,
   OrganizationName: string,
   Status: string
 }
-
-AWS.config.update({
-    accessKeyId: process.env.REACT_APP_ACCESS_KEY_ID,
-    secretAccessKey: process.env.REACT_APP_SECRET_ACCESS_KEY
-})
-
-const myBucket = new AWS.S3({
-    params: { Bucket: process.env.REACT_APP_S3_BUCKET},
-    region: process.env.REACT_APP_REGION,
-})
 
 export default function EditProfilePage() {
     const { userID } = useParams();
@@ -122,27 +111,32 @@ export default function EditProfilePage() {
     // Handle File input
     const handleFileInput = (e) => {
         setSelectedFile(e.target.files[0]);
-        Data.image = process.env.REACT_APP_URL + e.target.files[0].name;
+        Data.image = "https://team25-s3bucket.s3.amazonaws.com/" + e.target.files[0].name;
     }
 
     // Upload file to the S3 bucket
-    const uploadFile = (file) => {
-        const params = {
-            ACL: 'public-read',
-            Body: file,
-            Bucket: process.env.REACT_APP_S3_BUCKET,
-            Key: file.name,
-            ContentType:'image/jpg',
-            ContentDisposition:'inline', 
-        };
-
-        myBucket.putObject(params)
-            .on('httpUploadProgress', (evt) => {
-                setProgress(Math.round((evt.loaded / evt.total) * 100))
-            })
-            .send((err) => {
-                if (err) console.log(err)
-            })
+    const uploadFile = (file) => {          
+            var reader = new FileReader();
+            reader.readAsDataURL(file);
+        
+            reader.onload = () => {
+              const requestOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  filename: file.name,
+                  file: reader.result
+                })
+              };
+              fetch('http://localhost:3333/users/' + userID + '/profile/S3', requestOptions)
+                .then(response => response.json())
+                .catch((err) => {
+                  console.log(err.message);
+                });
+            };
+            reader.onerror = error => {
+              console.log("Error: ", error);
+            };
     }
 
     // Send Data struct info to database
@@ -202,7 +196,6 @@ export default function EditProfilePage() {
                       ></MDBBtn>
                     </MDBModalHeader>
                     <MDBModalBody>
-                      <div>Native SDK File Upload Progress is {progress}%</div>
                       <input type="file" onChange={handleFileInput}/>
                       <button onClick={() => uploadFile(selectedFile)}> Upload Image</button>
                     </MDBModalBody>

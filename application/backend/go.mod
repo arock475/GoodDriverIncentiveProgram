@@ -10,7 +10,10 @@ require (
 	gorm.io/gorm v1.24.5
 )
 
+require github.com/jmespath/go-jmespath v0.4.0 // indirect
+
 require (
+	github.com/aws/aws-sdk-go v1.44.247
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/go-chi/jwtauth/v5 v5.1.0 // indirect

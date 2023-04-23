@@ -41,6 +41,17 @@ type CreatePasswordPayload struct {
 	PlaintextPassword *string `json:"password"`
 }
 
+type CreateS3BucketPayload struct {
+	Filename *string `json:"filename"`
+	File     *string `json:"file"`
+}
+
+type CreateEmailPayload struct {
+	Name  *string `json:"name"`
+	Email *string `json:"email"`
+	Token *string `json:"token"`
+}
+
 // used to send data about points totals
 type GetPointsTotalsPayload struct {
 	Driver       Driver
