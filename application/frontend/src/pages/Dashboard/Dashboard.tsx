@@ -42,10 +42,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {
                     ((userClaims.role === User.Driver && viewAs === User.Driver) || viewAs === User.Driver) && 
                     <div>
-                        <MDBCardGroup>
+                        <MDBCardGroup className='d-flex justify-content-center'>
                             <CatalogCard {...userClaims} />
                             <PointsHistoryCard {...userClaims} />
-                            <NotificationsCard {...userClaims} />
                             <OrdersCard {...userClaims} />
                         </MDBCardGroup>
                         <MDBCardGroup className='d-flex justify-content-center'>
@@ -58,10 +57,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {
                     ((userClaims.role === User.Sponsor && viewAs === User.Sponsor) || viewAs === User.Sponsor) && 
                     <div>
-                        <MDBCardGroup>
+                        <MDBCardGroup className='d-flex justify-content-center'>
                             <CatalogCard {...userClaims} />
                             <PointsHistoryCard {...userClaims} />
-                            <NotificationsCard {...userClaims} />
                             <OrdersCard {...userClaims} />
                         </MDBCardGroup>
                         <MDBCardGroup className='d-flex justify-content-center'>
@@ -75,19 +73,21 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {
                     ((userClaims.role === User.Admin && viewAs === User.Admin) || viewAs === User.Admin) && 
                     <div>
-                        <MDBCardGroup>
-                            <CatalogCard {...userClaims} />
-                            <PointsHistoryCard {...userClaims} />
-                            <NotificationsCard {...userClaims} />
-                            <OrdersCard {...userClaims} />
-                        </MDBCardGroup>
-                        <MDBCardGroup className='d-flex justify-content-center'>
-                            <ProfileCard {...userClaims} />
-                            <OrganizationsCard {...userClaims} />
-                            <ReportsCard {...userClaims} />
-                            <LogsCard {...userClaims} />
-                        </MDBCardGroup>
+                        <div>
+                            <MDBCardGroup className='d-flex justify-content-center'>
+                                <CatalogCard {...userClaims} />
+                                <PointsHistoryCard {...userClaims} />
+                                <OrdersCard {...userClaims} />
+                            </MDBCardGroup>
+                            <MDBCardGroup className='d-flex justify-content-center'>
+                                <ProfileCard {...userClaims} />
+                                <OrganizationsCard {...userClaims} />
+                                <ReportsCard {...userClaims} />
+                                <LogsCard {...userClaims} />
+                            </MDBCardGroup>
+                        </div>
                     </div>
+                    
                 }
             </MDBRow> 
         </section>

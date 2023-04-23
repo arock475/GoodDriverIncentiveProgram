@@ -18,11 +18,6 @@ const CatalogCard: React.FC<UserClaims> = ({ }) => {
                 <MDBCardBody>
                     <MDBCardTitle >Catalog</MDBCardTitle>
                 </MDBCardBody>
-                <MDBRow>
-                    <MDBCol>
-                        <MDBCardImage src='https://www.shutterstock.com/image-photo/beautiful-landscape-ocean-summer-sunset-260nw-1513858394.jpg' fluid alt='...'/>
-                    </MDBCol>
-                </MDBRow>
             </MDBCard>
         </a>
     )
