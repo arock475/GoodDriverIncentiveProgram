@@ -17,21 +17,6 @@ const NotificationsCard: React.FC<UserClaims> = ({}) => {
             <MDBCard className='h-100' alignment='center'>
                 <MDBCardBody className='vstack gap-5'>
                     <MDBCardTitle >Notifications</MDBCardTitle>
-                    <div style={{ color: 'inherit', textDecoration: 'inherit', }}>
-                        <MDBCardText >
-                            Notification 1
-                        </MDBCardText>
-                    </div>
-                    <div style={{ color: 'inherit', textDecoration: 'inherit', }}>
-                        <MDBCardText >
-                            Notification 2
-                        </MDBCardText>
-                    </div>
-                    <div style={{ color: 'inherit', textDecoration: 'inherit', }}>
-                        <MDBCardText >
-                            Notification 3
-                        </MDBCardText>
-                    </div>
                 </MDBCardBody>
             </MDBCard>
         </a>

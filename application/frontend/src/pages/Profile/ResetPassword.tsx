@@ -37,11 +37,20 @@ import { Button } from 'react-bootstrap';
      }, []);
  
      function sendEmail(e) {
-       e.preventDefault();   
-       emailjs.send(process.env.REACT_APP_SERVICE_ID, process.env.REACT_APP_TEMPLATE_ID, email, process.env.REACT_APP_EMAIL_USER_ID)
-         .then((result) => {
-         }, (error) => {
-             console.log(error.text);
+         const requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: Data.firstName + ' ' + Data.lastName,
+            email: Data.email,
+            token: password_token.toString()
+          })
+        };
+        console.log(requestOptions);
+        fetch('http://localhost:3333/users/' + userID + '/email', requestOptions)
+          .then(response => response.json())
+          .catch((err) => {
+            console.log(err.message);
          });
      }
 

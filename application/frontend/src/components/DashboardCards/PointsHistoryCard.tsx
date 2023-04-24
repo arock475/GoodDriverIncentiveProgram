@@ -17,21 +17,6 @@ const PointsHistoryCard: React.FC<UserClaims> = ({}) => {
             <MDBCard className='h-100' alignment='center'>
                     <MDBCardBody className='vstack gap-5'>
                         <MDBCardTitle >Points History</MDBCardTitle>
-                        <div style={{ color: 'inherit', textDecoration: 'inherit', }}>
-                            <MDBCardText>
-                                Points Change 1
-                            </MDBCardText>
-                        </div>
-                        <div style={{ color: 'inherit', textDecoration: 'inherit'}}>
-                            <MDBCardText>
-                                Points Change 2
-                            </MDBCardText>
-                        </div>
-                        <div style={{ color: 'inherit', textDecoration: 'inherit'}}>
-                            <MDBCardText>
-                                Points Change 3
-                            </MDBCardText>
-                        </div>
                     </MDBCardBody>
             </MDBCard>   
         </a>

@@ -1,15 +1,24 @@
 package main
 
 import (
+	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/smtp"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -97,6 +106,11 @@ func (s *Server) MountHandlers() {
 
 		r.Route("/reports", func(r chi.Router) {
 			r.Get("/individual/{driverID}", s.IndividualDriverReportData)
+			r.Route("/salesbydriver", func(r chi.Router) {
+				r.Get("/", s.ListTotalSalesByDriver)
+				r.Get("/o:{orgID}", s.GetTotalSalesByDriverByOrg)
+			})
+			r.Get("/purchases", s.ListSales)
 			r.Get("/sponsor/sales/{orgID}", s.GetPurchasesForSponsor)
 			r.Get("/sponsor/sales/", s.ListPurchases)
 		})
@@ -120,11 +134,13 @@ func (s *Server) MountHandlers() {
 				r.Get("/", s.GetUser)
 				r.Get("/catalog", s.GetUserCatalogCtx)
 				r.Put("/profile", s.UpdateProfile)
+				r.Post("/profile/S3", s.UploadToS3)
 				r.Get("/cart", s.GetCartItems)
 				r.Put("/cart", s.AddItemToCart)
 				r.Delete("/cart", s.RemoveItemFromCart)
 				r.Put("/checkout", s.CheckoutItems)
 				r.Put("/reset", s.UpdatePassword)
+				r.Post("/email", s.SendEmail)
 				r.Get("/orders", s.GetOrderHistory)
 			})
 		})
@@ -1163,6 +1179,70 @@ func Authenticate(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Authentication Successful"))
 }
 
+func (s *Server) UploadToS3(w http.ResponseWriter, r *http.Request) {
+	data := CreateS3BucketPayload{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	s3Config := &aws.Config{
+		Region:      aws.String("us-east-1"),
+		Credentials: credentials.NewStaticCredentials(os.Getenv("S3_KEY"), os.Getenv("S3_SECRET_KEY"), ""),
+	}
+	s3Session := session.New(s3Config)
+	uploader := s3manager.NewUploader(s3Session)
+
+	i := strings.Index(*data.File, ",")
+	if i < 0 {
+		log.Fatal("no comma")
+	}
+	// pass reader to NewDecoder
+	dec := base64.NewDecoder(base64.StdEncoding, strings.NewReader((*data.File)[i+1:]))
+	if err != nil {
+		log.Fatal(err)
+	}
+	input := &s3manager.UploadInput{
+		Bucket:      aws.String("team25-s3bucket"), // bucket's name
+		Key:         aws.String(*data.Filename),    // files destination location
+		Body:        dec,                           // content of the file
+		ContentType: aws.String("image/png"),       // content type
+	}
+	res, err := uploader.UploadWithContext(context.Background(), input)
+	log.Printf("res %+v\n", res)
+}
+
+func (s *Server) SendEmail(w http.ResponseWriter, r *http.Request) {
+	data := CreateEmailPayload{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	from := "team25driverapp@gmail.com"
+	password := os.Getenv("EMAIL_PASSWORD")
+
+	toEmailAddress := *data.Email
+	to := []string{toEmailAddress}
+
+	host := "smtp.gmail.com"
+	port := "587"
+	address := host + ":" + port
+
+	subject := "Subject: Password Change Request\n"
+	body := "Hello " + *data.Name + ",\nYou have submitted a password change request.\nIf this was not you, please disregard this email and make sure you can still log in to your account. If it was you, then your reset password token is: " + *data.Token + "\nThank you!"
+	message := []byte(subject + body)
+
+	auth := smtp.PlainAuth("", from, password, host)
+
+	error := smtp.SendMail(address, auth, from, to, message)
+	if error != nil {
+		panic(error)
+	}
+}
+
 func (s *Server) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	data := UserProfilePayload{}
 
@@ -1356,7 +1436,7 @@ func (s *Server) UpdatePointsCategory(w http.ResponseWriter, r *http.Request) {
 func (s *Server) ListDrivers(w http.ResponseWriter, r *http.Request) {
 	var drivers []Driver
 
-	result := s.DB.Find(&drivers)
+	result := s.DB.Preload("User").Find(&drivers)
 	if result.Error != nil {
 		http.Error(w, result.Error.Error(), http.StatusBadRequest)
 		return
@@ -1503,6 +1583,19 @@ func (s *Server) IndividualDriverReportData(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(400)
 }
 
+func (s *Server) ListSales(w http.ResponseWriter, r *http.Request) {
+	var purchases []Purchase
+	result := s.DB.Preload("Driver.User").Preload("Organization").Where("checked_out = 1").Find(&purchases)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusBadRequest)
+		return
+	}
+	returned, _ := json.Marshal(purchases)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(returned)
+}
+
 // Gets all purchases
 func (s *Server) ListPurchases(w http.ResponseWriter, r *http.Request) {
 	var purchases []Purchase
@@ -1512,8 +1605,66 @@ func (s *Server) ListPurchases(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, result.Error.Error(), http.StatusBadRequest)
 		return
 	}
-
 	returned, _ := json.Marshal(purchases)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(returned)
+}
+
+func (s *Server) ListTotalSalesByDriver(w http.ResponseWriter, r *http.Request) {
+	var sales []SalesByDriverPayload
+	var drivers []Driver
+	result := s.DB.Preload("User").Preload("Organizations").Find(&drivers)
+	if result.Error != nil {
+		http.Error(w, "Internal Server Error. Failed to find Drivers.", http.StatusBadRequest)
+		return
+	}
+	for _, driver := range drivers {
+		var total int
+		result = s.DB.Model(&Purchase{}).Select("sum(points)").Where("driver_id = ?", driver.ID).Scan(&total)
+		if result.Error != nil {
+			total = 0
+		}
+		var sale SalesByDriverPayload
+		sale.Total = total
+		sale.Driver = driver
+		sales = append(sales, sale)
+	}
+	returned, _ := json.Marshal(sales)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(returned)
+}
+
+func (s *Server) GetTotalSalesByDriverByOrg(w http.ResponseWriter, r *http.Request) {
+	// get org from urlparam
+	var org Organization
+	if orgID := chi.URLParam(r, "orgID"); orgID != "" {
+		result := s.DB.Preload("Drivers.User").First(&org, "id = ?", orgID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "Organization Not Found", http.StatusNotFound)
+			return
+		}
+	} else {
+		http.Error(w, "Organization Not Found", http.StatusNotFound)
+		return
+	}
+
+	var sales []SalesByDriverPayload
+	for _, driver := range org.Drivers {
+		var total int
+		result := s.DB.Model(&Purchase{}).Select("sum(points)").Where("driver_id = ? AND organization_id = ?", driver.ID, org.ID).Scan(&total)
+		if result.Error != nil {
+			total = 0
+		}
+		var sale SalesByDriverPayload
+		sale.Total = total
+		sale.Driver = driver
+		sales = append(sales, sale)
+	}
+	returned, _ := json.Marshal(sales)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
 	w.Write(returned)
 }
 

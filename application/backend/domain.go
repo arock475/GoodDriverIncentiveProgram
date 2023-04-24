@@ -41,6 +41,17 @@ type CreatePasswordPayload struct {
 	PlaintextPassword *string `json:"password"`
 }
 
+type CreateS3BucketPayload struct {
+	Filename *string `json:"filename"`
+	File     *string `json:"file"`
+}
+
+type CreateEmailPayload struct {
+	Name  *string `json:"name"`
+	Email *string `json:"email"`
+	Token *string `json:"token"`
+}
+
 // used to send data about points totals
 type GetPointsTotalsPayload struct {
 	Driver       Driver
@@ -81,6 +92,11 @@ type IndividualReportPayload struct {
 	OrganizationID   *int                      `json:"OrganizationID"`
 	OrganizationName *string                   `json:"OrganizationName"`
 	PointHistory     []IndividualPointsPayload `json:"PointsHistory"`
+}
+
+type SalesByDriverPayload struct {
+	Driver Driver
+	Total  int
 }
 
 type AddToOrgPayload struct {
@@ -138,14 +154,14 @@ type Admin struct {
 // but it can have more than that.
 type Organization struct {
 	ID          int
-	Name        string    `gorm:"not null"`
-	Biography   string    `gorm:"default:''"`
-	Phone       string    `gorm:"default:''"`
-	Email       string    `gorm:"default:''"`
-	PointsRatio float64   `gorm:"default:1.0"`
-	LogoURL     string    `gorm:"not null"`
-	ShopRules   string    `gorm:"default:''"`
-	Drivers     []*Driver `gorm:"many2many:driver_organizations;"`
+	Name        string   `gorm:"not null"`
+	Biography   string   `gorm:"default:''"`
+	Phone       string   `gorm:"default:''"`
+	Email       string   `gorm:"default:''"`
+	PointsRatio float64  `gorm:"default:1.0"`
+	LogoURL     string   `gorm:"not null"`
+	ShopRules   string   `gorm:"default:''"`
+	Drivers     []Driver `gorm:"many2many:driver_organizations;"`
 }
 
 type PointsCategory struct {

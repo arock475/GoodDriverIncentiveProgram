@@ -54,6 +54,7 @@ const Header: React.FC<HeaderProps> = ({
                             <NavDropdown title="Reports" id="create-navbar-dropdown">
                                 <NavDropdown.Item href="/reports/points">Driver Reports</NavDropdown.Item>
                                 <NavDropdown.Item href="/reports/sponsor/sales">Sponsor Sales Reports</NavDropdown.Item>
+                                <NavDropdown.Item href="/reports/sales-by-driver">Sales By Driver</NavDropdown.Item>
                             </NavDropdown>
                         }
                     </Nav>

@@ -37,6 +37,7 @@ import ShopManage from './Shop/ShopManage';
 import PointsReport from './Reports/PointsReport';
 import SponsorSales from './Reports/SponsorSales';
 import ShopCheckout from './Shop/ShopCheckout';
+import SalesByDriverReport from './Reports/SalesByDriverReport';
 import OrderHistory from './Shop/OrderHistory';
 import DeleteOrganization from './Organizations/DeleteOrganization';
 
@@ -109,6 +110,7 @@ const App = () => {
         {/* Reports Link */}
         <Route path="reports" >
           <Route path="points" element={<PointsReport />} />
+          <Route path="sales-by-driver" element={<SalesByDriverReport />} />
           <Route path="sponsor/sales" element={<SponsorSales />} />
         </Route>
 
