@@ -177,7 +177,7 @@ const CreateUser: React.FC<CreateProps> = ({ colorTheme="dark", viewAs, setViewA
                 // resubmit dialog
                 const resubmit = (userClaims.role == User.Sponsor || userClaims.role == User.Admin) ? window.confirm('Do you want to create another user?') : false;   
                 if (resubmit) {
-                    window.location.href = '/login/create';
+                    window.location.href = '/create-user';
                 }
                 else if (!userClaims.authorized) {
                     window.location.href = '/login/'

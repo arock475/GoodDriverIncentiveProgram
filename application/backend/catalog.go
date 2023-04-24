@@ -179,20 +179,53 @@ func (s *Server) GetCatalog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var itemFilter []ItemFilter
+	itemFilter = append(itemFilter, ItemFilter{
+		Name:  "ListingType",
+		Value: "FixedPrice",
+	})
+	itemFilter = append(itemFilter, ItemFilter{
+		Name:  "Condition",
+		Value: "1000",
+	})
+
+	// Get organization shop rules
+	var rules []map[string]interface{}
+	err = json.Unmarshal([]byte(organization.ShopRules), &rules)
+	if err == nil {
+		for _, rule := range rules {
+			if rule["type"] == "Price Rule" {
+				value, ok := rule["value"].(map[string]interface{})
+				if !ok {
+					continue
+				}
+
+				min, ok := value["min"].(string)
+				if !ok {
+					continue
+				}
+				max, ok := value["max"].(string)
+				if !ok {
+					continue
+				}
+
+				itemFilter = append(itemFilter, ItemFilter{
+					Name:  "MinPrice",
+					Value: min,
+				})
+				itemFilter = append(itemFilter, ItemFilter{
+					Name:  "MaxPrice",
+					Value: max,
+				})
+			}
+		}
+	}
+
 	// Make request body to send to ebay
-	url := "https://svcs.sandbox.ebay.com/services/search/FindingService/v1"
+	url := "https://svcs.ebay.com/services/search/FindingService/v1"
 	request := FindItemsAdvancedRequest{
-		Keywords: keywords,
-		ItemFilter: []ItemFilter{
-			{
-				Name:  "ListingType",
-				Value: "FixedPrice",
-			},
-			{
-				Name:  "Condition",
-				Value: "1000",
-			},
-		},
+		Keywords:   keywords,
+		ItemFilter: itemFilter,
 		PaginationInput: PaginationInput{
 			EntriesPerPage: entriesPerPage,
 			PageNumber:     targetPage,
@@ -215,7 +248,7 @@ func (s *Server) GetCatalog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.Header.Add("X-EBAY-SOA-SECURITY-APPNAME", "AaronSpe-Team25Tr-SBX-4757afe53-80b1455b")
+	req.Header.Add("X-EBAY-SOA-SECURITY-APPNAME", "AaronSpe-Team25Tr-PRD-499285e91-9e6b8055")
 	req.Header.Add("X-EBAY-SOA-OPERATION-NAME", "findItemsAdvanced")
 	req.Header.Add("x-ebay-soa-response-data-format", "JSON")
 	req.Header.Add("x-ebay-soa-request-data-format", "JSON")

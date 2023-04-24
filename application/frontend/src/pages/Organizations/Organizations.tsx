@@ -49,7 +49,7 @@ const Organizations = ({}) => {
             <Container>
                 {
                     orgs.map((org) => (
-                        <Card >
+                        <Card className="my-3" style={{ maxWidth: '500px', margin: '0 auto' }}>
                             { org.LogoURL != null && <Card.Img variant="top" src={org.LogoURL} /> } 
                             <Card.Body>           
                                 <Card.Title>{org.Name}</Card.Title>

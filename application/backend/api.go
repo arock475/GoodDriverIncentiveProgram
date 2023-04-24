@@ -202,7 +202,7 @@ func init() {
 func main() {
 	s := CreateNewServer()
 	s.MountHandlers()
-	s.ConnectDatabase("devCreateRef")
+	s.ConnectDatabase("demo")
 
 	fmt.Print("Running\n")
 

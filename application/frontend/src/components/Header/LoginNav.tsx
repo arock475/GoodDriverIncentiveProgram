@@ -56,7 +56,7 @@ const LoginNav: React.FC<LoginNavProp> = ({viewAs, setViewAs}) => {
                         <NavDropdown.Item href="/logout">Logout</NavDropdown.Item>
                     </NavDropdown>
                     <Nav>
-                        <img src={`https://team25-s3bucket.s3.amazonaws.com/profilepicture-default.gif`} width={60} height={60} alt=''></img>
+                        <img src={`https://team25-s3bucket.s3.amazonaws.com/Default-PFP.jpg`} width={60} height={60} alt=''></img>
                     </Nav>
                 </>
 

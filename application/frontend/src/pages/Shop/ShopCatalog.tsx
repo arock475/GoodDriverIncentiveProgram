@@ -23,6 +23,12 @@ interface CartResponse {
   pointTotal: number;
 }
 
+export interface Sponsor {
+  ID: number;
+  UserID: number;
+  OrganizationID: number;
+}
+
 const ShopCatalog: React.FC = () => {
   const [driverCtx, setDriverCtx] = useState<DriverCatalogCtx>({
     userId: 0,
@@ -42,13 +48,26 @@ const ShopCatalog: React.FC = () => {
   const entriesPerPage = 25;
 
   useEffect(() => {
-    fetch(`http://localhost:3333/users/${userClaims.id}/catalog`)
-      .then((response) => response.json())
-      .then((data: DriverCatalogCtx) => {
-        setDriverCtx(data);
-      });
+    if (userClaims.role === User.Driver) {
+      fetch(`http://localhost:3333/users/${userClaims.id}/catalog`)
+        .then((response) => response.json())
+        .then((data: DriverCatalogCtx) => {
+          setDriverCtx(data);
+        });
+    }
+    if (userClaims.role == User.Sponsor) {
+      fetch(`http://localhost:3333/sponsors/u:${userClaims.id}`)
+        .then((result) => result.json())
+        .then((sponsor: Sponsor) => {
+          setDriverCtx({
+            userId: sponsor.UserID,
+            organizationName: "",
+            organizationId: sponsor.OrganizationID,
+            points: 0,
+          });
+        });
+    }
   }, []);
-  
 
   const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -89,19 +108,24 @@ const ShopCatalog: React.FC = () => {
       .then((data: EbayResponse) => {
         setTotalEntries(+data.totalEntries);
 
-        // Fetch existing cart items from backend
-        fetch(`http://localhost:3333/users/${userClaims.id}/cart`)
-          .then((response) => response.json())
-          .then((cart: CartResponse) => {
-            const itemIds: string[] = cart.items ? cart.items.map((item) => item.itemId) : [];
-            setItems(
-              data.items.map((item) => {
-                const inCart = itemIds.includes(item.itemId);
-                item.inCart = inCart;
-                return item;
-              })
-            );
-          });
+        if (userClaims.role === User.Driver) {
+          // Fetch existing cart items from backend
+          fetch(`http://localhost:3333/users/${userClaims.id}/cart`)
+            .then((response) => response.json())
+            .then((cart: CartResponse) => {
+              const itemIds: string[] = cart.items ? cart.items.map((item) => item.itemId) : [];
+              setItems(
+                data.items.map((item) => {
+                  const inCart = itemIds.includes(item.itemId);
+                  item.inCart = inCart;
+                  return item;
+                })
+              );
+            });
+        }
+        else {
+          setItems(data.items);
+        }
       });
   };
 
@@ -145,7 +169,7 @@ const ShopCatalog: React.FC = () => {
     .slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)
     .filter((item) => {
       if (showAffordableOnly) {
-        return item.points <= driverCtx.points; 
+        return item.points <= driverCtx.points;
       } else return true;
     });
 
