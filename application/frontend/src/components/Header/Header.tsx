@@ -47,7 +47,7 @@ const Header: React.FC<HeaderProps> = ({
                                 <NavDropdown.Item href="/create-org">Organization</NavDropdown.Item>
                             }
                         </NavDropdown>
-                        {(userClaims.role == User.Admin  || viewAs == User.Admin) &&
+                        {(viewAs == User.Admin) &&
                             <NavDropdown title="Delete" id="delete-navbar-dropdown">
                                 <NavDropdown.Item href="/orgs/delete">Organization</NavDropdown.Item>
                                 
