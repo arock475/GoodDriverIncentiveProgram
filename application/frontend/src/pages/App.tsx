@@ -20,6 +20,7 @@ import SponsorDashboard from './Dashboard/SponsorDashboard';
 import AdminDashboard from './Dashboard/AdminDashboard';
 
 import Logout from '../components/Login/Logout';
+import AdminUserDeletion from './UserDeletion/AdminUserDeletion';
 import Applications from './DriverApplications/Applications';
 import Points from './Points/Points'
 import ResetPassword from './Profile/ResetPassword';
@@ -79,6 +80,7 @@ const App = () => {
         </Route>
 
         {/* Create Pages*/}
+        <Route path="delete-user" element={<AdminUserDeletion />} />
         <Route path="create-user" element={<CreateUser viewAs={viewAs} setViewAs={setViewAs} />} />
         <Route path="create-org" element={<CreateOrganization />} />
         <Route path="points" element={<Points loggedIn={loggedIn} loginRole={loggedInRole} />} />

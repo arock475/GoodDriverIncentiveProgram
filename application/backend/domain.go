@@ -237,3 +237,10 @@ type Purchase struct {
 	CheckedOut     bool `gorm:"not null;default:0"`
 	UpdatedAt      time.Time
 }
+
+// User Roles Enum
+const (
+	DriverType  int = 0
+	SponsorType int = 1
+	AdminType   int = 2
+)

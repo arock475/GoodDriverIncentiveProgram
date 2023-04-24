@@ -129,11 +129,11 @@ func (s *Server) MountHandlers() {
 		r.Route("/users", func(r chi.Router) {
 			r.Get("/", s.ListUsers)
 			r.Post("/", s.CreateUser)
-
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Get("/", s.GetUser)
 				r.Get("/catalog", s.GetUserCatalogCtx)
 				r.Put("/profile", s.UpdateProfile)
+				r.Delete("/", s.DeleteUser)
 				r.Post("/profile/S3", s.UploadToS3)
 				r.Get("/cart", s.GetCartItems)
 				r.Put("/cart", s.AddItemToCart)
@@ -420,6 +420,73 @@ func (s *Server) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	returned, _ := json.Marshal(user)
 	w.Write(returned)
+}
+
+func (s *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	var user User
+	fmt.Print("Attempting to Delete user")
+	if userID := chi.URLParam(r, "userID"); userID != "" {
+		// finding user based on url
+		result := s.DB.First(&user, "id = ?", userID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
+		}
+		// deleting associated type before actual deletetion
+		switch user.Type {
+		case DriverType:
+			var driver Driver
+			result := s.DB.Preload("Organization").First(&driver, "user_id = ?", userID)
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				http.Error(w, "Driver Not Found", http.StatusNotFound)
+				return
+			}
+			s.DB.Model(&driver).Association("Organizations").Clear()
+			if err := s.DB.Where("driver_id = ?", driver.ID).Delete(&Points{}).Error; err != nil {
+				http.Error(w, "Failed to Delete Driver Points ", http.StatusNotFound)
+				return
+			}
+			if err := s.DB.Where("driver_user_id = ?", driver.UserID).Delete(&DriverApplication{}).Error; err != nil {
+				http.Error(w, "Failed to Delete Driver Applications", http.StatusNotFound)
+				return
+			}
+			if err := s.DB.Where("driver_id = ?", driver.ID).Delete(&Purchase{}).Error; err != nil {
+				http.Error(w, "Failed to Delete Driver Purchases", http.StatusNotFound)
+				return
+			}
+			s.DB.Delete(&driver)
+		case SponsorType:
+			var sponsor Sponsor
+			resultS := s.DB.Where("user_id = ?", user.ID).Delete(&sponsor)
+			if errors.Is(resultS.Error, gorm.ErrRecordNotFound) {
+				http.Error(w, "Associated Sponsor Not Found", http.StatusNotFound)
+				return
+			}
+		case AdminType:
+			var admin Admin
+			resultA := s.DB.Where("user_id = ?", user.ID).Delete(&admin)
+			if errors.Is(resultA.Error, gorm.ErrRecordNotFound) {
+				http.Error(w, "Associated Admin Not Found", http.StatusNotFound)
+				return
+			}
+		}
+
+		// deleting base user
+		resultD := s.DB.Delete(&User{}, &user)
+		if errors.Is(resultD.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Delete Failed", http.StatusNotFound)
+			return
+		}
+
+		// Return user that was deleted
+		returned, _ := json.Marshal(user)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(returned)
+	} else {
+		http.Error(w, "User Not Found", http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(200)
 }
 
 func (s *Server) UpdatePassword(w http.ResponseWriter, r *http.Request) {
