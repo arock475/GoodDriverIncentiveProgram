@@ -58,7 +58,7 @@ const DeleteOrg: React.FC<ViewAsProps> = ({viewAs, setViewAs}) => {
         const organizationId = parseInt(event.target.value);
         setSelectedOrg(orgs.find((org) => org.ID == organizationId));
     };
-    if (userClaims.role == User.Admin || viewAs == User.Admin)
+    if (userClaims.role == User.Admin || viewAs == User.Admin) {
         return (
             <Form onSubmit={handleSubmit}>
                 <Row>
@@ -85,6 +85,10 @@ const DeleteOrg: React.FC<ViewAsProps> = ({viewAs, setViewAs}) => {
                     </Col>
                 </Row>
             </Form>
+        );
+    } else {
+        return (
+          <div>ERROR! Improper role for accessing this page!</div>  
         );
     }
 }
