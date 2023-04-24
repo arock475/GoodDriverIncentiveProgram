@@ -449,6 +449,24 @@ func (s *Server) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "User Not Found", http.StatusNotFound)
 			return
 		}
+
+		var user User
+		result = s.DB.First(&user, "id = ?", userID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			http.Error(w, "User Not Found", http.StatusNotFound)
+			return
+		}
+		log := Log{
+			Event:       "Password Change",
+			Status:      "Success",
+			Description: "user_id = " + userID,
+			Email:       user.Email,
+			Time:        time.Now(),
+		}
+		result = s.DB.Create(&log)
+		if result.Error != nil {
+			http.Error(w, "Internal  server error: Failed to log password change. Passoword is still reset", http.StatusNotFound)
+		}
 	} else {
 		http.Error(w, "User Not Found", http.StatusNotFound)
 		return
