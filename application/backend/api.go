@@ -599,6 +599,7 @@ func (s *Server) DeleteOrg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
 	returned, _ := json.Marshal(org)
 	w.Write(returned)
 }

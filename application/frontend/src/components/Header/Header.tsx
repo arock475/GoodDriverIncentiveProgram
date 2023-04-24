@@ -7,6 +7,7 @@ import LoginNav from './LoginNav';
 import logo from '../../assets/truck-logo.jpg';
 import "../../styles/components/Header.css";
 import { getUserClaims } from '../../utils/getUserClaims';
+
 export type HeaderProps = {
     colorTheme?: string,
     viewAs?: number
@@ -46,6 +47,12 @@ const Header: React.FC<HeaderProps> = ({
                                 <NavDropdown.Item href="/create-org">Organization</NavDropdown.Item>
                             }
                         </NavDropdown>
+                        {(userClaims.role == User.Admin  || viewAs == User.Admin) &&
+                            <NavDropdown title="Delete" id="delete-navbar-dropdown">
+                                <NavDropdown.Item href="/orgs/delete">Organization</NavDropdown.Item>
+                                
+                            </NavDropdown>
+                        }
                         <Nav.Link href="/driver/orders" className="nav-link">Orders</Nav.Link>
                         <Nav.Link href="/orgs" className="nav-link">Organizations</Nav.Link>
                         <Nav.Link href="/driver/notifications" className="nav-link">Notifications</Nav.Link>

@@ -127,10 +127,11 @@ const App = () => {
           <Route path="admin" element={<></>} />
         </Route>
 
-        {/* Delete Pages */}
-        <Route path="delete-org" element={<DeleteOrganization />} />
-
-        <Route path="orgs" element={<Organizations />} />
+        {/* Organization Links */}
+        <Route path="orgs">
+            <Route index element={<Organizations />}/>
+            <Route path="delete" element={<DeleteOrganization />} />
+        </Route>
         <Route path="orgs/:orgid" element={<Organization />} />
       </Route>
     </Routes>
