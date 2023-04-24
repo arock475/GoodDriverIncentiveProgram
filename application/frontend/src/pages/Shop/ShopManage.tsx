@@ -13,7 +13,7 @@ const ShopManage: React.FC = () => {
       setRules(updatedRules);
       const rulesJson = JSON.stringify(updatedRules);
       try {
-        const response = await fetch(`http://localhost:3333/orgs/${orgId}/rules`, {
+        const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/${orgId}/rules`, {
           method: "POST",
           body: rulesJson,
           headers: {
@@ -31,7 +31,7 @@ const ShopManage: React.FC = () => {
 
   useEffect(() => {
     if (userClaims.role != 0) {
-      fetch(`http://localhost:3333/sponsors/u:${userClaims.id}`)
+      fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaims.id}`)
         .then((res) => res.json())
         .then((data) => {
           setOrgId(data.OrganizationID);
@@ -43,7 +43,7 @@ const ShopManage: React.FC = () => {
 
     const fetchRules = async () => {
       try {
-        const response = await fetch(`http://localhost:3333/orgs/${orgId}/rules`);
+        const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/${orgId}/rules`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch rules.");

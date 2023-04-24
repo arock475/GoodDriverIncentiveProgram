@@ -33,7 +33,7 @@ const AdminUserDeletion: React.FC<ViewAsProps> = ({viewAs, setViewAs}) => {
     const handleSubmit = async (even: React.SyntheticEvent) => {
         console.log(selectedUser);
         // making call to api
-        const response = await fetch(`http://localhost:3333/users/${selectedUser.id}`, {
+        const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/${selectedUser.id}`, {
             method: 'DELETE'
         }).then(response => {
             if (response.status >= 200 && response.status < 300) {
@@ -53,7 +53,7 @@ const AdminUserDeletion: React.FC<ViewAsProps> = ({viewAs, setViewAs}) => {
     useEffect(() => {
         // Fetch names from API and update state
         const fetchUsers = async () => {
-          const response = await fetch('http://localhost:3333/users/');
+          const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/');
           const data = await response.json();
           setUsers(data);
         };

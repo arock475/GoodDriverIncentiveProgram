@@ -20,7 +20,7 @@ export default function PointManagment() {
     PointsRatio: 1
   })
   useEffect(() => {
-    fetch(`http://localhost:3333/points/category`)
+    fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/points/category`)
       .then((res) => res.json())
       .then((data) => {
           setPointsArray(data);
@@ -32,7 +32,7 @@ export default function PointManagment() {
 
   useEffect(() => {
     if(userClaims.role != 0) {
-      fetch(`http://localhost:3333/sponsors/u:${userClaims.id}`)
+      fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaims.id}`)
       .then((res) => res.json())
       .then((data) => {
           setPointsRatio({PointsRatio: data.Organization.PointsRatio})
@@ -41,7 +41,7 @@ export default function PointManagment() {
           console.log(err.message);
       });
     } else {
-      fetch(`http://localhost:3333/drivers/u:${userClaims.id}`)
+      fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/drivers/u:${userClaims.id}`)
       .then((res) => res.json())
       .then((data) => {
           setPointsRatio({PointsRatio: data.Organization.PointsRatio})
@@ -113,7 +113,7 @@ export default function PointManagment() {
               Name: row.name,
             })
           };
-          fetch('http://localhost:3333/points/category', requestOptions)
+          fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/points/category', requestOptions)
             .then(response => response.json())
           done(true);
           window.location.reload(); 

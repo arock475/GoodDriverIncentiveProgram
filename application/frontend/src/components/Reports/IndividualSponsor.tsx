@@ -25,7 +25,7 @@ export default function IndividualSponsor () {
     const [userClaim, setUserClaim] = useState(getUserClaims());
 
     useEffect(() => {
-        fetch(`http://localhost:3333/sponsors/u:` + userClaim.id, {
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:` + userClaim.id, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ export default function IndividualSponsor () {
 
     useEffect(() => {
         const fetchReports = async () => {
-            fetch(`http://localhost:3333/reports/sponsor/sales/` + sponsor.OrganizationID, {
+            fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/sponsor/sales/` + sponsor.OrganizationID, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

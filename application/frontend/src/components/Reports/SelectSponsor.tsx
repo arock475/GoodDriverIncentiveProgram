@@ -28,7 +28,7 @@ export default function IndividualSponsor () {
     const [selectedIDs, setSelectedIDs] = useState([])
 
     useEffect(() => {
-        fetch(`http://localhost:3333/sponsors`, {
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ export default function IndividualSponsor () {
     useEffect(() => {
         const fetchReports = async () => {
             const promises = await Promise.all(selectedIDs.map(ID => 
-                fetch(`http://localhost:3333/reports/sponsor/sales/${ID}`, {
+                fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/sponsor/sales/${ID}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

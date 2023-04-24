@@ -31,7 +31,7 @@ const Organization = ({}) => {
         // get org
         const fetchOrg = async () => {
             try {
-                const response = await fetch(`http://localhost:3333/orgs/${orgid}`);
+                const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/${orgid}`);
                 const data = await response.json();
                 setOrg(data);
             }
@@ -51,7 +51,7 @@ const Organization = ({}) => {
                 orgId: org.ID
             })
         };
-        fetch('http://localhost:3333/orgs/' + org.ID + '/addToOrg', requestOptions)
+        fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/' + org.ID + '/addToOrg', requestOptions)
           .then(response => response.json())
       };
 

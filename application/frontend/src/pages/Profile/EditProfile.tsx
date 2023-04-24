@@ -41,7 +41,7 @@ export default function EditProfilePage() {
 
     // Gets user info from database
     useEffect(() => {
-       fetch('http://localhost:3333/users/' + userID)
+       fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID)
           .then((res) => res.json())
           .then((data) => {
             if(data.image == '') {
@@ -52,7 +52,7 @@ export default function EditProfilePage() {
           .catch((err) => {
              console.log(err.message);
           });
-          fetch(`http://localhost:3333/applications/driver?driverID=${userID}`, {
+          fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/applications/driver?driverID=${userID}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -128,7 +128,7 @@ export default function EditProfilePage() {
                   file: reader.result
                 })
               };
-              fetch('http://localhost:3333/users/' + userID + '/profile/S3', requestOptions)
+              fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID + '/profile/S3', requestOptions)
                 .then(response => response.json())
                 .catch((err) => {
                   console.log(err.message);
@@ -153,7 +153,7 @@ export default function EditProfilePage() {
             image: Data.image
           })
       };
-      fetch('http://localhost:3333/users/' + userID + '/profile', requestOptions)
+      fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID + '/profile', requestOptions)
           .then(response => response.json())
     };
     

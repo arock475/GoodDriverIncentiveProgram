@@ -54,7 +54,7 @@ const SalesByDriverReport = ({}) => {
             } 
             else {
                 const fetchOrgTotals = async () => {
-                    const response = await fetch(`http://localhost:3333/reports/salesbydriver/o:${selectedOrgID}`, {
+                    const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/salesbydriver/o:${selectedOrgID}`, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ const SalesByDriverReport = ({}) => {
 
     useEffect(() => {
         const fetchSponsorOrgID = async () => {
-            const response = await fetch(`http://localhost:3333/sponsors/u:${userClaim.id}`);
+            const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaim.id}`);
             const sponsor: Sponsor = await response.json();
             setSelectedOrgID(`${sponsor.OrganizationID}`);
         }
@@ -93,7 +93,7 @@ const SalesByDriverReport = ({}) => {
         }
 
         const fetchOrgs = async () => {
-            const response = await fetch('http://localhost:3333/orgs');
+            const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs');
             const data = await response.json();
             setOrgs(data);
         }
@@ -102,7 +102,7 @@ const SalesByDriverReport = ({}) => {
         }
 
         const fetchTotals = async () => {
-            const response = await fetch('http://localhost:3333/reports/salesbydriver', {
+            const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/salesbydriver', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ const SalesByDriverReport = ({}) => {
         fetchTotals();
 
         const fetchPurchases = async () => {
-            const response = await fetch('http://localhost:3333/reports/purchases', {
+            const response = await fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/purchases', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

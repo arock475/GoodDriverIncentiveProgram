@@ -49,14 +49,14 @@ const ShopCatalog: React.FC = () => {
 
   useEffect(() => {
     if (userClaims.role === User.Driver) {
-      fetch(`http://localhost:3333/users/${userClaims.id}/catalog`)
+      fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/${userClaims.id}/catalog`)
         .then((response) => response.json())
         .then((data: DriverCatalogCtx) => {
           setDriverCtx(data);
         });
     }
     if (userClaims.role == User.Sponsor) {
-      fetch(`http://localhost:3333/sponsors/u:${userClaims.id}`)
+      fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaims.id}`)
         .then((result) => result.json())
         .then((sponsor: Sponsor) => {
           setDriverCtx({
@@ -103,14 +103,14 @@ const ShopCatalog: React.FC = () => {
       }),
     };
 
-    fetch("http://localhost:3333/catalog", requestOptions)
+    fetch("http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/catalog", requestOptions)
       .then((response) => response.json())
       .then((data: EbayResponse) => {
         setTotalEntries(+data.totalEntries);
 
         if (userClaims.role === User.Driver) {
           // Fetch existing cart items from backend
-          fetch(`http://localhost:3333/users/${userClaims.id}/cart`)
+          fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/${userClaims.id}/cart`)
             .then((response) => response.json())
             .then((cart: CartResponse) => {
               const itemIds: string[] = cart.items ? cart.items.map((item) => item.itemId) : [];

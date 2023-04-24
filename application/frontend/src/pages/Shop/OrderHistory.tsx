@@ -14,7 +14,7 @@ const OrderHistory: React.FC = () => {
 
     const fetchCartItems = () => {
         // Fetch cart shop items from backend
-        fetch(`http://localhost:3333/users/${userClaims.id}/orders`)
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/${userClaims.id}/orders`)
             .then((response) => response.json())
             .then((data: OrdersResponse) => {
                 if (data.items) {

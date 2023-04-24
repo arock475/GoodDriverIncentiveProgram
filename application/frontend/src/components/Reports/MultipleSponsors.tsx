@@ -22,7 +22,7 @@ export default function IndividualSponsor () {
     const [purchaseHistory, setPurchaseHistory] = useState<Purchases[]>([])
 
     useEffect(() => {
-        fetch(`http://localhost:3333/reports/sponsor/sales/`, {
+        fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/reports/sponsor/sales/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

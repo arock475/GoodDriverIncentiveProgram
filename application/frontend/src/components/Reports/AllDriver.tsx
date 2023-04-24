@@ -39,10 +39,10 @@ const AllDriver = ({}) => {
     // load selected org
     useEffect(() => {
         const fetchSponsorOrg = () => {
-            fetch(`http://localhost:3333/sponsors/u:${userClaims.id}`)
+            fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/sponsors/u:${userClaims.id}`)
             .then((result) => result.json())
             .then((sponsor: Sponsor) => {
-                fetch(`http://localhost:3333/orgs/${sponsor.OrganizationID}`)
+                fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/orgs/${sponsor.OrganizationID}`)
                 .then((result) => result.json())
                 .then((org: Organization) => setSponsorOrg(org));
             });
@@ -55,7 +55,7 @@ const AllDriver = ({}) => {
 
     useEffect(() => {
         const fetchCols = async () => {      
-            const response = await fetch(`http://localhost:3333/points/totals`);
+            const response = await fetch(`http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/points/totals`);
             const data: TotalsPayload[] = await response.json();
             if (data) {
                 switch (sortBy) {

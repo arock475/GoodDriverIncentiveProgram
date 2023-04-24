@@ -26,7 +26,7 @@ import { Button } from 'react-bootstrap';
     }
     // Gets user info from database
     useEffect(() => {
-        fetch('http://localhost:3333/users/' + userID)
+        fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID)
            .then((res) => res.json())
            .then((data) => {
               setData({email:data.email, firstName:data.firstName, lastName:data.lastName})
@@ -47,7 +47,7 @@ import { Button } from 'react-bootstrap';
           })
         };
         console.log(requestOptions);
-        fetch('http://localhost:3333/users/' + userID + '/email', requestOptions)
+        fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID + '/email', requestOptions)
           .then(response => response.json())
           .catch((err) => {
             console.log(err.message);
@@ -62,7 +62,7 @@ import { Button } from 'react-bootstrap';
               password: Password.password
             })
           };
-          fetch('http://localhost:3333/users/' + userID + '/reset', requestOptions)
+          fetch('http://ec2-54-221-146-123.compute-1.amazonaws.com:3333/users/' + userID + '/reset', requestOptions)
             .then(response => response.json())
             .catch((err) => {
               console.log(err.message);
