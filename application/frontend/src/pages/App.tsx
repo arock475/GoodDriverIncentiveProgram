@@ -130,7 +130,7 @@ const App = () => {
         {/* Organization Links */}
         <Route path="orgs">
             <Route index element={<Organizations />}/>
-            <Route path="delete" element={<DeleteOrganization />} />
+            <Route path="delete" element={<DeleteOrganization viewAs={viewAs} setViewAs={setViewAs}/>} />
         </Route>
         <Route path="orgs/:orgid" element={<Organization />} />
       </Route>

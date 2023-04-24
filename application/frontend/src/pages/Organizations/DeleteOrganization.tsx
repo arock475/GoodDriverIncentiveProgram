@@ -1,6 +1,8 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { Button, Col, Form, ListGroup, Row, Table } from 'react-bootstrap';
+import { getUserClaims } from '../../utils/getUserClaims';
+import { User } from '../../components/CreateUser/CreateUser';
 
 
 // interfacing representing incoming organizations
@@ -12,8 +14,14 @@ interface Organization {
     Email: string
     LogoURL: string
 }
+export type ViewAsProps = {
+    viewAs?: number
+    setViewAs?: React.Dispatch<React.SetStateAction<number>>
+}
 
-const DeleteOrg = ({}) => {
+const DeleteOrg: React.FC<ViewAsProps> = ({viewAs, setViewAs}) => {
+    // claim
+    const [userClaims, setUserClaims] = useState(getUserClaims()); 
 
     // creating an org data constant to receive the data from fetch
     const [orgs, setOrgs] = useState<Organization[]>([])
@@ -50,34 +58,35 @@ const DeleteOrg = ({}) => {
         const organizationId = parseInt(event.target.value);
         setSelectedOrg(orgs.find((org) => org.ID == organizationId));
     };
-
-    return (
-        <Form onSubmit={handleSubmit}>
-            <Row>
-                <Col>                    
-                    <Form.Group>
-                        <Form.Label>Organizations</Form.Label>
-                        <Form.Control as='select' onChange={handleOrgChange}>
-                            <option value="">Select an Organization</option>
-                            {
-                                orgs.filter((org) => org.ID != -1).map((org) => (
-                                    <option key={org.ID} value={org.ID}>
-                                        {`ID: ${org.ID} Name: ${org.Name}`}
-                                    </option>
-                                ))
-                            }
-                        </Form.Control>
-                        <Form.Text>Select an organization to delete.</Form.Text>
-                    </Form.Group>
-                </Col>
-            </Row>   
-            <Row>
-                <Col className="text-center">
-                    <Button type='submit' onSubmit={handleSubmit}>Submit</Button>
-                </Col>
-            </Row>
-        </Form>
-    );
+    if (userClaims.role == User.Admin || viewAs == User.Admin)
+        return (
+            <Form onSubmit={handleSubmit}>
+                <Row>
+                    <Col>                    
+                        <Form.Group>
+                            <Form.Label>Organizations</Form.Label>
+                            <Form.Control as='select' onChange={handleOrgChange}>
+                                <option value="">Select an Organization</option>
+                                {
+                                    orgs.filter((org) => org.ID != -1).map((org) => (
+                                        <option key={org.ID} value={org.ID}>
+                                            {`ID: ${org.ID} Name: ${org.Name}`}
+                                        </option>
+                                    ))
+                                }
+                            </Form.Control>
+                            <Form.Text>Select an organization to delete.</Form.Text>
+                        </Form.Group>
+                    </Col>
+                </Row>   
+                <Row>
+                    <Col className="text-center">
+                        <Button type='submit' onSubmit={handleSubmit}>Submit</Button>
+                    </Col>
+                </Row>
+            </Form>
+        );
+    }
 }
 
 export default DeleteOrg;

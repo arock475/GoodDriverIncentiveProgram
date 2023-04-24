@@ -590,6 +590,21 @@ func (s *Server) DeleteOrg(w http.ResponseWriter, r *http.Request) {
 
 	// Clearing all associations with drivers
 	s.DB.Model(&org).Association("Drivers").Clear()
+	// Deleting points history with org
+	if err := s.DB.Where("organization_id = ?", org.ID).Delete(&DriverApplication{}).Error; err != nil {
+		http.Error(w, "Failed to Delete Org's Associated Driver Applications'", http.StatusNotFound)
+		return
+	}
+	// Deleting points history with org
+	if err := s.DB.Where("organization_id = ?", org.ID).Delete(&Points{}).Error; err != nil {
+		http.Error(w, "Failed to Delete Orgs Points History", http.StatusNotFound)
+		return
+	}
+	// Deleting purchase history with org
+	if err := s.DB.Where("organization_id = ?", org.ID).Delete(&Purchase{}).Error; err != nil {
+		http.Error(w, "Failed to Delete Org's Purchase History", http.StatusNotFound)
+		return
+	}
 
 	// Finally, deleting the organization
 	resultOrg := s.DB.Where("id = ?", org.ID).Delete(&Organization{})
